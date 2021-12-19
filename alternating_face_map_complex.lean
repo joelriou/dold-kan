@@ -108,12 +108,10 @@ begin
       simp only [indices, finset.mem_product, finset.mem_range],
       split,
         { exact nat.pred_lt_pred (show x.2 ≠ 0, by linarith) hx2, },
-        { linarith, },
-    },
+        { linarith, }, },
     { rw τ_case2 x h,
       simp only [indices, finset.mem_product, finset.mem_range],
-      split; linarith,
-    }
+      split; linarith, }
 end
 
 variables { α : Type* }
@@ -129,15 +127,13 @@ begin
       intro h1,
       have h2 := congr_arg prod.snd h1,
       simp only at h2,
-      linarith,
-    },
+      linarith, },
     { rw τ_case2 x h,
       intro h1,
       have h2 := congr_arg prod.fst h1,
       have h3 := congr_arg prod.snd h1,
       simp only at h2 h3,
-      linarith,
-    }
+      linarith, }
 end
 
 lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : x.2<x.1+1 := by linarith
@@ -147,11 +143,9 @@ begin
   intro h,
   cases x.2,
     { linarith, },
-    {
-      rw nat.succ_sub_one at h,
+    { rw nat.succ_sub_one at h,
       have h1 := nat.le_of_lt_succ hx,
-      linarith,
-    },
+      linarith, },
 end
 
 /-! τ' is an involution. -/
@@ -168,15 +162,13 @@ begin
       ext; simp only,
         cases x.2 with m,
           { linarith, },
-          { exact nat.succ_sub_one m.succ, }
-    },
+          { exact nat.succ_sub_one m.succ, } },
     { rw τ_case2 x h,
       have h1 := τ_case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
       simp only at h1,
       rw h1,
       ext; simp only, 
-        exact nat.succ_sub_one x.1,
-    },
+        exact nat.succ_sub_one x.1, },
 end
 
 /-!
@@ -202,18 +194,14 @@ begin
         have eq : x.2-1+1 = x.2,
         { cases x.2 with j,
             { exfalso, linarith },
-            { exact nat.succ_sub_one j.succ, }
-        },
+            { exact nat.succ_sub_one j.succ, } },
         rw eq at h1,
         simp only [prod.mk.eta] at h1,
         rw h1,
-        simp only [add_left_neg],
-      },
+        simp only [add_left_neg], },
       { rw τ_case2 x h,
         rw antisymmetry_f x.2 x.1 (by linarith) (by linarith),
-        simp only [prod.mk.eta, add_right_neg],
-      }
-  },
+        simp only [prod.mk.eta, add_right_neg], } },
   exact finset.sum_involution τ' h0 τ'_ne τ'_mem τ'_inv ,
 end
 
@@ -237,28 +225,24 @@ begin
   { rw pow_succ,
     rw ← mul_assoc,
     rw mul_comm ((-1 : ℤ)^i) (-1),
-    simp only [neg_mul_eq_neg_mul_symm, one_mul],
-  },
+    simp only [neg_mul_eq_neg_mul_symm, one_mul], },
   rw [← eq, mul_comm , ← neg_smul],
   apply congr_arg,
   have ineq : ( i : fin(n+2)) ≤ j,
   { rw ← fin.coe_fin_le,
     rw fin.coe_coe_of_lt (show i<n+2, by linarith),
     rw fin.coe_coe_of_lt (show j<n+2, by linarith),
-    exact hij,
-  },
+    exact hij, },
   have hi : fin.cast_succ (i : fin(n+2)) = (i : fin(n+3)),
   { ext,
     rw fin.coe_cast_succ,
     rw fin.coe_coe_of_lt (show i<n+2, by linarith),
-    rw fin.coe_coe_of_lt (show i<n+3, by linarith),
-  },
+    rw fin.coe_coe_of_lt (show i<n+3, by linarith), },
   have hj : (j : fin(n+2)).succ = ((j+1) : ℕ),
   { ext,
     rw fin.coe_succ,
     rw fin.coe_coe_of_lt (show j+1<n+3, by linarith),
-    rw fin.coe_coe_of_lt (show j<n+2, by linarith),
-  },
+    rw fin.coe_coe_of_lt (show j<n+2, by linarith), },
   have seq := category_theory.simplicial_object.δ_comp_δ X ineq,
   rw [hi, hj] at seq,
   exact seq,
@@ -314,8 +298,7 @@ variables (C)
 @[simps]
 def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :=
 { obj := alternating_face_map_complex.obj,
-  map := λ X Y f, alternating_face_map_complex.map f
-}
+  map := λ X Y f, alternating_face_map_complex.map f }
 
 
 /-- A small lemma which may appear somewhere else in mathlib? -/
@@ -362,8 +345,7 @@ chain_complex.of_hom _ _ _ _ _ _
         rw ← factor_thru_arrow _ _
           (finset_inf_arrow_factors finset.univ _ (j : fin(n+1)) (by simp)),
         slice_lhs 2 3 { erw kernel_subobject_arrow_comp (X.δ (j:fin(n+1)).succ), },
-        simp,
-      },
+        simp, },
       rw finset.sum_eq_zero null at h,
       rw [show 1+(n+1)=n+2, by linarith] at h,
       rw h,
