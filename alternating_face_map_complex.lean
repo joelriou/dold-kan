@@ -16,13 +16,13 @@ import algebra.big_operators.basic
 
 We construct the alternating face map complex, as a 
 functor `alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ`
-for any abelian category `C`. For any simplicial object `X` in `C`,
+for any preadditive category `C`. For any simplicial object `X` in `C`,
 this is the homological complex `... → X_2 → X_1 → X_0`
 where the differentials are alternate sums of faces.
 
 We also construct the natural transformation 
-`inclusion_of_Moore_complex : nat_trans (normalized_Moore_complex C) (alternating_face_map_complex C)` 
-
+`inclusion_of_Moore_complex : nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A)` 
+when `A` is an abelain category
 
 ## References
 * https://stacks.math.columbia.edu/tag/0194
@@ -37,7 +37,7 @@ open_locale big_operators
 noncomputable theory
 namespace algebraic_topology
 
-variables {C : Type*} [category C] [abelian C]
+variables {C : Type*} [category C] [preadditive C]
 variables (X : simplicial_object C)
 variables (Y : simplicial_object C)
 
@@ -297,7 +297,6 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
 { obj := alternating_face_map_complex.obj,
   map := λ X Y f, alternating_face_map_complex.map f }
 
-
 /-- A small lemma which may appear somewhere else in mathlib? -/
 variables {α : Type*}
 lemma smul_zero_var [add_comm_group α] (n : ℤ) (x : α) (hx : x = 0) : n•x = 0 :=
@@ -310,9 +309,9 @@ end
 ## Construction of the natural inclusion from the normalized Moore complex to the alternating face map complex
 -/
 
-variables {C}
-def inclusion_of_Moore_complex_map (X : simplicial_object C) :  
-  (normalized_Moore_complex C).obj X ⟶ (alternating_face_map_complex C).obj X :=
+variables {A : Type*} [category A] [abelian A]
+def inclusion_of_Moore_complex_map (X : simplicial_object A) :  
+  (normalized_Moore_complex A).obj X ⟶ (alternating_face_map_complex A).obj X :=
 chain_complex.of_hom _ _ _ _ _ _ 
   (λ n, (normalized_Moore_complex.obj_X X n).arrow)
   (λ n,
@@ -357,15 +356,14 @@ chain_complex.of_hom _ _ _ _ _ _
     end)
 
 @[simp]
-lemma inclusion_of_Moore_complex_map_f (X : simplicial_object C) (n : ℕ) :
+lemma inclusion_of_Moore_complex_map_f (X : simplicial_object A) (n : ℕ) :
   (inclusion_of_Moore_complex_map X).f n = (normalized_Moore_complex.obj_X X n).arrow :=
 chain_complex.of_hom_f _ _ _ _ _ _ _ _ n
 
-variables (C)
+variables (A)
 @[simps]
 def inclusion_of_Moore_complex :
-  nat_trans (normalized_Moore_complex C) (alternating_face_map_complex C) :=
+  nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A) :=
 { app := inclusion_of_Moore_complex_map, }
 
 end algebraic_topology
-
