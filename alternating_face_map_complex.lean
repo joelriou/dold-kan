@@ -56,7 +56,7 @@ def obj_d (n : ℕ) : (obj_X X (n+1) ⟶ (obj_X X n)) :=
 The expansion of `d ≫ d` involves a double sum, or a sum of terms
 indexed by a set of the form {0,...,n} × {0,...,n+1}. We shall show
 a general cancellation lemma `antisymmetric_sum_cancels` of such sums when
-the terms f_{i,j} satisfy an "antisymmetry" relation f_{i,j+1}=-t_{j,i}
+the terms f_{i,j} satisfy an "antisymmetry" relation f_{i,j+1}=-f_{j,i}
 for i≤j, The cancellation lemma follows from the study of a certain
 involution `τ` on `ℕ × ℕ`.
 
