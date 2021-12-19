@@ -210,7 +210,7 @@ end
 -/
 
 def di_dj (n : ℕ) (x : ℕ × ℕ) : obj_X X (n+2) ⟶ (obj_X X n) :=
-  ((-1 : ℤ)^x.2 • X.δ x.2) ≫ ((-1 : ℤ)^x.1 • X.δ x.1)
+((-1 : ℤ)^x.2 • X.δ x.2) ≫ ((-1 : ℤ)^x.1 • X.δ x.1)
 
 lemma di_dj_antisymm (n : ℕ) : (∀ (i j : ℕ), i≤j → j≤n+1 →
   (di_dj X n (i,j+1)) = - di_dj X n (j,i)):=
@@ -222,9 +222,7 @@ begin
   repeat { rw category_theory.preadditive.zsmul_comp },
   repeat { rw ← mul_smul },
   have eq : -((-1)^i * (-1)^j : ℤ) = (-1)^i * (-1)^(j+1),
-  { rw pow_succ,
-    rw ← mul_assoc,
-    rw mul_comm ((-1 : ℤ)^i) (-1),
+  { rw [pow_succ, ← mul_assoc, mul_comm ((-1 : ℤ)^i) (-1)],
     simp only [neg_mul_eq_neg_mul_symm, one_mul], },
   rw [← eq, mul_comm , ← neg_smul],
   apply congr_arg,
@@ -275,13 +273,12 @@ variables {X} {Y}
 
 @[simp]
 def map (f : X ⟶ Y) : obj X ⟶ obj Y :=
-  chain_complex.of_hom _ _ _ _ _ _
+chain_complex.of_hom _ _ _ _ _ _
   (λ n, f.app(op(simplex_category.mk n)))
   (λ n,
     begin
       repeat { rw obj_d },
-      rw preadditive.comp_sum,
-      rw preadditive.sum_comp,
+      rw [preadditive.comp_sum, preadditive.sum_comp],
       apply congr_arg (finset.range(n+2)).sum,
       ext,
       rw category_theory.preadditive.comp_zsmul,
@@ -362,7 +359,7 @@ chain_complex.of_hom _ _ _ _ _ _
 @[simp]
 lemma inclusion_of_Moore_complex_map_f (X : simplicial_object C) (n : ℕ) :
   (inclusion_of_Moore_complex_map X).f n = (normalized_Moore_complex.obj_X X n).arrow :=
-  chain_complex.of_hom_f _ _ _ _ _ _ _ _ n
+chain_complex.of_hom_f _ _ _ _ _ _ _ _ n
 
 variables (C)
 @[simps]
