@@ -81,47 +81,48 @@ by { rw τ, split_ifs, refl }
 lemma τ_case2 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : τ x = (x.2,x.1+1) :=
 by { rw τ, split_ifs, refl }
 
-lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : x.2<x.1+1 := by linarith
+lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : (τ x).1<(τ x).2 :=
+by { rw τ_case2 x hx, linarith, }
 
-lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬x.2-1<x.1 :=
-begin
-  intro h,
+lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬(τ x).1<(τ x).2 := by
+{ rw τ_case1 x hx,
   cases x.2,
-  { linarith, },
-  { rw nat.succ_sub_one at h,
+  { exfalso, linarith, },
+  { intro htx,
+    rw nat.succ_sub_one at htx,
     have h1 := nat.le_of_lt_succ hx,
-    linarith, },
-end
+    linarith,
+    }, }
 
 lemma τ_inv (x : ℕ × ℕ) : τ (τ x) = x :=
 begin
   by_cases x.1<x.2,
-  { rw τ_case1 x h,
-    rw τ_case2 (x.2-1,x.1) (τ_of_case1_is_case2 x h),
+  { rw τ_case2 (τ x) (τ_of_case1_is_case2 x h),
+    rw τ_case1 x h,
     ext; simp only,
       cases x.2 with m,
       { linarith, },
       { exact nat.succ_sub_one m.succ, }, },
-  { rw τ_case2 x h,
-    rw τ_case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
+  { rw τ_case1 (τ x) (τ_of_case2_is_case1 x h),
+    rw τ_case2 x h,
     simp only [nat.add_succ_sub_one, add_zero, prod.mk.eta], },
 end
 
-lemma τ_ne (x : ℕ × ℕ) : τ x ≠ x :=
+/-- τ has no fixed point -/
+lemma τ_ne' (x : ℕ × ℕ) : τ x ≠ x :=
 begin
   have case1 : ∀ (y : ℕ × ℕ), y.1<y.2 → τ y ≠ y,
   { intros y hy h1,
     rw τ_case1 y hy at h1,
     have h2 := congr_arg prod.snd h1, 
     simp only at h2,
-    linarith,
-  },
+    linarith, },
+  have case2 : ∀ (y : ℕ × ℕ), ¬y.1<y.2 → τ y ≠ y,
+  { intros y hy h1,
+    exact case1 (τ y) (τ_of_case2_is_case1 y hy) (congr_arg τ h1), },
   by_cases x.1<x.2,
   { exact case1 x h, },
-  { intro hx,
-    have h1 := case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
-    rw ← τ_case2 x h at h1,
-    exact h1 (congr_arg τ hx), },
+  { exact case2 x h, },
 end
 
 /-!
@@ -140,9 +141,8 @@ def τ' {n : ℕ} : Π (x : ℕ × ℕ), x ∈ indices n → ℕ × ℕ :=
 τ' x hx = τ x := by refl
 
 /-- τ stabilises {0,...,n} × {0,...,n+1} -/
-lemma τ'_mem {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) : τ' x hx ∈ indices n :=
+lemma τ'_mem' {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) : τ x ∈ indices n :=
 begin
-  rw τ'_eq_τ,
   simp only [indices, finset.mem_product, finset.mem_range] at hx,
   cases hx with hx1 hx2,
   by_cases x.1<x.2,
@@ -156,12 +156,12 @@ begin
     split; linarith, }
 end
 
-variables {α : Type*}
+lemma τ'_mem {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) : τ' x hx ∈ indices n :=
+by { rw τ'_eq_τ, exact τ'_mem' x hx, }
 
 /-- τ' has no fixed point -/
-lemma τ'_ne [add_comm_monoid α] {n : ℕ} {f : ℕ × ℕ → α}
-  (x : ℕ × ℕ) (hx : x ∈ indices n) (hfx : f x ≠ 0) : τ' x hx ≠ x :=
-by { rw τ'_eq_τ, exact τ_ne x, }
+lemma τ'_ne' {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) : τ' x hx ≠ x :=
+by { rw τ'_eq_τ, exact τ_ne' x, }
 
 /-! τ' is an involution. -/
 lemma τ'_inv {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) :
@@ -171,6 +171,8 @@ by { simp only [τ'_eq_τ], exact τ_inv x, }
 /-!
 ### Cancellation of "antisymmetric" sums indexed by {0,...,n} × {0,...,n+1}
 -/
+
+variables {α : Type*}
 
 /-- The proof uses finset.sum_involution. Then, from the assumption, we have
 to show that for all x in {0,...,n} × {0,...,n+1}, we have `f x + f (τ x) = 0`.
@@ -190,11 +192,7 @@ begin
     (hx : x ∈ indices n), f x + f (τ x) = 0,
   { intros x h1x hx,
     rw add_comm,
-    have eq := hf_case2 (τ x)
-      (by { rw τ_case1 x h1x,
-            exact τ_of_case1_is_case2 x h1x, })
-      (by { rw ← τ'_eq_τ x hx,
-            exact τ'_mem x hx,} ),
+    have eq := hf_case2 (τ x) (τ_of_case1_is_case2 x h1x) (τ'_mem' x hx),
     rw τ_inv x at eq,
     exact eq, },
   have hf : ∀ (x : ℕ × ℕ) (hx : x ∈ indices n), f x + f (τ' x hx) = 0,
@@ -203,7 +201,7 @@ begin
     by_cases x.1<x.2,
     { exact hf_case1 x h hx, },
     { exact hf_case2 x h hx, }, },
-  exact finset.sum_involution τ' hf τ'_ne τ'_mem τ'_inv ,
+  exact finset.sum_involution τ' hf (λ x hx _, τ'_ne' x hx) τ'_mem τ'_inv,
 end
 
 
