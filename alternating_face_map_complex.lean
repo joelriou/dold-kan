@@ -289,11 +289,6 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
 { obj := alternating_face_map_complex.obj,
   map := λ X Y f, alternating_face_map_complex.map f }
 
-/-- A small lemma which may appear somewhere else in mathlib? -/
-variables {α : Type*}
-lemma smul_zero_var [add_comm_group α] (n : ℤ) (x : α) (hx : x = 0) : n•x = 0 :=
-by { rw hx, simp only [smul_zero'], }
-
 /-!
 ## Construction of the natural inclusion from the normalized Moore complex to the alternating face map complex
 -/
@@ -322,7 +317,8 @@ chain_complex.of_hom _ _ _ _ _ _
         simp only [finset.mem_range] at hj,
         rw def_t,
         rw preadditive.comp_zsmul,
-        apply smul_zero_var,
+        rw ← zsmul_zero ((-1 : ℤ)^(1+j)),
+        apply congr_arg,
         rw normalized_Moore_complex.obj_X,
         rw [show ((1+j : ℕ) : (fin(n+2))) = (j : fin(n+1)).succ, by
           { ext,
