@@ -9,10 +9,11 @@ import algebraic_topology.simplicial_object
 import algebraic_topology.Moore_complex
 import category_theory.abelian.basic
 import algebra.big_operators.basic
+import tactic.ring_exp
 
 /-!
 
-# The alternating face map complex of a simplicial object in a abelian category
+# The alternating face map complex of a simplicial object in a preadditive category
 
 We construct the alternating face map complex, as a 
 functor `alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ`
@@ -22,7 +23,7 @@ where the differentials are alternate sums of faces.
 
 We also construct the natural transformation 
 `inclusion_of_Moore_complex : nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A)` 
-when `A` is an abelain category
+when `A` is an abelian category
 
 ## References
 * https://stacks.math.columbia.edu/tag/0194
@@ -48,15 +49,15 @@ def obj_X (n : ℕ) := X.obj(op(simplex_category.mk n))
 
 @[simp]
 def obj_d (n : ℕ) : (obj_X X (n+1) ⟶ (obj_X X n)) :=
-∑ i in finset.range (n+2), ((-1 : ℤ)^i • X.δ i)
+∑ i in finset.range(n+2), ((-1 : ℤ)^i • X.δ i)
 
 /-!
-## Proof of the relation chain complex relation `d ≫ d` 
+## Proof of the chain complex relation `d ≫ d` 
 
 The expansion of `d ≫ d` involves a double sum, or a sum of terms
 indexed by a set of the form {0,...,n} × {0,...,n+1}. We shall show
 a general cancellation lemma `antisymmetric_sum_cancels` of such sums when
-the terms f_{i,j} satisfy an "antisymmetry" relation f_{i,j+1}=-f_{j,i}
+the terms f_{i,j} satisfy an "antisymmetry" relation f_{i,j+1} = -f_{j,i}
 for i≤j, The cancellation lemma follows from the study of a certain
 involution `τ` on `ℕ × ℕ`.
 
@@ -80,26 +81,50 @@ by { rw τ, split_ifs, refl }
 lemma τ_case2 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : τ x = (x.2,x.1+1) :=
 by { rw τ, split_ifs, refl }
 
+lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : x.2<x.1+1 := by linarith
+
+lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬x.2-1<x.1 :=
+begin
+  intro h,
+  cases x.2,
+  { linarith, },
+  { rw nat.succ_sub_one at h,
+    have h1 := nat.le_of_lt_succ hx,
+    linarith, },
+end
+
+lemma τ_inv (x : ℕ × ℕ) : τ (τ x) = x :=
+begin
+  by_cases x.1<x.2,
+  { rw τ_case1 x h,
+    rw τ_case2 (x.2-1,x.1) (τ_of_case1_is_case2 x h),
+    ext; simp only,
+      cases x.2 with m,
+      { linarith, },
+      { exact nat.succ_sub_one m.succ, }, },
+  { rw τ_case2 x h,
+    rw τ_case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
+    simp only [nat.add_succ_sub_one, add_zero, prod.mk.eta], },
+end
+
 /-!
 ### Verification that τ induces an involution τ' on {0,...,n} × {0,...,n+1}
 
 `indices n` denotes `{0,...,n} × {0,...,n+1}` as a finite subset of `ℕ × ℕ`
-
 -/
 
 def indices (n : ℕ) : finset (ℕ × ℕ) := 
 finset.product (finset.range(n+1)) (finset.range(n+2))
 
-def τ' {n : ℕ} : (Π (x : ℕ × ℕ), x ∈ (indices n) → (ℕ × ℕ)) := 
+def τ' {n : ℕ} : (Π (x : ℕ × ℕ), x ∈ indices n → (ℕ × ℕ)) := 
 λ x hx, τ x
 
-@[simp] lemma τ'_eq_τ {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ (indices n)) :
+@[simp] lemma τ'_eq_τ {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) :
 τ' x hx = τ x := by refl
 
 /-- τ stabilises {0,...,n} × {0,...,n+1} -/
-lemma τ'_mem {n : ℕ} : (∀ (x : ℕ × ℕ) (hx : x ∈ indices n), τ' x hx ∈ indices n) :=
+lemma τ'_mem {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) : τ' x hx ∈ indices n :=
 begin
-  intros x hx,
   rw τ'_eq_τ,
   simp only [indices, finset.mem_product, finset.mem_range] at hx,
   cases hx with hx1 hx2,
@@ -117,10 +142,9 @@ end
 variables { α : Type* }
 
 /-- τ' has no fixed point -/
-lemma τ'_ne [add_comm_monoid α] {n : ℕ} {f : ℕ × ℕ → α} :
-  (∀ (x : ℕ × ℕ) (hx : x ∈ indices n), f x ≠ 0 → τ' x hx ≠ x) :=
+lemma τ'_ne [add_comm_monoid α] {n : ℕ} {f : ℕ × ℕ → α}
+  (x : ℕ × ℕ) (hx : x ∈ indices n) (hfx : f x ≠ 0) : τ' x hx ≠ x :=
 begin
-  intros x hx hfx,
   rw τ'_eq_τ,
   by_cases x.1<x.2,
   { rw τ_case1 x h,
@@ -136,47 +160,17 @@ begin
     linarith, }
 end
 
-lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : x.2<x.1+1 := by linarith
-
-lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬x.2-1<x.1 :=
-begin
-  intro h,
-  cases x.2,
-  { linarith, },
-  { rw nat.succ_sub_one at h,
-    have h1 := nat.le_of_lt_succ hx,
-    linarith, },
-end
-
 /-! τ' is an involution. -/
-lemma τ'_inv {n : ℕ} : (∀ (x : ℕ × ℕ) (hx : x ∈ indices n),
-  τ' (τ' x hx) (τ'_mem x hx) = x) :=
-begin
-  intros x hx,
-  simp only [τ'_eq_τ],
-  by_cases x.1<x.2,
-  { rw τ_case1 x h,
-    have h1 := τ_case2 (x.2-1,x.1) (τ_of_case1_is_case2 x h),
-    simp only at h1,
-    rw h1,
-    ext; simp only,
-      cases x.2 with m,
-      { linarith, },
-      { exact nat.succ_sub_one m.succ, } },
-  { rw τ_case2 x h,
-    have h1 := τ_case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
-    simp only at h1,
-    rw h1,
-    ext; simp only, 
-      exact nat.succ_sub_one x.1, },
-end
+lemma τ'_inv {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) :
+  τ' (τ' x hx) (τ'_mem x hx) = x :=
+by { simp only [τ'_eq_τ], exact τ_inv x, }
 
 /-!
 ### Cancellation of "antisymmetric" sums indexed by {0,...,n} × {0,...,n+1}
 -/
 
 /-- The proof uses finset.sum_involution. Then, from the assumption, we have
-to show that for all x in {0,...,n} × {0,...,n+1}, we have `x + f (τ x) = 0`.
+to show that for all x in {0,...,n} × {0,...,n+1}, we have `f x + f (τ x) = 0`.
 -/
 lemma antisymmetric_sum_cancels [add_comm_group α] {n : ℕ} (f : ℕ × ℕ → α)
   (antisymmetry_f : ∀ (i j : ℕ), i≤j → j≤n → f (i,j+1) = - f (j,i)) :
@@ -212,21 +206,19 @@ end
 def di_dj (n : ℕ) (x : ℕ × ℕ) : obj_X X (n+2) ⟶ (obj_X X n) :=
 ((-1 : ℤ)^x.2 • X.δ x.2) ≫ ((-1 : ℤ)^x.1 • X.δ x.1)
 
-lemma di_dj_antisymm (n : ℕ) : (∀ (i j : ℕ), i≤j → j≤n+1 →
-  (di_dj X n (i,j+1)) = - di_dj X n (j,i)):=
+lemma di_dj_antisymm (n i j : ℕ) (hij : i≤j) (hjn : j≤n+1) :
+  (di_dj X n (i,j+1)) = - di_dj X n (j,i) :=
 begin
-  intros i j hij hjn,
   repeat { rw di_dj },
   simp only,
   repeat { rw category_theory.preadditive.comp_zsmul },
   repeat { rw category_theory.preadditive.zsmul_comp },
   repeat { rw ← mul_smul },
-  have eq : -((-1)^i * (-1)^j : ℤ) = (-1)^i * (-1)^(j+1),
-  { rw [pow_succ, ← mul_assoc, mul_comm ((-1 : ℤ)^i) (-1)],
-    simp only [neg_mul_eq_neg_mul_symm, one_mul], },
-  rw [← eq, mul_comm , ← neg_smul],
+
+  have eq : -((-1)^i * (-1)^j : ℤ) = (-1)^i * (-1)^(j+1) := by ring_exp,
+  rw [← eq, mul_comm, ← neg_smul],
   apply congr_arg,
-  have ineq : ( i : fin(n+2)) ≤ j,
+  have ineq : (i : fin(n+2)) ≤ j,
   { rw ← fin.coe_fin_le,
     rw fin.coe_coe_of_lt (show i<n+2, by linarith),
     rw fin.coe_coe_of_lt (show j<n+2, by linarith),
@@ -300,10 +292,7 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
 /-- A small lemma which may appear somewhere else in mathlib? -/
 variables {α : Type*}
 lemma smul_zero_var [add_comm_group α] (n : ℤ) (x : α) (hx : x = 0) : n•x = 0 :=
-begin
-  rw hx,
-  simp only [smul_zero'],
-end
+by { rw hx, simp only [smul_zero'], }
 
 /-!
 ## Construction of the natural inclusion from the normalized Moore complex to the alternating face map complex
@@ -316,6 +305,10 @@ chain_complex.of_hom _ _ _ _ _ _
   (λ n, (normalized_Moore_complex.obj_X X n).arrow)
   (λ n,
     begin
+      /- we have to show the compatibility of the differentials on the alternating
+         face map complex with those defined on the normalized_Moore_complex:
+         in the alternating sum, we first get rid of the terms that are obviously
+         zero on the normalized_Moore_complex -/
       simp only [alternating_face_map_complex.obj_d],
       rw preadditive.comp_sum,
       let t := λ (j : ℕ), (normalized_Moore_complex.obj_X X (n+1)).arrow ≫
@@ -324,14 +317,14 @@ chain_complex.of_hom _ _ _ _ _ _
         ((-1 : ℤ)^j • X.δ j)) := by { intro j, refl, },
       have h := finset.sum_range_add t 1 (n+1),
       rw finset.sum_range_one at h,
-      have null : (∀ j, j ∈ finset.range(n+1) → t (1+j) = 0 ),
+      have null : (∀ j, j ∈ finset.range(n+1) → t (1+j) = 0),
       { intros j hj,
         simp only [finset.mem_range] at hj,
         rw def_t,
         rw preadditive.comp_zsmul,
         apply smul_zero_var,
         rw normalized_Moore_complex.obj_X,
-        rw [show ((1+j : ℕ) : (fin(n+2))) = (j:fin(n+1)).succ, by
+        rw [show ((1+j : ℕ) : (fin(n+2))) = (j : fin(n+1)).succ, by
           { ext,
             rw fin.coe_succ,
             rw fin.coe_coe_of_lt (show j<n+1, by linarith),
@@ -346,6 +339,7 @@ chain_complex.of_hom _ _ _ _ _ _
       rw h,
       simp only [add_zero],
 
+      /- finally, we study the remaining term which is induced by X.δ 0 -/
       let eq := def_t 0,
       rw [show (-1 : ℤ)^0 = 1, by ring] at eq,
       rw one_smul at eq,
@@ -360,6 +354,7 @@ lemma inclusion_of_Moore_complex_map_f (X : simplicial_object A) (n : ℕ) :
 chain_complex.of_hom_f _ _ _ _ _ _ _ _ n
 
 variables (A)
+
 @[simps]
 def inclusion_of_Moore_complex :
   nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A) :=
