@@ -19,11 +19,11 @@ We construct the alternating face map complex, as a
 functor `alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ`
 for any preadditive category `C`. For any simplicial object `X` in `C`,
 this is the homological complex `... → X_2 → X_1 → X_0`
-where the differentials are alternate sums of faces.
+where the differentials are alternating sums of faces.
 
-We also construct the natural transformation `inclusion_of_Moore_complex :
-nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A)`
-when `A` is an abelian category
+We also construct the natural transformation
+`inclusion_of_Moore_complex : normalized_Moore_complex A ⟶ alternating_face_map_complex A`
+when `A` is an abelian category.
 
 ## References
 * https://stacks.math.columbia.edu/tag/0194
@@ -45,7 +45,7 @@ namespace alternating_face_map_complex
 the nth-object of the simplicial object -/
 @[simp]
 def obj_X {C : Type*} [category C] (X : simplicial_object C) (n : ℕ) :=
-X.obj(op(simplex_category.mk n))
+X.obj (op (simplex_category.mk n))
 
 variables {C : Type*} [category C] [preadditive C]
 variables (X : simplicial_object C)
@@ -54,8 +54,8 @@ variables (Y : simplicial_object C)
 /-- The differential on the alternating face map complex is the alternate
 sum of the face maps -/
 @[simp]
-def obj_d (n : ℕ) : (obj_X X (n+1)) ⟶ (obj_X X n) :=
-∑ i in finset.range(n+2), ((-1 : ℤ)^i • X.δ i)
+def obj_d (n : ℕ) : obj_X X (n+1) ⟶ obj_X X n :=
+∑ i in finset.range (n+2), (-1 : ℤ)^i • X.δ i
 
 /-!
 ## Proof of the chain complex relation `d ≫ d`
@@ -266,7 +266,7 @@ variables {X} {Y}
 @[simp]
 def map (f : X ⟶ Y) : obj X ⟶ obj Y :=
 chain_complex.of_hom _ _ _ _ _ _
-  (λ n, f.app(op(simplex_category.mk n)))
+  (λ n, f.app (op (simplex_category.mk n)))
   (λ n,
     begin
       repeat { rw obj_d },
