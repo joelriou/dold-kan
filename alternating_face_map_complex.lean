@@ -121,8 +121,7 @@ begin
   { intro hx,
     have h1 := case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
     rw ← τ_case2 x h at h1,
-    exact h1 (congr_arg τ hx),
-  },
+    exact h1 (congr_arg τ hx), },
 end
 
 /-!
@@ -180,28 +179,33 @@ lemma antisymmetric_sum_cancels [add_comm_group α] {n : ℕ} (f : ℕ × ℕ �
   (antisymmetry_f : ∀ (i j : ℕ), i≤j → j≤n → f (i,j+1) = - f (j,i)) :
   ∑ x in (indices n), f x = 0 :=
 begin
-  have h0 : ∀ (x : ℕ × ℕ) (hx : x ∈ indices n), f x + f (τ' x hx) = 0,
+  have hf_case2 : ∀ (x : ℕ × ℕ) (h2x : ¬x.1<x.2) 
+    (hx : x ∈ indices n), f x + f (τ x) = 0,
+  { intros x h2x hx,
+    rw τ_case2 x h2x,
+    simp only [indices, finset.mem_product, finset.mem_range] at hx,
+    rw antisymmetry_f x.2 x.1 (by linarith) (by linarith),
+    simp only [prod.mk.eta, add_right_neg], },
+  have hf_case1 : ∀ (x : ℕ × ℕ) (h1x : x.1<x.2) 
+    (hx : x ∈ indices n), f x + f (τ x) = 0,
+  { intros x h1x hx,
+    rw add_comm,
+    have eq := hf_case2 (τ x)
+      (by { rw τ_case1 x h1x,
+            exact τ_of_case1_is_case2 x h1x, })
+      (by { rw ← τ'_eq_τ x hx,
+            exact τ'_mem x hx,} ),
+    rw τ_inv x at eq,
+    exact eq, },
+  have hf : ∀ (x : ℕ × ℕ) (hx : x ∈ indices n), f x + f (τ' x hx) = 0,
   { intros x hx,
     rw τ'_eq_τ,
-    simp only [indices, finset.mem_product, finset.mem_range] at hx,
-    cases hx with hx1 hx2,
     by_cases x.1<x.2,
-    { rw τ_case1 x h,
-      have ineq : x.2-1 ≤ n := nat.pred_le_pred (nat.lt_succ_iff.mp hx2),
-      have h1 := antisymmetry_f x.1 (x.2-1) (nat.le_pred_of_lt h) ineq,
-      have eq : x.2-1+1 = x.2,
-      { cases x.2 with j,
-        { exfalso, linarith },
-        { exact nat.succ_sub_one j.succ, } },
-      rw eq at h1,
-      simp only [prod.mk.eta] at h1,
-      rw h1,
-      simp only [add_left_neg], },
-    { rw τ_case2 x h,
-      rw antisymmetry_f x.2 x.1 (by linarith) (by linarith),
-      simp only [prod.mk.eta, add_right_neg], } },
-  exact finset.sum_involution τ' h0 τ'_ne τ'_mem τ'_inv ,
+    { exact hf_case1 x h hx, },
+    { exact hf_case2 x h hx, }, },
+  exact finset.sum_involution τ' hf τ'_ne τ'_mem τ'_inv ,
 end
+
 
 /-!
 ### Antisymmetry property for the terms that appear in the expansion of `d ≫ d`
@@ -305,8 +309,8 @@ chain_complex.of_hom _ _ _ _ _ _
   (λ n,
     begin
       /- we have to show the compatibility of the differentials on the alternating
-         face map complex with those defined on the normalized_Moore_complex:
-         in the alternating sum, we first get rid of the terms that are obviously
+         face map complex with those defined on the normalized Moore complex:
+         we first get rid of the terms of the alternating sum that are obviously
          zero on the normalized_Moore_complex -/
       simp only [alternating_face_map_complex.obj_d],
       rw preadditive.comp_sum,
