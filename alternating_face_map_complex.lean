@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2021 Joël Riou. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Joël Riou
+Authors: Joël Riou
 -/
 
 import algebra.homology.homological_complex
@@ -21,8 +21,8 @@ for any preadditive category `C`. For any simplicial object `X` in `C`,
 this is the homological complex `... → X_2 → X_1 → X_0`
 where the differentials are alternate sums of faces.
 
-We also construct the natural transformation 
-`inclusion_of_Moore_complex : nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A)` 
+We also construct the natural transformation `inclusion_of_Moore_complex :
+nat_trans (normalized_Moore_complex A) (alternating_face_map_complex A)` 
 when `A` is an abelian category
 
 ## References
@@ -92,8 +92,7 @@ begin
   { intro htx,
     rw nat.succ_sub_one at htx,
     have h1 := nat.le_of_lt_succ hx,
-    linarith,
-    },
+    linarith, },
 end
 
 lemma τ_inv (x : ℕ × ℕ) : τ (τ x) = x :=
@@ -298,7 +297,7 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
   map := λ X Y f, alternating_face_map_complex.map f }
 
 /-!
-## Construction of the natural inclusion of the normalized Moore complex into the alternating face map complex
+## Construction of the natural inclusion of the normalized Moore complex
 -/
 
 variables {A : Type*} [category A] [abelian A]
