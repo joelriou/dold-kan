@@ -48,7 +48,7 @@ namespace alternating_face_map_complex
 def obj_X (n : ℕ) := X.obj(op(simplex_category.mk n))
 
 @[simp]
-def obj_d (n : ℕ) : (obj_X X (n+1) ⟶ (obj_X X n)) :=
+def obj_d (n : ℕ) : (obj_X X (n+1)) ⟶ (obj_X X n) :=
 ∑ i in finset.range(n+2), ((-1 : ℤ)^i • X.δ i)
 
 /-!
@@ -107,6 +107,24 @@ begin
     simp only [nat.add_succ_sub_one, add_zero, prod.mk.eta], },
 end
 
+lemma τ_ne (x : ℕ × ℕ) : τ x ≠ x :=
+begin
+  have case1 : ∀ (y : ℕ × ℕ), y.1<y.2 → τ y ≠ y,
+  { intros y hy h1,
+    rw τ_case1 y hy at h1,
+    have h2 := congr_arg prod.snd h1, 
+    simp only at h2,
+    linarith,
+  },
+  by_cases x.1<x.2,
+  { exact case1 x h, },
+  { intro hx,
+    have h1 := case1 (x.2,x.1+1) (τ_of_case2_is_case1 x h),
+    rw ← τ_case2 x h at h1,
+    exact h1 (congr_arg τ hx),
+  },
+end
+
 /-!
 ### Verification that τ induces an involution τ' on {0,...,n} × {0,...,n+1}
 
@@ -116,7 +134,7 @@ end
 def indices (n : ℕ) : finset (ℕ × ℕ) := 
 finset.product (finset.range(n+1)) (finset.range(n+2))
 
-def τ' {n : ℕ} : (Π (x : ℕ × ℕ), x ∈ indices n → (ℕ × ℕ)) := 
+def τ' {n : ℕ} : Π (x : ℕ × ℕ), x ∈ indices n → ℕ × ℕ := 
 λ x hx, τ x
 
 @[simp] lemma τ'_eq_τ {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) :
@@ -139,26 +157,12 @@ begin
     split; linarith, }
 end
 
-variables { α : Type* }
+variables {α : Type*}
 
 /-- τ' has no fixed point -/
 lemma τ'_ne [add_comm_monoid α] {n : ℕ} {f : ℕ × ℕ → α}
   (x : ℕ × ℕ) (hx : x ∈ indices n) (hfx : f x ≠ 0) : τ' x hx ≠ x :=
-begin
-  rw τ'_eq_τ,
-  by_cases x.1<x.2,
-  { rw τ_case1 x h,
-    intro h1,
-    have h2 := congr_arg prod.snd h1,
-    simp only at h2,
-    linarith, },
-  { rw τ_case2 x h,
-    intro h1,
-    have h2 := congr_arg prod.fst h1,
-    have h3 := congr_arg prod.snd h1,
-    simp only at h2 h3,
-    linarith, }
-end
+by { rw τ'_eq_τ, exact τ_ne x, }
 
 /-! τ' is an involution. -/
 lemma τ'_inv {n : ℕ} (x : ℕ × ℕ) (hx : x ∈ indices n) :
@@ -176,7 +180,7 @@ lemma antisymmetric_sum_cancels [add_comm_group α] {n : ℕ} (f : ℕ × ℕ �
   (antisymmetry_f : ∀ (i j : ℕ), i≤j → j≤n → f (i,j+1) = - f (j,i)) :
   ∑ x in (indices n), f x = 0 :=
 begin
-  have h0 : (∀ (x : ℕ × ℕ) (hx : x ∈ (indices n)), f x + f (τ' x hx) = 0),
+  have h0 : ∀ (x : ℕ × ℕ) (hx : x ∈ indices n), f x + f (τ' x hx) = 0,
   { intros x hx,
     rw τ'_eq_τ,
     simp only [indices, finset.mem_product, finset.mem_range] at hx,
@@ -203,7 +207,7 @@ end
 ### Antisymmetry property for the terms that appear in the expansion of `d ≫ d`
 -/
 
-def di_dj (n : ℕ) (x : ℕ × ℕ) : obj_X X (n+2) ⟶ (obj_X X n) :=
+def di_dj (n : ℕ) (x : ℕ × ℕ) : (obj_X X (n+2)) ⟶ (obj_X X n) :=
 ((-1 : ℤ)^x.2 • X.δ x.2) ≫ ((-1 : ℤ)^x.1 • X.δ x.1)
 
 lemma di_dj_antisymm (n i j : ℕ) (hij : i≤j) (hjn : j≤n+1) :
@@ -214,10 +218,10 @@ begin
   repeat { rw category_theory.preadditive.comp_zsmul },
   repeat { rw category_theory.preadditive.zsmul_comp },
   repeat { rw ← mul_smul },
-
   have eq : -((-1)^i * (-1)^j : ℤ) = (-1)^i * (-1)^(j+1) := by ring_exp,
   rw [← eq, mul_comm, ← neg_smul],
   apply congr_arg,
+  /- the equality shall follow from simplicial identities -/
   have ineq : (i : fin(n+2)) ≤ j,
   { rw ← fin.coe_fin_le,
     rw fin.coe_coe_of_lt (show i<n+2, by linarith),
