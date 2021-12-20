@@ -84,15 +84,17 @@ by { rw τ, split_ifs, refl }
 lemma τ_of_case2_is_case1 (x : ℕ × ℕ) (hx : ¬x.1<x.2) : (τ x).1<(τ x).2 :=
 by { rw τ_case2 x hx, linarith, }
 
-lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬(τ x).1<(τ x).2 := by
-{ rw τ_case1 x hx,
+lemma τ_of_case1_is_case2 (x : ℕ × ℕ) (hx : x.1<x.2) : ¬(τ x).1<(τ x).2 :=
+begin
+  rw τ_case1 x hx,
   cases x.2,
   { exfalso, linarith, },
   { intro htx,
     rw nat.succ_sub_one at htx,
     have h1 := nat.le_of_lt_succ hx,
     linarith,
-    }, }
+    },
+end
 
 lemma τ_inv (x : ℕ × ℕ) : τ (τ x) = x :=
 begin
@@ -174,7 +176,7 @@ by { simp only [τ'_eq_τ], exact τ_inv x, }
 
 variables {α : Type*}
 
-/-- The proof uses finset.sum_involution. Then, from the assumption, we have
+/-- The proof uses finset.sum_involution. Then, from the assumption, we need
 to show that for all x in {0,...,n} × {0,...,n+1}, we have `f x + f (τ x) = 0`.
 -/
 lemma antisymmetric_sum_cancels [add_comm_group α] {n : ℕ} (f : ℕ × ℕ → α)
@@ -296,7 +298,7 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
   map := λ X Y f, alternating_face_map_complex.map f }
 
 /-!
-## Construction of the natural inclusion from the normalized Moore complex to the alternating face map complex
+## Construction of the natural inclusion of the normalized Moore complex into the alternating face map complex
 -/
 
 variables {A : Type*} [category A] [abelian A]
