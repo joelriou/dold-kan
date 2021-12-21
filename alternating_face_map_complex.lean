@@ -91,11 +91,13 @@ begin
     (fin.cast_lt ij.2
       (lt_of_le_of_lt (finset.mem_filter.mp hij).right (fin.is_lt ij.1)), ij.1.succ),
   apply finset.sum_bij φ,
-  { intros ij hij,
+  { -- φ(S) is contained in Sᶜ
+    intros ij hij,
     simp only [finset.mem_univ, finset.compl_filter, finset.mem_filter, true_and,
       fin.coe_succ, fin.coe_cast_lt] at hij ⊢,
     linarith, },
-  { rintro ⟨i, j⟩ hij,
+  { /- identification of corresponding terms in both sums -/
+    rintro ⟨i, j⟩ hij,
     let jj : fin (n+2) := (φ (i,j) hij).1,
     simp only [finset.mem_filter, finset.mem_univ, true_and] at hij,
     simp only [term, d_l, d_r, φ],
@@ -111,7 +113,8 @@ begin
     have ineq : jj ≤ i, { rw ← fin.coe_fin_le, exact hij, },
     rw category_theory.simplicial_object.δ_comp_δ X ineq,
     simp only [fin.cast_succ_cast_lt], },
-  { rintro ⟨i, j⟩ ⟨i', j'⟩ hij hij' h,
+  { -- φ : S → Sᶜ is injective
+    rintro ⟨i, j⟩ ⟨i', j'⟩ hij hij' h,
     rw [prod.mk.inj_iff],
     split,
     { have h1 := congr_arg prod.snd h,
@@ -120,7 +123,8 @@ begin
     { have h1 := congr_arg fin.cast_succ (congr_arg prod.fst h),
       simp only [fin.cast_succ_cast_lt] at h1,
       exact h1, }, },
-  { clear term d_l d_r,
+  { -- φ : S → Sᶜ is surjective
+    clear term d_l d_r,
     rintro ⟨i', j'⟩ hij',
     simp only [true_and, finset.mem_univ, finset.compl_filter, not_le,
       finset.mem_filter] at hij',
