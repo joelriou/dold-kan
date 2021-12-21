@@ -140,25 +140,6 @@ begin
       split; refl, }, },
 end
 
-/-
-  /- surjectivity of φ : s \ s₁ -> s₁ -/
-  { rintros ⟨y₁, y₂⟩ h1,
-    simp only [finset.mem_filter, finset.mem_product, finset.mem_range] at h1,
-    cases y₂,
-    { exfalso, linarith, },
-    { use (y₂,y₁),
-      split,
-      { simp only [finset.mem_sdiff, finset.mem_filter],
-        have h2a := nat.le_of_lt_succ h1.right,
-        have h2b := h1.left.right,
-        rw nat.succ_eq_one_add at h2b,
-        split,
-        { simp only [finset.mem_filter, finset.mem_product, finset.mem_range],
-          split; linarith, },
-        { intro h3, linarith, }, },
-      { ext; simp only, }, }, },
-end-/
-
 /-!
 ## Construction of the alternating face map complex functor
 -/
