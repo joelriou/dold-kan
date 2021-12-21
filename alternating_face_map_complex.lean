@@ -62,7 +62,7 @@ variables (Y : simplicial_object C)
 sum of the face maps -/
 @[simp]
 def obj_d (n : ℕ) : obj_X X (n+1) ⟶ obj_X X n :=
-∑ (i : fin(n+2)), (-1 : ℤ)^(i : ℕ) • X.δ i
+∑ (i : fin (n+2)), (-1 : ℤ)^(i : ℕ) • X.δ i
 
 /--
 ## The chain complex relation `d ≫ d`
@@ -204,7 +204,7 @@ chain_complex.of_hom _ _ _ _ _ _
       rw preadditive.comp_sum,
       let t := λ (j : fin (n+2)), (normalized_Moore_complex.obj_X X (n+1)).arrow ≫
         ((-1 : ℤ)^(j : ℕ) • X.δ j),
-      have def_t : (∀ j : fin(n+2), t j = (normalized_Moore_complex.obj_X X (n+1)).arrow ≫
+      have def_t : (∀ j : fin (n+2), t j = (normalized_Moore_complex.obj_X X (n+1)).arrow ≫
         ((-1 : ℤ)^(j : ℕ) • X.δ j)) := by { intro j, refl, },
       rw [fin.sum_univ_succ t],
       have null : ∀ j : fin (n+1), t j.succ = 0,
@@ -222,7 +222,7 @@ chain_complex.of_hom _ _ _ _ _ _
       simp only [add_zero],
       /- finally, we study the remaining term which is induced by X.δ 0 -/
       let eq := def_t 0,
-      rw [show (-1 : ℤ)^((0 : fin(n+2)) : ℕ) = 1, by ring] at eq,
+      rw [show (-1 : ℤ)^((0 : fin (n+2)) : ℕ) = 1, by ring] at eq,
       rw one_smul at eq,
       rw eq,
       clear eq null def_t t,
