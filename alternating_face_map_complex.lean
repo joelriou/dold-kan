@@ -85,8 +85,8 @@ begin
     (∑ ij in S, term ij) + (∑ ij in Sᶜ, term ij), by rw finset.sum_add_sum_compl],
   rw [← eq_neg_iff_add_eq_zero, ← finset.sum_neg_distrib],
   /- we are reduced to showing that two sums are equal, and this is obtained
-  by constructing a bijection φ : S -> Sᶜ, which maps (i,j) to (j,i+1)
-  and comparing the terms -/ 
+  by constructing a bijection φ : S -> Sᶜ, which maps (i,j) to (j,i+1),
+  and by comparing the terms -/ 
   let φ : Π (ij : P), ij ∈ S → P := λ ij hij,
     (fin.cast_lt ij.2
       (lt_of_le_of_lt (finset.mem_filter.mp hij).right (fin.is_lt ij.1)), ij.1.succ),
@@ -122,7 +122,8 @@ begin
       exact h1, }, },
   { clear term d_l d_r,
     rintro ⟨i', j'⟩ hij',
-    simp only [true_and, finset.mem_univ, finset.compl_filter, not_le, finset.mem_filter] at hij',
+    simp only [true_and, finset.mem_univ, finset.compl_filter, not_le,
+      finset.mem_filter] at hij',
     have j'_neq_0 : j' ≠ 0 := begin
       intro H,
       rw [H] at hij',
@@ -134,7 +135,8 @@ begin
       rw [H] at hij',
       simp only [nat.not_lt_zero, fin.coe_zero] at hij',
       exact hij', },
-    { simp only [true_and, finset.mem_univ, fin.coe_cast_succ, fin.coe_pred, finset.mem_filter],
+    { simp only [true_and, finset.mem_univ, fin.coe_cast_succ, fin.coe_pred,
+        finset.mem_filter],
       exact nat.le_pred_of_lt hij', },
     { simp only [prod.mk.inj_iff, fin.succ_pred, fin.cast_lt_cast_succ],
       split; refl, }, },
@@ -239,3 +241,4 @@ def inclusion_of_Moore_complex :
 { app := inclusion_of_Moore_complex_map, }
 
 end algebraic_topology
+
