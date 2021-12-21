@@ -213,8 +213,7 @@ chain_complex.of_hom _ _ _ _ _ _
         rw ← factor_thru_arrow _ _
           (finset_inf_arrow_factors finset.univ _ j (by simp)),
         slice_lhs 2 3 { erw kernel_subobject_arrow_comp (X.δ j.succ), },
-        simp only [comp_zero],
-      },
+        simp only [comp_zero], },
       rw [fintype.sum_eq_zero _ null],
       simp only [add_zero],
       /- finally, we study the remaining term which is induced by X.δ 0 -/
