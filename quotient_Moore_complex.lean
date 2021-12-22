@@ -125,10 +125,18 @@ begin
   { intros j h1 h2,
     exfalso, linarith, },
   { intros j h1 h2,
-    by_cases n<q,
-    { rw π_eq' q n h,
+    by_cases h3 : n<q,
+    { rw π_eq' q n h3,
       exact hq j h1 (by linarith), },
-    { sorry, }, },
+    { rw not_lt at h3,
+      rw π_eq q n h3,
+      by_cases h4 : n+1 ≤ j+q,
+      { simp only [comp_sub, sub_comp, category.comp_id, category.assoc, hq j h1 h4],
+        simp only [zero_sub, neg_eq_zero],
+        unfold σδ,
+        simp, /- pour l'affichage -/
+      sorry, },
+      { sorry, }, }, },
 end
 
 
