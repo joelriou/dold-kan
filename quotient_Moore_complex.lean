@@ -11,6 +11,7 @@ import alternating_face_map_complex
 open category_theory
 open category_theory.limits
 open category_theory.subobject
+open category_theory.preadditive
 open opposite
 
 open_locale simplicial
@@ -30,8 +31,8 @@ variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
 /-- Given a simplicial object X in an abelian category,
-the endomorphism ν q n : X_n → X_n is meant to be the projector
-with image a subcomplex D_q and kernel N_q, where
+the endomorphism π q n : X_n → X_n is meant to be the projector
+with image N_q and kernel D_q, where
 N_q X_n is the intersection of the diffentials       δ_j : K_n → K_{n-1} for j>n-q & j>0
 D_q X_n is the sum of the images of the degeneracies σ_i : K_{n-1} → K_n for j≥n-q
 
@@ -39,48 +40,66 @@ This shall be checked in the case when the category is abelian, but the definiti
 of the projectors makes sense even if the category is preadditive only.
 -/
 
-def ν : ℕ → Π n : ℕ, (X.obj (op [n]) ⟶ (X.obj (op [n])))
-| 0     := λ n, 0
+def π : ℕ → Π n : ℕ, (X.obj (op [n]) ⟶ (X.obj (op [n])))
+| 0     := λ n, 𝟙 _
 | (q+1) := λ n,
   begin
     cases n,
-    { exact 0, },
+    { exact 𝟙 _, },
     { exact if q ≤ n
-        then ν q (n+1) ≫ (𝟙 _ - σδ q n)
-        else ν q (n+1), },
+        then π q (n+1) ≫ (𝟙 _ - σδ q n)
+        else π q (n+1), },
   end
 
-/-- π are the complement projectors of the ν -/
-def π (q : ℕ) (n : ℕ) : (X.obj (op [n]) ⟶ (X.obj (op [n]))) := 𝟙 _ - ν q n
+/-- ν are the complement projectors of the π -/
+def ν (q : ℕ) (n : ℕ) : (X.obj (op [n]) ⟶ (X.obj (op [n]))) := 𝟙 _ - π q n
 
 @[simp]
-lemma ν0_eq (n : ℕ) :
+lemma π_deg0_eq (n : ℕ) :
+  (π 0 n : (X.obj (op [n]) ⟶ (X.obj (op [n])))) = 𝟙 _ := by unfold π
+
+@[simp]
+lemma ν_deg0_eq (n : ℕ) :
   (ν 0 n : (X.obj (op [n]) ⟶ (X.obj (op [n])))) = 0 :=
-begin
-  unfold ν,
-end
+by { unfold ν, rw π_deg0_eq, rw [sub_self], }
+
+@[simp]
+lemma π_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
+  (π (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = 
+  π q (n+1) ≫ (𝟙 _ - σδ q n) :=
+by { unfold π, rw [nat.rec_add_one], split_ifs, refl, }
+
+/- to https://leanprover-community.github.io/mathlib_docs/algebra/group/commute.html ? -/
+@[simp]
+lemma comm_group_trivial_lemma (α : Type*) [add_comm_group α] (a b c : α) :
+  a - (b - c) = a - b + c := by
+{ rw sub_eq_iff_eq_add, rw [add_add_sub_cancel, sub_add_cancel], }
 
 @[simp]
 lemma ν_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
   (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = 
-  ν q (n+1) ≫ (𝟙 _ - σδ q n) :=
+  ν q (n+1) + (𝟙 _ - ν q (n+1)) ≫ σδ q n :=
 begin
   unfold ν,
-  rw [nat.rec_add_one],
-  split_ifs,
-  refl,
+  rw π_eq q n hqn,
+  simp only [comm_group_trivial_lemma, comp_sub, zero_add, category.comp_id, sub_self],
 end
 
 @[simp]
-lemma ν_eq' (q : ℕ) (n : ℕ) (hqn : n < q ) :
-  (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = ν q (n+1) :=
+lemma π_eq' (q : ℕ) (n : ℕ) (hqn : n < q ) :
+  (π (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = π q (n+1) :=
 begin
-  unfold ν,
+  unfold π,
   rw [nat.rec_add_one],
   split_ifs,
   { exfalso, linarith, },
   { refl, }
 end
+
+@[simp]
+lemma ν_eq' (q : ℕ) (n : ℕ) (hqn : n < q ) :
+  (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = ν q (n+1) :=
+by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 
 
 
