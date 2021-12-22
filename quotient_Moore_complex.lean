@@ -23,7 +23,7 @@ namespace algebraic_topology
 namespace degenerate_subcomplex
 
 def σδ {C : Type*} [category C] {X : simplicial_object C}
-  (q : ℕ) (n : ℕ) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1]))) :=
+  (q : ℕ) (n : ℕ) : X _[n+1] ⟶ X _[n+1] :=
   X.δ (fin.mk (n-q+1) (nat.succ_lt_succ (nat.sub_lt_succ n q))) ≫
   X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
 
@@ -40,7 +40,7 @@ This shall be checked in the case when the category is abelian, but the definiti
 of the projectors makes sense even if the category is preadditive only.
 -/
 
-def π : ℕ → Π n : ℕ, (X.obj (op [n]) ⟶ (X.obj (op [n])))
+def π : ℕ → Π n : ℕ, X _[n] ⟶ X _[n]
 | 0     := λ n, 𝟙 _
 | (q+1) := λ n,
   begin
@@ -52,20 +52,20 @@ def π : ℕ → Π n : ℕ, (X.obj (op [n]) ⟶ (X.obj (op [n])))
   end
 
 /-- ν are the complement projectors of the π -/
-def ν (q : ℕ) (n : ℕ) : (X.obj (op [n]) ⟶ (X.obj (op [n]))) := 𝟙 _ - π q n
+def ν (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n] := 𝟙 _ - π q n
 
 @[simp]
 lemma π0_eq (n : ℕ) :
-  (π 0 n : (X.obj (op [n]) ⟶ (X.obj (op [n])))) = 𝟙 _ := by unfold π
+  (π 0 n : X _[n] ⟶ X _[n]) = 𝟙 _ := by unfold π
 
 @[simp]
 lemma ν0_eq (n : ℕ) :
-  (ν 0 n : (X.obj (op [n]) ⟶ (X.obj (op [n])))) = 0 :=
+  (ν 0 n : X _[n] ⟶ X _[n]) = 0 :=
   by { unfold ν, rw π0_eq, rw [sub_self], }
 
 @[simp]
 lemma π_deg0_eq (q : ℕ) :
-  (π q 0 : (X.obj (op [0]) ⟶ (X.obj (op [0])))) = 𝟙 _ :=
+  (π q 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
   cases q,
   { exact π0_eq 0, },
@@ -74,12 +74,12 @@ end
 
 @[simp]
 lemma ν_deg0_eq (q : ℕ) :
-  (ν q 0 : (X.obj (op [0]) ⟶ (X.obj (op [0])))) = 0 :=
+  (ν q 0 : X _[0] ⟶ X _[0]) = 0 :=
 by { unfold ν, simp only [π_deg0_eq, sub_self], }
 
 @[simp]
 lemma π_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
-  (π (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = 
+  (π (q+1) (n+1) : X _[n+1] ⟶ X _[n+1]) = 
   π q (n+1) ≫ (𝟙 _ - σδ q n) :=
 by { unfold π, rw [nat.rec_add_one], split_ifs, refl, }
 
@@ -91,7 +91,7 @@ lemma comm_group_trivial_lemma (α : Type*) [add_comm_group α] (a b c : α) :
 
 @[simp]
 lemma ν_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
-  (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = 
+  (ν (q+1) (n+1) : X _[n+1] ⟶ X _[n+1]) = 
   ν q (n+1) + (𝟙 _ - ν q (n+1)) ≫ σδ q n :=
 begin
   unfold ν,
@@ -101,7 +101,7 @@ end
 
 @[simp]
 lemma π_eq' (q : ℕ) (n : ℕ) (hqn : n < q) :
-  (π (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = π q (n+1) :=
+  (π (q+1) (n+1) : X _[n+1] ⟶ X _[n+1]) = π q (n+1) :=
 begin
   unfold π,
   rw [nat.rec_add_one],
@@ -112,14 +112,14 @@ end
 
 @[simp]
 lemma ν_eq' (q : ℕ) (n : ℕ) (hqn : n < q ) :
-  (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = ν q (n+1) :=
+  (ν (q+1) (n+1) : X _[n+1] ⟶ X _[n+1]) = ν q (n+1) :=
 by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 
 
 /- the image of π q n is contained in N_q X_n -/
 
 lemma d_π_eq_zero (q : ℕ) (n : ℕ) : ∀ (j : ℕ) (h1 : j+1 ≤ n+1) (h2 : n+1 ≤ j+q),
-  (π q (n+1) ≫ X.δ (fin.mk (j+1) (by linarith)) : X.obj (op [n+1]) ⟶ (X.obj (op [n]))) = 0 :=
+  (π q (n+1) ≫ X.δ (fin.mk (j+1) (by linarith)) : X _[n+1] ⟶ X _[n]) = 0 :=
 begin
   induction q with q hq,
   { intros j h1 h2,
@@ -135,6 +135,10 @@ begin
         simp only [comp_sub, sub_comp, category.comp_id, category.assoc, hq j h1 h4],
         simp only [zero_sub, neg_eq_zero],
         unfold σδ,
+        cases (nat.le.dest h3) with a ha,
+        rw ← ha at h4,
+        -- have blah : a <j := by linarith,
+        have eq : n = a+q := by linarith,
         simp, /- pour l'affichage -/
       sorry, },
       { sorry, }, }, },
@@ -151,3 +155,4 @@ def obj_X {A : Type*} [category A] [abelian A] {Y : simplicial_object A} : Π n 
 end degenerate_subcomplex
 
 end algebraic_topology
+
