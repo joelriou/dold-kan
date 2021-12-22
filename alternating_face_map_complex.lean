@@ -209,7 +209,7 @@ chain_complex.of_hom _ _ _ _ _ _
         apply congr_arg,
         rw normalized_Moore_complex.obj_X,
         rw ← factor_thru_arrow _ _
-          (finset_inf_arrow_factors finset.univ _ j (by simp)),
+          (finset_inf_arrow_factors finset.univ _ j (by simp only [finset.mem_univ])),
         slice_lhs 2 3 { erw kernel_subobject_arrow_comp (X.δ j.succ), },
         simp only [comp_zero], },
       rw [fintype.sum_eq_zero _ null],
@@ -238,4 +238,3 @@ def inclusion_of_Moore_complex :
 { app := inclusion_of_Moore_complex_map, }
 
 end algebraic_topology
-
