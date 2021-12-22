@@ -46,7 +46,7 @@ def ν : ℕ → Π n : ℕ, (X.obj (op [n]) ⟶ (X.obj (op [n])))
     cases n,
     { exact 0, },
     { exact if q ≤ n
-        then (𝟙 _ - σδ q n) ≫ ν q (n+1)
+        then ν q (n+1) ≫ (𝟙 _ - σδ q n)
         else ν q (n+1), },
   end
 
@@ -63,7 +63,7 @@ end
 @[simp]
 lemma ν_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
   (ν (q+1) (n+1) : (X.obj (op [n+1]) ⟶ (X.obj (op [n+1])))) = 
-  (𝟙 _ - σδ q n) ≫ ν q (n+1) :=
+  ν q (n+1) ≫ (𝟙 _ - σδ q n) :=
 begin
   unfold ν,
   rw [nat.rec_add_one],
