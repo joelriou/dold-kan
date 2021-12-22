@@ -12,6 +12,7 @@ open category_theory
 open category_theory.limits
 open category_theory.subobject
 open category_theory.preadditive
+open category_theory.simplicial_object
 open opposite
 
 open_locale simplicial
@@ -139,8 +140,14 @@ begin
         rw ← ha at h4,
         -- have blah : a <j := by linarith,
         have eq : n = a+q := by linarith,
-        simp, /- pour l'affichage -/
-      sorry, },
+        simp only [eq, add_tsub_cancel_right],
+        erw [← δ_comp_σ_of_gt X
+          (show fin.cast_succ (fin.mk a (show a<n+1, by linarith)) <
+          fin.mk (a+1) (show a+1<n+2, by linarith), by
+        { simp only [fin.lt_iff_coe_lt_coe, fin.coe_cast_succ,
+            fin.mk_eq_subtype_mk, fin.coe_mk, lt_add_one], })],
+
+        sorry, },
       { sorry, }, }, },
 end
 
@@ -148,7 +155,7 @@ end
 /- what follows makes sense only in an abelian category -/
 
 @[simp]
-def obj_X {A : Type*} [category A] [abelian A] {Y : simplicial_object A} : Π n : ℕ, subobject (Y.obj(op(simplex_category.mk n)))
+def obj_X {A : Type*} [category A] [abelian A] {Y : simplicial_object A} : Π n : ℕ, subobject (Y _[n])
 | 0 := ⊥ 
 | (n+1) := finset.univ.sup (λ k : fin(n+1), subobject.mk (image.ι (Y.σ 0)))
 
