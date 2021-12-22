@@ -102,6 +102,13 @@ lemma ν_eq' (q : ℕ) (n : ℕ) (hqn : n < q ) :
 by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 
 
+/- the image of π q n is contained in N_q X_n -/
+
+lemma d_π_eq_zero (q : ℕ) (n : ℕ) (j : ℕ) (hqnj1 : j+1 ≤ n+1) (hqnj2 : n+1 ≤ j+q) :
+  (π q (n+1) ≫ X.δ (fin.mk (j+1) (by linarith)) : X.obj (op [n+1]) ⟶ (X.obj (op [n]))) = 0 :=
+begin
+  sorry
+end
 
 
 /- what follows makes sense only in an abelian category -/
