@@ -118,13 +118,17 @@ by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 
 /- the image of π q n is contained in N_q X_n -/
 
-lemma d_π_eq_zero (q : ℕ) : ∀ (n j : ℕ) (h1 : j+1 ≤ n+1) (h2 : n+1 ≤ j+q),
+lemma d_π_eq_zero (q : ℕ) (n : ℕ) : ∀ (j : ℕ) (h1 : j+1 ≤ n+1) (h2 : n+1 ≤ j+q),
   (π q (n+1) ≫ X.δ (fin.mk (j+1) (by linarith)) : X.obj (op [n+1]) ⟶ (X.obj (op [n]))) = 0 :=
 begin
   induction q with q hq,
-  { intros n j h1 h2,
+  { intros j h1 h2,
     exfalso, linarith, },
-  { sorry, },
+  { intros j h1 h2,
+    by_cases n<q,
+    { rw π_eq' q n h,
+      exact hq j h1 (by linarith), },
+    { sorry, }, },
 end
 
 
