@@ -128,12 +128,6 @@ begin
     rintro ⟨i', j'⟩ hij',
     simp only [true_and, finset.mem_univ, finset.compl_filter, not_le,
       finset.mem_filter] at hij',
-    have j'_neq_0 : j' ≠ 0 := begin
-      intro H,
-      rw [H] at hij',
-      simp only [nat.not_lt_zero, fin.coe_zero] at hij',
-      exact hij',
-    end,
     refine ⟨(j'.pred _,fin.cast_succ i'),_,_⟩,
     { intro H,
       rw [H] at hij',
