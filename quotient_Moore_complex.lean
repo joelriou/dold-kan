@@ -121,7 +121,7 @@ by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 /- the image of π q n is contained in N_q X_n -/
 
 lemma d_π_eq_zero (q : ℕ) (n : ℕ) : ∀ (j : ℕ) (h1 : j+1 ≤ n+1) (h2 : n+1 ≤ j+q),
-  (π q (n+1) ≫ X.δ (fin.mk (j+1) (by linarith)) : X _[n+1] ⟶ X _[n]) = 0 :=
+  (π q (n+1) ≫ X.δ (fin.mk (j+1) (nat.lt_succ_iff.mpr h1)) : X _[n+1] ⟶ X _[n]) = 0 :=
 begin
   induction q with q hq,
   { intros j h1 h2,
@@ -151,17 +151,12 @@ begin
             fin.mk j (show j<m+2, by linarith) := by 
           { simp only [subtype.mk_lt_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk],
             linarith, },
-          have rel1 := δ_comp_σ_of_gt X ineq1,
-          simp only [fin.succ_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk] at rel1 ⊢,
-          slice_lhs 3 4 { rw rel1, },
-          clear ineq1 rel1,
+          slice_lhs 3 4 { erw δ_comp_σ_of_gt X ineq1, },
           have ineq2 : (fin.mk (a+1) (show a+1<m+2, by linarith)) ≤
             fin.mk j (show j<m+2, by linarith) := by
           { simp only [subtype.mk_le_mk, fin.mk_eq_subtype_mk],
             linarith, },
-          have rel2 := δ_comp_δ X ineq2,
-          simp only [fin.succ_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk] at rel2 ⊢,
-          slice_lhs 2 3 { rw ← rel2, },
+          slice_lhs 2 3 { erw ← δ_comp_δ X ineq2, },
           slice_lhs 1 2 { erw hq j h1 (by linarith), },
           simp only [zero_comp], }, },
       { rw [show q.succ = q+1, by refl] at h2,
@@ -177,7 +172,6 @@ begin
         slice_rhs 2 3 { erw δ_comp_σ_succ X, },
         simp only [comp_id], }, }, },
 end
-
 
 /- what follows makes sense only in an abelian category -/
 
