@@ -182,6 +182,10 @@ begin
   rw [sub_comp, d_π_eq_zero q n j hj, sub_zero, id_comp],
 end
 
+/- construction of homotopies -/
+
+def diff (n : ℕ) : X _[n+1] ⟶ X _[n] := ((alternating_face_map_complex C).obj X).d (n+1) n
+
 /- what follows makes sense only in an abelian category -/
 
 @[simp]
