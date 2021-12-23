@@ -26,7 +26,7 @@ namespace degenerate_subcomplex
 
 def σδ {C : Type*} [category C] {X : simplicial_object C}
   (q : ℕ) (n : ℕ) : X _[n+1] ⟶ X _[n+1] :=
-  X.δ (fin.mk (n-q+1) (nat.succ_lt_succ (nat.sub_lt_succ n q))) ≫
+  X.δ (fin.mk (n-q) (nat.sub_lt_succ n q)).succ ≫
   X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
 
 variables {C : Type*} [category C] [preadditive C]
@@ -89,7 +89,7 @@ by { unfold π, rw [nat.rec_add_one], split_ifs, refl, }
 @[simp]
 lemma comm_group_trivial_lemma (α : Type*) [add_comm_group α] (a b c : α) :
   a - (b - c) = a - b + c := by
-{ rw sub_eq_iff_eq_add, rw [add_add_sub_cancel, sub_add_cancel], }
+{ rw [sub_eq_iff_eq_add, add_add_sub_cancel, sub_add_cancel], }
 
 @[simp]
 lemma ν_eq (q : ℕ) (n : ℕ) (hqn : q ≤ n) :
@@ -120,57 +120,66 @@ by { unfold ν, rw [sub_right_inj], exact π_eq' q n hqn, }
 
 /- the image of π q n is contained in N_q X_n -/
 
-lemma d_π_eq_zero (q : ℕ) (n : ℕ) : ∀ (j : ℕ) (h1 : j+1 ≤ n+1) (h2 : n+1 ≤ j+q),
-  (π q (n+1) ≫ X.δ (fin.mk (j+1) (nat.lt_succ_iff.mpr h1)) : X _[n+1] ⟶ X _[n]) = 0 :=
+lemma d_π_eq_zero (q : ℕ) (n : ℕ) : ∀ (j : fin(n+1)) (hj : n+1 ≤ (j : ℕ)+q),
+  (π q (n+1) ≫ X.δ j.succ : X _[n+1] ⟶ X _[n]) = 0 :=
 begin
   induction q with q hq,
-  { intros j h1 h2,
+  { intros j hj,
+    have h1 := fin.is_lt j,
     exfalso, linarith, },
-  { intros j h1 h2,
-    by_cases h3 : n<q,
-    { rw π_eq' q n h3,
-      exact hq j h1 (by linarith), },
-    { rw not_lt at h3,
-      rw π_eq q n h3,
-      by_cases h4 : n+1 ≤ j+q,
-      { clear h2,
-        simp only [comp_sub, sub_comp, category.comp_id, category.assoc, hq j h1 h4],
+  { intros j hj,
+    have h1 := fin.is_lt j,
+    by_cases h2 : n<q,
+    { rw π_eq' q n h2,
+      exact hq j (by linarith), },
+    { rw not_lt at h2,
+      rw π_eq q n h2,
+      by_cases h3 : n+1 ≤ (j : ℕ)+q,
+      { simp only [comp_sub, sub_comp, category.comp_id, category.assoc, hq j h3],
         simp only [zero_sub, neg_eq_zero],
         unfold σδ,
-        cases (nat.le.dest h3) with a ha,
-        rw ← ha at h4,
-        have eq : n = a+q := by linarith,
-        simp only [eq, add_tsub_cancel_right],
+        cases (nat.le.dest h2) with a ha,
+        rw eq_comm at ha,
+        simp only [ha] at h3,
+        have eq : n - q = a := by linarith,
+        simp only [eq],
         cases n with m hm,
         { simp only [show a=0, by linarith, show j=0, by linarith,
             fin.mk_zero, fin.mk_eq_subtype_mk, fin.mk_one],
-          slice_lhs 1 2 { erw hq 0 rfl.ge (by linarith)},
+          slice_lhs 1 2 { erw hq (0 : fin(1)) (by linarith)},
           simp only [zero_comp], },
-        { rw [show m.succ = m+1, by refl] at h1 h3 ha eq, 
-          have ineq1 : fin.cast_succ (fin.mk a (show a<m+1, by linarith)) <
-            fin.mk j (show j<m+2, by linarith) := by 
-          { simp only [subtype.mk_lt_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk],
+        { have ineq1 : fin.cast_succ (fin.mk a (show a<m.succ, by linarith)) < j, 
+          { rw [fin.lt_iff_coe_lt_coe],
+            simp only [fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.coe_mk],
             linarith, },
           slice_lhs 3 4 { erw δ_comp_σ_of_gt X ineq1, },
-          have ineq2 : (fin.mk (a+1) (show a+1<m+2, by linarith)) ≤
-            fin.mk j (show j<m+2, by linarith) := by
-          { simp only [subtype.mk_le_mk, fin.mk_eq_subtype_mk],
+          have ineq2 : (fin.mk (a+1) (show a+1<m.succ+1, by linarith)) ≤ j,
+          { rw [fin.le_iff_coe_le_coe],
+            simp only [fin.mk_eq_subtype_mk, fin.coe_mk],
             linarith, },
           slice_lhs 2 3 { erw ← δ_comp_δ X ineq2, },
-          slice_lhs 1 2 { erw hq j h1 (by linarith), },
+          slice_lhs 1 2 { erw hq j (by linarith), },
           simp only [zero_comp], }, },
-      { rw [show q.succ = q+1, by refl] at h2,
-        have eq : n = j + q := by linarith,
-        clear h2 h4,
+      { rw [show q.succ = q+1, by refl] at hj,
+        have eq : n-q = j := by linarith,
+        clear h2 h3 h1 hj,
         simp only [comp_sub, sub_comp],
         rw sub_eq_zero,
         repeat { rw assoc, },
         apply whisker_eq,
         simp only [id_comp],
         unfold σδ,
-        simp only [show n-q=j, by linarith],
+        simp only [eq],
+        simp only [fin.mk_eq_subtype_mk, fin.eta],
         slice_rhs 2 3 { erw δ_comp_σ_succ X, },
         simp only [comp_id], }, }, },
+end
+
+lemma d_ν_eq_zero (q : ℕ) (n : ℕ) (j : fin(n+1)) (hj : n+1 ≤ (j : ℕ)+q) :
+  (ν q (n+1) ≫ X.δ j.succ : X _[n+1] ⟶ X _[n]) = X.δ j.succ :=
+begin
+  unfold ν,
+  rw [sub_comp, d_π_eq_zero q n j hj, sub_zero, id_comp],
 end
 
 /- what follows makes sense only in an abelian category -/
