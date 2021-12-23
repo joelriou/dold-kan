@@ -13,6 +13,7 @@ open category_theory.limits
 open category_theory.subobject
 open category_theory.preadditive
 open category_theory.simplicial_object
+open category_theory.category
 open opposite
 
 open_locale simplicial
@@ -138,17 +139,43 @@ begin
         unfold σδ,
         cases (nat.le.dest h3) with a ha,
         rw ← ha at h4,
-        -- have blah : a <j := by linarith,
         have eq : n = a+q := by linarith,
         simp only [eq, add_tsub_cancel_right],
-        erw [← δ_comp_σ_of_gt X
-          (show fin.cast_succ (fin.mk a (show a<n+1, by linarith)) <
-          fin.mk (a+1) (show a+1<n+2, by linarith), by
-        { simp only [fin.lt_iff_coe_lt_coe, fin.coe_cast_succ,
-            fin.mk_eq_subtype_mk, fin.coe_mk, lt_add_one], })],
-
-        sorry, },
-      { sorry, }, }, },
+        cases n with m hm,
+        { simp only [show a=0, by linarith, show j=0, by linarith,
+            fin.mk_zero, fin.mk_eq_subtype_mk, fin.mk_one],
+          slice_lhs 1 2 { erw hq 0 rfl.ge (by linarith)},
+          simp only [zero_comp], },
+        { rw [show m.succ = m+1, by refl] at h1 h3 ha eq, 
+          have ineq1 : fin.cast_succ (fin.mk a (show a<m+1, by linarith)) <
+            fin.mk j (show j<m+2, by linarith) := by 
+          { simp only [subtype.mk_lt_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk],
+            linarith, },
+          have rel1 := δ_comp_σ_of_gt X ineq1,
+          simp only [fin.succ_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk] at rel1 ⊢,
+          slice_lhs 3 4 { rw rel1, },
+          clear ineq1 rel1,
+          have ineq2 : (fin.mk (a+1) (show a+1<m+2, by linarith)) ≤
+            fin.mk j (show j<m+2, by linarith) := by
+          { simp only [subtype.mk_le_mk, fin.mk_eq_subtype_mk],
+            linarith, },
+          have rel2 := δ_comp_δ X ineq2,
+          simp only [fin.succ_mk, fin.mk_eq_subtype_mk, fin.cast_succ_mk] at rel2 ⊢,
+          slice_lhs 2 3 { rw ← rel2, },
+          slice_lhs 1 2 { erw hq j h1 (by linarith), },
+          simp only [zero_comp], }, },
+      { rw [show q.succ = q+1, by refl] at h2,
+        have eq : n = j + q := by linarith,
+        clear h2 h4,
+        simp only [comp_sub, sub_comp],
+        rw sub_eq_zero,
+        repeat { rw assoc, },
+        apply whisker_eq,
+        simp only [id_comp],
+        unfold σδ,
+        simp only [show n-q=j, by linarith],
+        slice_rhs 2 3 { erw δ_comp_σ_succ X, },
+        simp only [comp_id], }, }, },
 end
 
 
