@@ -182,9 +182,61 @@ begin
   rw [sub_comp, d_π_eq_zero q n j hj, sub_zero, id_comp],
 end
 
+/- general stuff of homotopies -/
+
+@[simp]
+def null_homotopic_chain_complex_map_f {K L : chain_complex C ℕ}
+  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) : Π (n : ℕ), K.X n ⟶ L.X n
+| 0 := h 0 ≫ L.d 1 0
+| (n+1) := h (n+1) ≫ L.d (n+2) (n+1) + K.d (n+1) n ≫ h n
+
+def null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
+  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) : K ⟶ L :=
+{ f := null_homotopic_chain_complex_map_f h,
+  comm' := λ i j, begin
+    rw complex_shape.down_rel,
+    intro hij,
+    cases j;
+    { rw ← hij, simp, },
+  end }
+
+def null_homotopic_chain_complex_map_hom {K L : chain_complex C ℕ}
+  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) (i j : ℕ) : K.X i ⟶ L.X j :=
+begin
+  by_cases hij : i+1=j,
+  { exact h i ≫ (eq_to_hom (by { congr, assumption, }) : L.X (i+1) ⟶ L.X j) },
+  { exact 0 },
+end
+
 /- construction of homotopies -/
 
-def diff (n : ℕ) : X _[n+1] ⟶ X _[n] := ((alternating_face_map_complex C).obj X).d (n+1) n
+def hν (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
+  if n<q
+  then 0
+  else (-1 : ℤ)^(n-q) • X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
+
+lemma hν0_eq (q : ℕ) (n : ℕ) (hnq : n<q) : (hν q n : X _[n] ⟶ X _[n+1])= 0 :=
+begin
+  unfold hν,
+  simp only [fin.mk_eq_subtype_mk, ite_eq_left_iff],
+  intro h,
+  exfalso,
+  exact h hnq,
+end
+
+lemma hν_eq (q n a : ℕ) (ha : a+q=n) :
+  (hν q n : X _[n] ⟶ X _[n+1]) = (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
+begin
+  unfold hν,
+  simp only [not_lt, fin.mk_eq_subtype_mk, ite_eq_left_iff],
+  split_ifs,
+  { exfalso, linarith, },
+  { congr; exact tsub_eq_of_eq_add (eq.symm ha), }
+end
+
+def Δνπ (q : ℕ) := 0
+
+-- def diff (n : ℕ) : X _[n+1] ⟶ X _[n] := ((alternating_face_map_complex C).obj X).d (n+1) n
 
 /- what follows makes sense only in an abelian category -/
 
