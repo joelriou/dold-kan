@@ -228,46 +228,75 @@ def homotopy_of_null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
     { simp, apply add_comm, }
   end }
 
-#check homotopy_of_null_homotopic_chain_complex_map
-
 /- construction of homotopies -/
 
-def hν (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
+def hσδ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
   if n<q
   then 0
   else (-1 : ℤ)^(n-q) • X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
 
-lemma hν0_eq (q : ℕ) (n : ℕ) (hnq : n<q) : (hν q n : X _[n] ⟶ X _[n+1])= 0 :=
+@[simp]
+lemma hσδ0_eq (q : ℕ) (n : ℕ) (hnq : n<q) : (hσδ q n : X _[n] ⟶ X _[n+1])= 0 :=
 begin
-  unfold hν,
+  unfold hσδ,
   simp only [fin.mk_eq_subtype_mk, ite_eq_left_iff],
   intro h,
   exfalso,
   exact h hnq,
 end
 
-lemma hν_eq (q n a : ℕ) (ha : a+q=n) :
-  (hν q n : X _[n] ⟶ X _[n+1]) = (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
+@[simp]
+lemma hσδ_eq (q n a : ℕ) (ha : a+q=n) :
+  (hσδ q n : X _[n] ⟶ X _[n+1]) = (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
 begin
-  unfold hν,
+  unfold hσδ,
   simp only [not_lt, fin.mk_eq_subtype_mk, ite_eq_left_iff],
   split_ifs,
   { exfalso, linarith, },
   { congr; exact tsub_eq_of_eq_add (eq.symm ha), }
 end
 
-def Δνπ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
+@[simp]
+def Hσδ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X :=
-null_homotopic_chain_complex_map (hν q)
+null_homotopic_chain_complex_map (hσδ q)
 
-lemma Δνπ_eq {Y : C} (q : ℕ) (n : ℕ) (φ : Y ⟶ X _[n+1]) 
-  (hφ : ∀ (j : fin(n+1)), (n+1 ≤ (j : ℕ)+q) → φ ≫ X.δ j = 0) :
-  φ ≫ ((Δνπ q).f (n+1) : X _[n+1] ⟶ X _[n+1]) = φ ≫ (ν (q+1) (n+1) - ν q (n+1)) :=
+lemma Hσδ_eq {Y : C} (q : ℕ) (n : ℕ) (φ : Y ⟶ X _[n+1]) 
+  (hφ : ∀ (j : fin(n+1)), (n+1 ≤ (j : ℕ)+q) → φ ≫ X.δ j.succ = 0) :
+  φ ≫ ((Hσδ q).f (n+1) : X _[n+1] ⟶ X _[n+1]) = φ ≫ σδ q n :=
 begin
   sorry,
 end
 
-#check Δνπ_eq
+@[simp]
+def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
+(alternating_face_map_complex C).obj X)
+| 0     := 𝟙 _
+| (q+1) := P q ≫ (𝟙 _ - Hσδ q)
+
+theorem P_eq_π (q : ℕ) (n : ℕ) : ((P q).f n : X _[n] ⟶ X _[n]) = π q n :=
+begin
+  induction q with q hq,
+  { simpa only [π0_eq, homological_complex.id_f, P], },
+  { simp only [homological_complex.sub_f_apply, homological_complex.comp_f,
+      comp_sub, P, comp_id, hq],
+    cases n,
+    { simp only [sub_eq_self, π_deg0_eq],
+      erw id_comp,
+      cases q,
+      { simp,
+        erw chain_complex.of_d,
+
+        simp only [alternating_face_map_complex.obj_d, hσδ_eq 0 0 0 (by refl),
+          fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
+        let term := finset.univ.sum (λ (i : fin (0 + 2)), (-1 : ℤ) ^ (i : ℕ) • X.δ i),
+        have eq : term = 0 := by sorry,
+        -- erw eq,
+        
+        sorry, },
+      { sorry, }, },
+    { sorry, }, },
+end
 
 /- what follows makes sense only in an abelian category -/
 
