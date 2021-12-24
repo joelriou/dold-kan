@@ -5,6 +5,7 @@ Author: Joël Riou
 -/
 
 import algebra.homology.homological_complex
+import algebra.homology.homotopy
 import algebraic_topology.simplicial_object
 import alternating_face_map_complex
 
@@ -190,6 +191,7 @@ def null_homotopic_chain_complex_map_f {K L : chain_complex C ℕ}
 | 0 := h 0 ≫ L.d 1 0
 | (n+1) := h (n+1) ≫ L.d (n+2) (n+1) + K.d (n+1) n ≫ h n
 
+@[simps]
 def null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
   (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) : K ⟶ L :=
 { f := null_homotopic_chain_complex_map_f h,
@@ -200,6 +202,7 @@ def null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
     { rw ← hij, simp, },
   end }
 
+@[simp]
 def null_homotopic_chain_complex_map_hom {K L : chain_complex C ℕ}
   (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) (i j : ℕ) : K.X i ⟶ L.X j :=
 begin
@@ -207,6 +210,25 @@ begin
   { exact h i ≫ (eq_to_hom (by { congr, assumption, }) : L.X (i+1) ⟶ L.X j) },
   { exact 0 },
 end
+
+def homotopy_of_null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
+  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) :
+  homotopy (null_homotopic_chain_complex_map h) 0 :=
+{ hom := null_homotopic_chain_complex_map_hom h,
+  zero' := λ i j hij, begin
+    rw complex_shape.down_rel at hij,
+    simp only [null_homotopic_chain_complex_map_hom, dite_eq_right_iff],
+    intro hij',
+    exfalso,
+    exact hij hij',
+  end,
+  comm := λ n, begin
+    cases n,
+    { simp, },
+    { simp, apply add_comm, }
+  end }
+
+#check homotopy_of_null_homotopic_chain_complex_map
 
 /- construction of homotopies -/
 
