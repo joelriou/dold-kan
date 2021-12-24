@@ -313,6 +313,12 @@ begin
         { rw [show q = n+1, by linarith],
           simp,
           apply sub_eq_zero.mpr,
+          rw hσδ_eq (n+1) (n+1) 0 (zero_add (n+1)),
+          simp only [fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
+          unfold σδ,
+          simp,
+          --slice_rhs 2 3 { erw [δ_comp_σ_succ], },
+          
           sorry, },
       }, }, },
 end
