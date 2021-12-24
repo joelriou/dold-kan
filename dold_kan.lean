@@ -8,7 +8,7 @@ import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
-import alternating_face_map_complex
+import algebraic_topology.alternating_face_map_complex
 
 open category_theory
 open category_theory.limits
