@@ -6,6 +6,7 @@ Author: Joël Riou
 
 import algebra.homology.homological_complex
 import algebra.homology.homotopy
+import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import alternating_face_map_complex
 
@@ -17,6 +18,7 @@ open category_theory.simplicial_object
 open category_theory.category
 open opposite
 
+open_locale big_operators
 open_locale simplicial
 
 noncomputable theory
@@ -274,6 +276,9 @@ def P : ℕ → ((alternating_face_map_complex C).obj X ⟶
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ - Hσδ q)
 
+lemma sum_over_fin2 {β : Type*} [add_comm_monoid β] (f : fin (2) → β) :
+  ∑ x, f x = f 0 + f 1 := sorry
+
 theorem P_eq_π (q : ℕ) (n : ℕ) : ((P q).f n : X _[n] ⟶ X _[n]) = π q n :=
 begin
   induction q with q hq,
@@ -286,14 +291,13 @@ begin
       cases q,
       { simp,
         erw chain_complex.of_d,
-
         simp only [alternating_face_map_complex.obj_d, hσδ_eq 0 0 0 (by refl),
           fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
-        let term := finset.univ.sum (λ (i : fin (0 + 2)), (-1 : ℤ) ^ (i : ℕ) • X.δ i),
-        have eq : term = 0 := by sorry,
-        -- erw eq,
-        
-        sorry, },
+        rw sum_over_fin2,
+        simp only [comp_neg, fin.coe_zero, comp_add, fin.coe_one, pow_one,
+          one_zsmul, pow_zero, neg_smul],
+        apply add_neg_eq_zero.mpr,
+        erw [δ_comp_σ_self, δ_comp_σ_succ], },
       { sorry, }, },
     { sorry, }, },
 end
