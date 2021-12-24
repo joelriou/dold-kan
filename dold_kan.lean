@@ -256,9 +256,18 @@ begin
   { congr; exact tsub_eq_of_eq_add (eq.symm ha), }
 end
 
-def Δνπ (q : ℕ) := 0
+def Δνπ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
+  (alternating_face_map_complex C).obj X :=
+null_homotopic_chain_complex_map (hν q)
 
--- def diff (n : ℕ) : X _[n+1] ⟶ X _[n] := ((alternating_face_map_complex C).obj X).d (n+1) n
+lemma Δνπ_eq {Y : C} (q : ℕ) (n : ℕ) (φ : Y ⟶ X _[n+1]) 
+  (hφ : ∀ (j : fin(n+1)), (n+1 ≤ (j : ℕ)+q) → φ ≫ X.δ j = 0) :
+  φ ≫ ((Δνπ q).f (n+1) : X _[n+1] ⟶ X _[n+1]) = φ ≫ (ν (q+1) (n+1) - ν q (n+1)) :=
+begin
+  sorry,
+end
+
+#check Δνπ_eq
 
 /- what follows makes sense only in an abelian category -/
 
