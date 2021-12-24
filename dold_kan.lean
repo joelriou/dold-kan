@@ -238,7 +238,7 @@ def hσδ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
   else (-1 : ℤ)^(n-q) • X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
 
 @[simp]
-lemma hσδ0_eq (q : ℕ) (n : ℕ) (hnq : n<q) : (hσδ q n : X _[n] ⟶ X _[n+1])= 0 :=
+lemma hσδ_eq_zero (q : ℕ) (n : ℕ) (hnq : n<q) : (hσδ q n : X _[n] ⟶ X _[n+1])= 0 :=
 begin
   unfold hσδ,
   simp only [fin.mk_eq_subtype_mk, ite_eq_left_iff],
@@ -263,21 +263,19 @@ def Hσδ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X :=
 null_homotopic_chain_complex_map (hσδ q)
 
-lemma Hσδ_eq {Y : C} (q : ℕ) (n : ℕ) (φ : Y ⟶ X _[n+1]) 
+lemma Hσδ_eq {Y : C} (q : ℕ) (n : ℕ) (hqn : q≤n) (φ : Y ⟶ X _[n+1]) 
   (hφ : ∀ (j : fin(n+1)), (n+1 ≤ (j : ℕ)+q) → φ ≫ X.δ j.succ = 0) :
   φ ≫ ((Hσδ q).f (n+1) : X _[n+1] ⟶ X _[n+1]) = φ ≫ σδ q n :=
 begin
   sorry,
 end
 
+
 @[simp]
 def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X)
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ - Hσδ q)
-
-lemma sum_over_fin2 {β : Type*} [add_comm_monoid β] (f : fin (2) → β) :
-  ∑ x, f x = f 0 + f 1 := sorry
 
 theorem P_eq_π (q : ℕ) (n : ℕ) : ((P q).f n : X _[n] ⟶ X _[n]) = π q n :=
 begin
@@ -293,13 +291,30 @@ begin
         erw chain_complex.of_d,
         simp only [alternating_face_map_complex.obj_d, hσδ_eq 0 0 0 (by refl),
           fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
-        rw sum_over_fin2,
+        rw [fin.sum_univ_succ_above, fin.sum_univ_one,
+          fin.zero_succ_above, fin.succ_zero_eq_one],
         simp only [comp_neg, fin.coe_zero, comp_add, fin.coe_one, pow_one,
           one_zsmul, pow_zero, neg_smul],
         apply add_neg_eq_zero.mpr,
         erw [δ_comp_σ_self, δ_comp_σ_succ], },
-      { sorry, }, },
-    { sorry, }, },
+      { simp, }, },
+    { by_cases hqn : q≤n,
+      { erw Hσδ_eq q n hqn (π q n.succ : X _[n+1] ⟶ X _[n+1]) (d_π_eq_zero q n),
+        rw π_eq q n hqn,
+        rw [comp_sub, comp_id], },
+      { rw not_le at hqn,
+        rw π_eq' q n hqn,
+        apply sub_eq_self.mpr,
+        simp [Hσδ],
+        rw hσδ_eq_zero q n hqn,
+        by_cases hqn1 : n+1<q,
+        { rw hσδ_eq_zero q (n+1) hqn1,
+          simp, },
+        { rw [show q = n+1, by linarith],
+          simp,
+          apply sub_eq_zero.mpr,
+          sorry, },
+      }, }, },
 end
 
 /- what follows makes sense only in an abelian category -/
