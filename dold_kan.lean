@@ -189,6 +189,22 @@ begin
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, comp_sum, sum_comp],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
+  have hn2aq : n+2=(a+2)+q := by linarith,
+  rw [remove_trailing_zero_in_sum hn2aq], swap,
+  { intro j,
+    have hj := fin.is_lt j,
+    let i : fin(n+1) := fin.mk (a+j+1) (by linarith),
+    have eq := v.vanishing i
+      (by { simp only [i, fin.mk_eq_subtype_mk, fin.coe_mk], linarith, }),
+    have hi : translate_fin (a+2) hn2aq j = i.succ,
+    { ext,
+      simp only [i, fin.succ_mk, translate_fin,
+        fin.mk_eq_subtype_mk, fin.coe_mk],
+      linarith, },
+    simp only [hi, eq, smul_zero', zero_comp], },
+  have hn3aq : n+3=(a+3)+q := by linarith,
+  rw [remove_trailing_zero_in_sum hn3aq], swap,
+
   sorry,
 end
 
