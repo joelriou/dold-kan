@@ -10,6 +10,9 @@ import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
 
+import homotopies
+open homology
+
 open category_theory
 open category_theory.limits
 open category_theory.subobject
@@ -29,51 +32,6 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-/- general stuff on homotopies -/
-
-@[simp]
-def null_homotopic_chain_complex_map_f {K L : chain_complex C ℕ}
-  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) : Π (n : ℕ), K.X n ⟶ L.X n
-| 0 := h 0 ≫ L.d 1 0
-| (n+1) := h (n+1) ≫ L.d (n+2) (n+1) + K.d (n+1) n ≫ h n
-
-@[simps]
-def null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
-  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) : K ⟶ L :=
-{ f := null_homotopic_chain_complex_map_f h,
-  comm' := λ i j, begin
-    rw complex_shape.down_rel,
-    intro hij,
-    cases j;
-    { rw ← hij, simp, },
-  end }
-
-@[simp]
-def null_homotopic_chain_complex_map_hom {K L : chain_complex C ℕ}
-  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) (i j : ℕ) : K.X i ⟶ L.X j :=
-begin
-  by_cases hij : i+1=j,
-  { exact h i ≫ (eq_to_hom (by { congr, assumption, }) : L.X (i+1) ⟶ L.X j) },
-  { exact 0 },
-end
-
-def homotopy_of_null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
-  (h : Π (n : ℕ), K.X n ⟶ L.X (n+1)) :
-  homotopy (null_homotopic_chain_complex_map h) 0 :=
-{ hom := null_homotopic_chain_complex_map_hom h,
-  zero' := λ i j hij, begin
-    rw complex_shape.down_rel at hij,
-    simp only [null_homotopic_chain_complex_map_hom, dite_eq_right_iff],
-    intro hij',
-    exfalso,
-    exact hij hij',
-  end,
-  comm := λ n, begin
-    cases n,
-    { simp, },
-    { simp, apply add_comm, }
-  end }
-
 /- construction of homotopies -/
 
 variables {X : simplicial_object C}
@@ -92,8 +50,8 @@ begin
 end
 
 @[simp]
-lemma hσ_eq {q n a : ℕ} (ha : a+q=n) :
-  (hσ q n : X _[n] ⟶ X _[n+1]) = (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
+lemma hσ_eq {q n a : ℕ} (ha : a+q=n) : (hσ q n : X _[n] ⟶ X _[n+1]) =
+    (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
 begin
   unfold hσ,
   simp only [not_lt, fin.mk_eq_subtype_mk, ite_eq_left_iff],
@@ -214,15 +172,25 @@ begin
         linarith, },
       rw translate_2 at δσ_rel,
       erw δσ_rel,
-      have dphi := v.vanishing j _, swap, rw eqq, exact le_add_self,
-      rw [← assoc, dphi],
+      have dφ := v.vanishing j _, swap, rw eqq, exact le_add_self,
+      rw [← assoc, dφ],
       simp only [smul_zero', zero_comp], }, },
 end
 
 lemma Hσφ_eq_σδ {Y : C} {n : ℕ} (q : ℕ) (hqn : q≤n) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
   φ ≫ X.δ (fin.mk (n-q) (nat.sub_lt_succ n q)).succ ≫
-  X.σ (fin.mk (n-q) (nat.sub_lt_succ n q)) := sorry
+  X.σ (fin.mk (n-q) (nat.sub_lt_succ n q)) :=
+begin
+  cases nat.le.dest hqn with a ha,
+  have hnaq : a+q=n := by linarith,
+  have hnaqsucc : (a+1)+q=n+1 := by linarith,
+  simp [hσ_eq hnaq, hσ_eq hnaqsucc],
+  repeat { erw chain_complex.of_d, },
+  simp only [alternating_face_map_complex.obj_d, comp_sum, sum_comp],
+  simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
+  sorry,
+end
 
 lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ - Hσ q).f (n+1)) :=
