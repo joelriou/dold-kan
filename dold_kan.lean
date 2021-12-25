@@ -146,7 +146,27 @@ lemma remove_trailing_zero_in_sum {β : Type*} [add_comm_monoid β] {n : ℕ} {a
   {f : fin(n) → β} (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
   ∑ (i : fin(n)), f i = ∑ (i : fin(a)), f (fin.cast_le (nat.le.intro (eq.symm hnaq)) i) := 
 begin
-  sorry
+  let lt_a := λ (i : fin(n)), (i:ℕ)<a,
+  have vanishing : ∀ (i : fin(n)), i ∈ (finset.univ : finset(fin(n))) → f i ≠ 0 → lt_a i := by sorry,
+  simp only [← finset.sum_filter_of_ne vanishing],
+  apply eq.symm,
+  let φ : Π (i : fin(a)), i ∈ (finset.univ : finset(fin(a))) → fin(n) :=
+    λ i _, fin.cast_le (nat.le.intro (eq.symm hnaq)) i,
+  apply finset.sum_bij φ,
+  { intros i hi,
+    simp only [true_and, finset.mem_univ, finset.mem_filter, φ, lt_a,
+      fin.coe_cast_le],
+    exact fin.is_lt i, },
+  { intros i hi,
+    congr, },
+  { intros i j hi hj hij,
+    simp only [φ] at hij,
+    simpa only [order_embedding.eq_iff_eq] using hij, },
+  { intros j hj,
+    simp only [true_and, finset.mem_univ, finset.mem_filter, lt_a] at hj,
+    let i : fin(a) := fin.mk (j:ℕ) hj,
+    use [fin.mk (j:ℕ) hj, finset.mem_univ _],
+    simp only [φ, fin.cast_le_mk, fin.mk_eq_subtype_mk, fin.eta], },
 end
 
 lemma Hσφ_eq_zero {Y : C} {n : ℕ} (q : ℕ) (hqn : n<q) (φ : Y ⟶ X _[n+1])
