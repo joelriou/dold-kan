@@ -147,7 +147,21 @@ lemma remove_trailing_zero_in_sum {β : Type*} [add_comm_monoid β] {n : ℕ} {a
   ∑ (i : fin(n)), f i = ∑ (i : fin(a)), f (fin.cast_le (nat.le.intro (eq.symm hnaq)) i) := 
 begin
   let lt_a := λ (i : fin(n)), (i:ℕ)<a,
-  have vanishing : ∀ (i : fin(n)), i ∈ (finset.univ : finset(fin(n))) → f i ≠ 0 → lt_a i := by sorry,
+  have vanishing : ∀ (i : fin(n)), i ∈ (finset.univ : finset(fin(n))) → f i ≠ 0 → lt_a i,
+  { intros i hi0,
+    by_cases hi1 : lt_a i,
+    { intro, assumption, },
+    { intro hi2,
+      exfalso,
+      simp only [not_lt] at hi1,
+      cases nat.le.dest hi1 with j hj,
+      have hjq : j<q,
+      { apply (add_lt_add_iff_left a).mp,
+        rw [← hnaq, hj],
+        exact fin.is_lt i, },
+      have hfj := hf (fin.mk j hjq),
+      simp [hj] at hfj,
+      exact hi2 hfj, }, },
   simp only [← finset.sum_filter_of_ne vanishing],
   apply eq.symm,
   let φ : Π (i : fin(a)), i ∈ (finset.univ : finset(fin(a))) → fin(n) :=
@@ -204,8 +218,6 @@ begin
       rw [← assoc, dphi],
       simp only [smul_zero', zero_comp], }, },
 end
-
-#exit
 
 lemma Hσφ_eq_σδ {Y : C} {n : ℕ} (q : ℕ) (hqn : q≤n) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
