@@ -204,9 +204,35 @@ begin
     simp only [hi, eq, smul_zero', zero_comp], },
   have hn3aq : n+3=(a+3)+q := by linarith,
   rw [remove_trailing_zero_in_sum hn3aq], swap,
-
+  { intro j,
+    have hj := fin.is_lt j,
+    let i : fin(n+2):= fin.mk (a+2+(j : ℕ)) (by linarith),
+    have δσ_rel := δ_comp_σ_of_gt X
+      (_ : fin.cast_succ (fin.mk (a+1) (show a+1<n+1, by linarith)) < i), swap,
+    { rw fin.lt_iff_coe_lt_coe,
+      simp only [i, fin.mk_eq_subtype_mk, fin.cast_succ_mk, fin.coe_mk],
+      linarith, },
+    have eq_i : translate_fin (a+3) hn3aq j = i.succ,
+    { ext,
+      simp only [i, fin.succ_mk, translate_fin,
+        fin.mk_eq_subtype_mk, fin.coe_mk],
+      linarith, },
+    simp only [fin.mk_eq_subtype_mk, fin.cast_succ_mk] at δσ_rel,
+    rw eq_i,
+    simp only [δσ_rel, fin.coe_succ, assoc],
+    let ipred : fin (n+1) := fin.mk (a+1+(j : ℕ)) (by linarith), 
+    have eq := v.vanishing ipred _,
+    swap, { simp only [ipred, fin.mk_eq_subtype_mk, fin.coe_mk], linarith, },
+    rw (_ : ipred.succ = i) at eq, swap,
+    { ext,
+      simp only [ipred, i, fin.coe_succ, fin.mk_eq_subtype_mk, fin.coe_mk],
+      linarith, },
+    rw [← assoc, eq],
+    simp only [smul_zero', zero_comp], },
   sorry,
 end
+
+#exit
 
 lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ - Hσ q).f (n+1)) :=
