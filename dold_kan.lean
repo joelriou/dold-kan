@@ -82,7 +82,7 @@ def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
   else (-1 : ℤ)^(n-q) • X.σ (fin.mk (n-q) (nat.sub_lt_succ n q))
 
 @[simp]
-lemma hσ_eq_zero (q : ℕ) (n : ℕ) (hnq : n<q) : (hσ q n : X _[n] ⟶ X _[n+1])= 0 :=
+lemma hσ_eq_zero {q : ℕ} {n : ℕ} (hnq : n<q) : (hσ q n : X _[n] ⟶ X _[n+1])= 0 :=
 begin
   unfold hσ,
   simp only [fin.mk_eq_subtype_mk, ite_eq_left_iff],
@@ -92,7 +92,7 @@ begin
 end
 
 @[simp]
-lemma hσ_eq (q n a : ℕ) (ha : a+q=n) :
+lemma hσ_eq {q n a : ℕ} (ha : a+q=n) :
   (hσ q n : X _[n] ⟶ X _[n+1]) = (-1 : ℤ)^a • X.σ (fin.mk a (nat.lt_succ_iff.mpr (nat.le.intro ha))) :=
 begin
   unfold hσ,
@@ -124,9 +124,8 @@ begin
   { simp [hq],
     cases q,
     { erw chain_complex.of_d,
-      simp [hσ_eq 0 0 0 (by refl), alternating_face_map_complex.obj_d],
-      rw [fin.sum_univ_succ_above, fin.sum_univ_one,
-        fin.zero_succ_above, fin.succ_zero_eq_one],
+      simp [hσ_eq (show 0+0=0, by refl), alternating_face_map_complex.obj_d],
+      rw [fin.sum_univ_two],
       simp only [comp_neg, fin.coe_zero, comp_add, fin.coe_one, pow_one,
         one_zsmul, pow_zero, neg_smul],
       apply add_neg_eq_zero.mpr,
@@ -137,10 +136,56 @@ end
 /- vanishing of some faces -/
 
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
-  (vanishing : ∀ (j : fin(n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
+  (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
 
-lemma Hσφ_eq_zero {Y : C} {n : ℕ} (q : ℕ) (hqn : q<n) (φ : Y ⟶ X _[n+1])
-  (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 := sorry
+@[simp]
+def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin(q)) : fin(n) :=
+fin.mk (a+(i:ℕ)) (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))
+
+lemma remove_trailing_zero_in_sum {β : Type*} [add_comm_monoid β] {n : ℕ} {a : ℕ} {q : ℕ} (hnaq : n=a+q)
+  {f : fin(n) → β} (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
+  ∑ (i : fin(n)), f i = ∑ (i : fin(a)), f (fin.cast_le (nat.le.intro (eq.symm hnaq)) i) := 
+begin
+  sorry
+end
+
+lemma Hσφ_eq_zero {Y : C} {n : ℕ} (q : ℕ) (hqn : n<q) (φ : Y ⟶ X _[n+1])
+  (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
+begin
+  by_cases hqnp : n+1<q,
+  { simp [Hσ],
+    rw [hσ_eq_zero hqn, hσ_eq_zero hqnp],
+    simp only [add_zero, zero_comp, comp_zero], },
+  { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
+    simp,
+    rw hσ_eq (show 0+q=n+1, by linarith),
+    simp only [fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
+    erw chain_complex.of_d,
+    simp only [alternating_face_map_complex.obj_d,
+      hσ_eq_zero hqn, add_zero, comp_zero, comp_sum],
+    have h2 : n+3=2+(n+1) := by linarith,
+    rw [remove_trailing_zero_in_sum h2],
+    { rw fin.sum_univ_two,
+      simp only [comp_neg, fin.coe_zero, fin.coe_one, pow_one, fin.coe_cast_le,
+        one_zsmul, neg_smul, pow_zero, fin.cast_le_zero],
+      apply add_neg_eq_zero.mpr,
+      erw [δ_comp_σ_self, δ_comp_σ_succ], },
+    { intros j,
+      simp only [comp_zsmul],
+      have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin(n+1))<j.succ),
+      swap, rw fin.cast_succ_zero, exact fin.succ_pos j,
+      have translate_2 : j.succ.succ = translate_fin 2 h2 j,
+      { ext,
+        simp only [fin.coe_succ, translate_fin, fin.mk_eq_subtype_mk, fin.coe_mk],
+        linarith, },
+      rw translate_2 at δσ_rel,
+      erw δσ_rel,
+      have dphi := v.vanishing j _, swap, rw eqq, exact le_add_self,
+      rw [← assoc, dphi],
+      simp only [smul_zero', zero_comp], }, },
+end
+
+#exit
 
 lemma Hσφ_eq_σδ {Y : C} {n : ℕ} (q : ℕ) (hqn : q≤n) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
