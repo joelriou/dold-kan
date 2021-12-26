@@ -221,9 +221,9 @@ begin
   { let ι : fin (n+2) → fin (n+3) := fin.cast_succ,
     let S := finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ,
     let T := finset.filter (λ i : fin(n+3), (i:ℕ)<a+1) finset.univ,
-    have eq : ∑ (s : fin(n+2)) in S, term1 (ι s) = ∑ (t : fin(n+3)) in T, term1 t :=
-      finset.sum_bij (λ (s : fin(n+2)) (hs : s ∈ finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ),
-         ι s) _ _ _ _, rotate,
+    have eq : ∑ (s : fin(n+2)) in S, term1 (ι s) =
+              ∑ (t : fin(n+3)) in T, term1 t    := finset.sum_bij (λ (s : fin(n+2))
+      (hs : s ∈ finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ), ι s) _ _ _ _, rotate,
       { intros a ha,
         simp only [true_and, finset.mem_univ, fin.coe_cast_succ,
           finset.mem_filter] at ha ⊢,
