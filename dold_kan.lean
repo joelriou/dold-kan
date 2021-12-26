@@ -126,23 +126,25 @@ end
 lemma leave_out_last_term {β : Type*} [add_comm_monoid β] {n a : ℕ} (hna : a<n)
   {f : fin(n) → β} :
   ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a+1) finset.univ, f i = 
-  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i + f ⟨a, hna⟩ := sorry
-
-
+  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i + f ⟨a, hna⟩ :=
+begin
+  conv { to_rhs, rw add_comm, },
+  let S := finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ,
+  let b : fin (n) := ⟨a, hna⟩,
+  rw ← finset.sum_insert (_ : b ∉ S), swap,
+  { simp only [lt_self_iff_false, not_false_iff, finset.mem_filter, fin.coe_mk, and_false], },
+  congr',
+  ext i,
+  simp only [true_and, finset.mem_univ, finset.mem_insert, finset.mem_filter],
+  simp only [nat.lt_iff_add_one_le],
+  rw [nat.le_add_one_iff],
+  conv { to_lhs, congr, skip, rw [add_left_inj 1], },
+  conv { to_rhs, rw or.comm, congr, skip, rw [fin.ext_iff, fin.coe_mk], },
+end
 
 lemma simplif {β : Type*} [add_comm_group β] {a b c d e f : β} 
   (h1 : e=f) (h2 : b+c=0) (h3 : a+d=0) : a+b+c+(d+e) = f :=
 by { rw [add_assoc a b c, h2, add_zero, ← add_assoc a d e, h3, zero_add, h1], }
-
-lemma test1 (a n q : ℕ) (hnaq : n=a+q) : a≤ n := nat.le.intro (eq.symm hnaq)
-lemma test2 (a n : ℕ) (h : a≤n) : a<n+1 := nat.lt_succ_iff.mpr h
-lemma test3 (a b : ℕ) (h : a<b) : a+1<b+1 := nat.succ_lt_succ h
-lemma test4 (a b : ℕ) (h : a<b) : a<b+2 := nat.lt_add_right a b 2 h
-lemma test5 (a b : ℤ) (e : ℕ) : (a*b)^e = a^e*b^e := mul_pow a b e
-lemma test6 : (-1 : ℤ ) * (-1 : ℤ) = 1 := by ring
-lemma test7 (a b : ℤ) (h : a = -b) : a+b = 0 := add_eq_zero_iff_eq_neg.mpr h
-
-
 
 lemma Hσφ_eq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
@@ -257,7 +259,7 @@ begin
     apply add_eq_zero_iff_eq_neg.mpr,
     rw ← neg_smul,
     congr',
-    simp [ι],
+    simp only [fin.coe_cast_succ],
     ring_exp, }
   },
 end
