@@ -70,8 +70,7 @@ null_homotopic_chain_complex_map (hσ q)
 def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X)
 | 0     := 𝟙 _
-| (q+1) := P q ≫ (𝟙 _ - Hσ q)
-/- the sign should be changed?...-/
+| (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
 /- these endormorphismes P q coincide with `𝟙` in degree 0 -/
 
@@ -142,11 +141,7 @@ begin
   conv { to_rhs, rw or.comm, congr, skip, rw [fin.ext_iff, fin.coe_mk], },
 end
 
-lemma simplif {β : Type*} [add_comm_group β] {a b c d e f : β} 
-  (h1 : e=f) (h2 : b+c=0) (h3 : a+d=0) : a+b+c+(d+e) = f :=
-by { rw [add_assoc a b c, h2, add_zero, ← add_assoc a d e, h3, zero_add, h1], }
-
-lemma Hσφ_eq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) (φ : Y ⟶ X _[n+1])
+lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
   - φ ≫ X.δ ⟨a+1, nat.succ_lt_succ (nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)))⟩ ≫
   X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
@@ -197,7 +192,10 @@ begin
   rw [leave_out_last_term (ineq2 : a+1<n+2),
     leave_out_last_term (show a+2<n+3, by linarith),
     leave_out_last_term (show a+1<n+3, by linarith)],
-  apply simplif,
+  have simplif : ∀ (a b c d e f : Y ⟶ X _[n+1]), e=f → b+c=0 → a+d=0 → a+b+c+(d+e) =f,
+  { intros a b c d e f h1 h2 h3,
+    rw [add_assoc a b c, h2, add_zero, ← add_assoc a d e, h3, zero_add, h1], },
+  apply simplif _ _ _ _ _ _,
   { simp only [term2],
     rw fin.coe_mk,
     have eq : (-1 : ℤ)^(a+1) * (-1 : ℤ)^a = -1,
@@ -305,12 +303,11 @@ end
 
 
 lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
-  (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ - Hσ q).f (n+1)) :=
+  (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 { vanishing :=
   begin
-      sorry
-  end
-}
+    sorry
+  end }
 
 end dold_kan
 
