@@ -177,6 +177,10 @@ begin
       simp only [smul_zero', zero_comp], }, },
 end
 
+lemma simplif {β : Type*} [add_comm_group β] {a b c d e f : β} (h1 : b+c=0)
+  (h2 : e=f) (h3 : a+d=0) : a+b+c+(d+e) = f :=
+by { rw [add_assoc a b c, h1, add_zero, ← add_assoc a d e, h3, zero_add, h2], }
+
 lemma Hσφ_eq_σδ {Y : C} {n : ℕ} (q : ℕ) (hqn : q≤n) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
   φ ≫ X.δ (fin.mk (n-q) (nat.sub_lt_succ n q)).succ ≫
@@ -189,6 +193,7 @@ begin
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, comp_sum, sum_comp],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
+  /- we get rid of the q trailing zero terms in the first sum  -/
   have hn2aq : n+2=(a+2)+q := by linarith,
   rw [remove_trailing_zero_in_sum hn2aq], swap,
   { intro j,
@@ -202,6 +207,8 @@ begin
         fin.mk_eq_subtype_mk, fin.coe_mk],
       linarith, },
     simp only [hi, eq, smul_zero', zero_comp], },
+  /- we get rid of the q trailing zero terms in the second sum;
+    this is more involved as we need to use a simplicial relation  -/
   have hn3aq : n+3=(a+3)+q := by linarith,
   rw [remove_trailing_zero_in_sum hn3aq], swap,
   { intro j,
@@ -229,7 +236,40 @@ begin
       linarith, },
     rw [← assoc, eq],
     simp only [smul_zero', zero_comp], },
-  sorry,
+  /- cleaning up the first sum -/
+  have ineq3 : a+3<=n+3 := by linarith,
+  let term1' := λ (i : fin (a+3)), ((-1 : ℤ)^(a + 1)*(-1 : ℤ)^(fin.cast_le ineq3 i : ℕ)) •
+    (φ ≫ X.σ (⟨(a+1), by linarith⟩ : fin(n+2))) ≫ X.δ (fin.cast_le ineq3 i),
+  simp only [← term1'],
+  rw [fin.sum_univ_cast_succ term1'],
+  rw [fin.sum_univ_cast_succ (λ (i : fin (a+2)), term1' (fin.cast_succ i))],
+  let term1 := λ (i : fin (a+1)), ((-1 : ℤ)^(a + 1 + (i : ℕ)) •
+    (φ ≫ X.σ (⟨(a+1), by linarith⟩)) ≫ X.δ (fin.cast_le (show a+1≤n+3, by linarith) i)),
+  rw [(_: ∑ (i : fin (a+1)), (λ (i : fin (a+2)), term1' (fin.cast_succ i)) (fin.cast_succ i)
+    = ∑ (i : fin(a+1)), term1 i)], swap,
+  { apply congr_arg,
+    ext i, 
+    sorry, },
+  /- cleaning up the second sum -/
+  have ineq2 : a+2<=n+2 := by linarith,
+  have ineg4 : a<n+1 := by linarith,
+  let term2' := λ (i : fin (a+2)), ((-1 : ℤ)^(fin.cast_le ineq2 i : ℕ) *
+    (-1 : ℤ)^a) • (φ ≫ X.δ (fin.cast_le ineq2 i)) ≫ X.σ ⟨a, ineg4⟩,
+  simp only [← term2'],
+  rw [fin.sum_univ_cast_succ term2'],
+  have ineg5 : a+1 ≤ n+2 := by linarith,
+  let term2 := λ (i : fin (a+1)), (-1 : ℤ)^(a+(i : ℕ)) •
+    (φ ≫ X.δ (fin.cast_le ineg5 i)) ≫ X.σ ⟨a, ineg4⟩,
+  rw [(_: ∑ (i : fin (a+1)), term2' (fin.cast_succ i)
+    = ∑ (i : fin(a+1)), term2 i)], swap,
+  { apply congr_arg,
+    ext i,
+    sorry, },
+  /- three remaining goals -/
+  apply simplif,
+  { sorry, },
+  { sorry, },
+  { sorry, },
 end
 
 #exit
