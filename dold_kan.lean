@@ -300,10 +300,6 @@ begin
       simp only [← assoc, dφ, zero_comp, smul_zero'], }, },
 end
 
-#check Hσφ_eq_neq_σδ
-
-lemma x (a b: ℤ ) (h : a=b) : a+(-b) = 0 := add_neg_eq_zero.mpr h
-
 lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 { vanishing :=
@@ -362,21 +358,13 @@ lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]}
           repeat { rw [← assoc], },
           repeat { rw v.vanishing j (by linarith), },
           simp only [zero_comp], }, },
-      { sorry, }, },
+      { simp [show a = (j : ℕ), by linarith],
+        erw [δ_comp_σ_succ],
+        simp only [comp_id],
+        congr,
+        ext,
+        simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
-
-#exit
-
-lemma  
-
-
-lemma zz (q a m : ℕ) (ha' : ¬ a<m) : a≥ m := not_lt.mp ha'
-lemma zz (q a m : ℕ) : ¬a<m ↔ a≥ m := not_lt.mp ha'
-lemma zz (q a m : ℕ) (ha : a≤ m) (hq' : m≤ a)  : a=m := le_antisymm ha hq'
-
-
---lemma zz (q a m : ℕ) (h : m+1≤ a) (ha' : a+q=m+1) : q=0 := by library_search
-
 
 end dold_kan
 
