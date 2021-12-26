@@ -91,7 +91,7 @@ begin
     { simp, }, },
 end
 
-/- vanishing of some faces -/
+/- computation of the null_homotopic mapt Hσ -/
 
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
   (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
@@ -100,7 +100,7 @@ structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) 
 def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin(q)) : fin(n) :=
 ⟨a+(i:ℕ), (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))⟩
 
-lemma remove_trailing_zero_in_sum {β : Type*} [add_comm_monoid β] {n a q : ℕ} (hnaq : n=a+q)
+lemma remove_trailing_zeros_in_sum {β : Type*} [add_comm_monoid β] {n a q : ℕ} (hnaq : n=a+q)
   (f : fin(n) → β) (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
   ∑ (i : fin(n)), f i = ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i := 
 begin
@@ -165,7 +165,7 @@ begin
   let j : fin(n+1) := ⟨n-q, nat.sub_lt_succ n q⟩,
   simp only [← term1, ← term2],
   /- cleaning up the first sum -/
-  rw remove_trailing_zero_in_sum (hnaq_shift 3) term1, swap,
+  rw remove_trailing_zeros_in_sum (hnaq_shift 3) term1, swap,
   { intro k,
     simp only [term1],
     have hk := fin.is_lt k,
@@ -183,7 +183,7 @@ begin
     rw [← assoc, eq],
     simp only [smul_zero', zero_comp], },
   /- cleaning up the second sum -/
-  rw remove_trailing_zero_in_sum (hnaq_shift 2) term2, swap,
+  rw remove_trailing_zeros_in_sum (hnaq_shift 2) term2, swap,
   { intro k,
     simp only [term2],
     have hk := fin.is_lt k,
@@ -264,43 +264,45 @@ begin
   },
 end
 
-#exit
-
 lemma Hσφ_eq_zero {Y : C} {n : ℕ} (q : ℕ) (hqn : n<q) (φ : Y ⟶ X _[n+1])
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
-  by_cases hqnp : n+1<q,
-  { simp [Hσ],
-    rw [hσ_eq_zero hqn, hσ_eq_zero hqnp],
-    simp only [add_zero, zero_comp, comp_zero], },
+  by_cases hqnp : n+1<q;
+  simp only [Hσ, null_homotopic_chain_complex_map_f_2,
+      null_homotopic_chain_complex_map_f, hσ_eq_zero hqn],
+  { simp only [hσ_eq_zero hqnp, add_zero, zero_comp, comp_zero], },
   { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
-    simp,
-    rw hσ_eq (show n+1=0+q, by linarith),
-    simp only [fin.mk_zero, fin.mk_eq_subtype_mk, one_zsmul, pow_zero],
+    simp only [hσ_eq (show n+1=0+q, by linarith), pow_zero, one_zsmul],
     erw chain_complex.of_d,
-    simp only [alternating_face_map_complex.obj_d,
-      hσ_eq_zero hqn, add_zero, comp_zero, comp_sum],
-    have h2 : n+3=2+(n+1) := by linarith,
-    rw [remove_trailing_zero_in_sum' h2],
-    { rw fin.sum_univ_two,
-      simp only [comp_neg, fin.coe_zero, fin.coe_one, pow_one, fin.coe_cast_le,
-        one_zsmul, neg_smul, pow_zero, fin.cast_le_zero],
+    simp only [alternating_face_map_complex.obj_d, add_zero, comp_zero, comp_sum],
+    rw remove_trailing_zeros_in_sum (show n+3=2+(n+1), by linarith),
+    { rw [leave_out_last_term (show 1<n+3, by linarith),
+        leave_out_last_term (show 0<n+3, by linarith)],
+      rw [finset.sum_eq_zero], swap,
+      { intros x hx,
+        exfalso,
+        simpa only [finset.not_mem_empty, nat.not_lt_zero, finset.filter_false] using hx, },
+      simp only [fin.mk_zero, comp_neg, fin.coe_zero, comp_add, fin.coe_one,
+        pow_one, one_zsmul, zero_add, neg_smul, fin.mk_one, pow_zero],
       apply add_neg_eq_zero.mpr,
       erw [δ_comp_σ_self, δ_comp_σ_succ], },
-    { intros j,
-      simp only [comp_zsmul],
+    { intro j,
+      simp only [comp_zsmul, fin.mk_zero],
       have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin(n+1))<j.succ),
       swap, rw fin.cast_succ_zero, exact fin.succ_pos j,
-      have translate_2 : j.succ.succ = translate_fin 2 h2 j,
-      { ext,
-        simp only [fin.coe_succ, translate_fin, fin.mk_eq_subtype_mk, fin.coe_mk],
+      simp only [fin.cast_succ_zero] at δσ_rel,
+      have h1 : j.succ.succ = translate_fin 2 _ j,
+      { simp only [translate_fin],
+        ext,
+        simp only [fin.coe_succ, fin.coe_mk],
         linarith, },
-      rw translate_2 at δσ_rel,
-      erw δσ_rel,
+      swap, { rw [show 2+(n+1)=((n+1)+1)+1, by linarith], },
+      rw h1 at δσ_rel,
+      rw δσ_rel,
       have dφ := v.vanishing j _, swap, rw eqq, exact le_add_self,
-      rw [← assoc, dφ],
-      simp only [smul_zero', zero_comp], }, },
+      simp only [← assoc, dφ, zero_comp, smul_zero'], }, },
 end
+
 
 lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ - Hσ q).f (n+1)) :=
