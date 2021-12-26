@@ -311,7 +311,7 @@ lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]}
     intros j hj,
     simp only [add_comp, comp_add, homological_complex.add_f_apply, homological_complex.id_f],
     erw comp_id,
-    -- when n<q, the result follows immediately from the assumtion
+    -- when n < q, the result follows immediately from the assumtion
     by_cases hqn : n<q,
     { rw [Hσφ_eq_zero q hqn φ v, zero_comp, add_zero, v.vanishing j (by linarith)], },
     -- we now assume that n≥q, and write n=a+q
@@ -321,25 +321,62 @@ lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]}
       neg_comp, add_neg_eq_zero, assoc, assoc],
     cases n with m hm,
     -- the boundary case n=0
-    { have ha0 : a = 0, by linarith,
-      have hj1 := fin.is_lt j,
-      have hj0 : (j : ℕ) = 0, by linarith,
-      have hj0' : j = 0 := sorry,
-      simp only [ha0, hj0', fin.mk_zero, fin.mk_one],
+    { simp only [nat.eq_zero_of_add_eq_zero_left ha, fin.eq_zero j,
+        fin.mk_zero, fin.mk_one],
       erw [δ_comp_σ_succ],
       simp only [fin.succ_zero_eq_one, comp_id], },
     -- in the other cases, we need to write n as m+1
-    /- Probably, this is where we should also restrict to the case n+1 ≤ j+q -/
-    { have ineq1 : (fin.cast_succ (⟨a, by sorry⟩ : fin(m+1)) < j) := sorry,
-      erw [δ_comp_σ_of_gt X ineq1],
-      have ineq2 : (fin.cast_succ (⟨a+1, by sorry⟩ : fin(m+1)) ≤ ⟨(j:ℕ), by sorry⟩) := sorry,
-      have δδ_rel := δ_comp_δ X ineq2,
-      simp only [fin.cast_succ_mk, fin.eta] at δδ_rel,
-      slice_rhs 2 3 { erw [← δδ_rel], },
-      simp only [← assoc],
-      repeat { rw v.vanishing j (by sorry), },
-      simp only [zero_comp], }
+    { by_cases hj1 : m.succ+1≤(j : ℕ)+q,
+      { have hj0 := fin.is_lt j,
+        have ham : a≤m,
+        { by_contradiction,
+          rw [not_le, ← nat.succ_le_iff] at h,
+          linarith, },
+        have haj : a<(j:ℕ) := by linarith,
+        have ineq1 : (fin.cast_succ (⟨a, nat.lt_succ_iff.mpr ham⟩ : fin(m+1)) < j),
+        { rw fin.lt_iff_coe_lt_coe, exact haj, },
+        erw [δ_comp_σ_of_gt X ineq1],
+        -- we shall deal with the case a=m, i.e q=0 separately later
+        by_cases ha' : a<m,
+        { have ineq2 : (fin.cast_succ (⟨a+1, nat.succ_lt_succ ha'⟩ : fin(m+1)) ≤ j),
+          { simp only [fin.le_iff_coe_le_coe, fin.cast_succ_mk, fin.eta, fin.coe_mk],
+            exact nat.succ_le_iff.mpr haj, },
+          have δδ_rel := δ_comp_δ X ineq2,
+          simp only [fin.cast_succ_mk, fin.eta] at δδ_rel,
+          slice_rhs 2 3 { erw [← δδ_rel], },
+          simp only [← assoc],
+          repeat { rw v.vanishing j (by linarith), },
+          simp only [zero_comp], },
+        { -- case where a=m, q=0, j=m+1
+          have eqa1 : a=m := le_antisymm ham (not_lt.mp ha'),
+          have eqq  : q=1,
+          { simp [← eqa1] at ha,
+            rw [show a.succ=a+1, by refl] at ha,
+            rw add_comm at ha,
+            exact (add_right_inj a).mp ha, },
+          have eqa2 : a+1 = (j : ℕ) := by linarith,
+          have eqj : (⟨a+1, by linarith⟩ : fin (m+3)) = (fin.cast_succ j),
+          { ext, simpa [fin.coe_cast_succ, fin.coe_mk] using eqa2, },
+          rw eqj,
+          slice_rhs 2 3 { rw δ_comp_δ_self, },
+          repeat { rw [← assoc], },
+          repeat { rw v.vanishing j (by linarith), },
+          simp only [zero_comp], }, },
+      { sorry, }, },
   end }
+
+#exit
+
+lemma  
+
+
+lemma zz (q a m : ℕ) (ha' : ¬ a<m) : a≥ m := not_lt.mp ha'
+lemma zz (q a m : ℕ) : ¬a<m ↔ a≥ m := not_lt.mp ha'
+lemma zz (q a m : ℕ) (ha : a≤ m) (hq' : m≤ a)  : a=m := le_antisymm ha hq'
+
+
+--lemma zz (q a m : ℕ) (h : m+1≤ a) (ha' : a+q=m+1) : q=0 := by library_search
+
 
 end dold_kan
 
