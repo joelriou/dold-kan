@@ -366,6 +366,17 @@ lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
 
+lemma higher_faces_vanish_P : Π (q : ℕ),
+  Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
+| 0    := λ n, { vanishing := by
+            { intros j hj, exfalso, have hj2 := fin.is_lt j, linarith, } }
+|(q+1) := λ n, { vanishing := 
+            (higher_faces_vanish_ind q (higher_faces_vanish_P q n)).vanishing }
+
+/- construction of homotopies P q ~ id by induction on q -/
+#check higher_faces_vanish
+
+
 end dold_kan
 
 end algebraic_topology
