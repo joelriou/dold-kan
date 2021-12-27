@@ -140,7 +140,7 @@ begin
   conv { to_rhs, rw or.comm, congr, skip, rw [fin.ext_iff, fin.coe_mk], },
 end
 
-lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) (φ : Y ⟶ X _[n+1])
+lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
   - φ ≫ X.δ ⟨a+1, nat.succ_lt_succ (nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)))⟩ ≫
   X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
@@ -261,7 +261,7 @@ begin
   },
 end
 
-lemma Hσφ_eq_zero {Y : C} {n : ℕ} (q : ℕ) (hqn : n<q) (φ : Y ⟶ X _[n+1])
+lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
   by_cases hqnp : n+1<q;
@@ -300,7 +300,7 @@ begin
       simp only [← assoc, dφ, zero_comp, smul_zero'], }, },
 end
 
-lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]} 
+lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} 
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 { vanishing :=
   begin
@@ -309,11 +309,11 @@ lemma higher_faces_vanish_ind {Y : C} {n : ℕ} (q : ℕ) {φ : Y ⟶ X _[n+1]}
     erw comp_id,
     -- when n < q, the result follows immediately from the assumtion
     by_cases hqn : n<q,
-    { rw [Hσφ_eq_zero q hqn φ v, zero_comp, add_zero, v.vanishing j (by linarith)], },
+    { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v.vanishing j (by linarith)], },
     -- we now assume that n≥q, and write n=a+q
     rw [not_lt] at hqn,
     cases nat.le.dest hqn with a ha,
-    rw [Hσφ_eq_neq_σδ (show n=a+q, by linarith) φ v,
+    rw [Hσφ_eq_neq_σδ (show n=a+q, by linarith) v,
       neg_comp, add_neg_eq_zero, assoc, assoc],
     cases n with m hm,
     -- the boundary case n=0
@@ -371,10 +371,51 @@ lemma higher_faces_vanish_P : Π (q : ℕ),
 | 0    := λ n, { vanishing := by
             { intros j hj, exfalso, have hj2 := fin.is_lt j, linarith, } }
 |(q+1) := λ n, { vanishing := 
-            (higher_faces_vanish_ind q (higher_faces_vanish_P q n)).vanishing }
+            (higher_faces_vanish_ind (higher_faces_vanish_P q n)).vanishing }
+
+lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
+  (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
+{ vanishing :=
+  begin
+    intros j hj,
+    apply v.vanishing j,
+    rw ← add_assoc,
+    exact le_add_right hj,
+  end }
+
+lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} 
+  (v : higher_faces_vanish q φ) : φ ≫ (P q).f (n+1) = φ :=
+begin
+  induction q with q hq,
+  { unfold P,
+    simp only [homological_complex.id_f, comp_id],
+    erw [comp_id], },
+  { unfold P,
+    simp only [comp_add, homological_complex.comp_f,
+      homological_complex.add_f_apply, comp_id, ← assoc],
+    simp only [hq (downgrade_vanishing v)],
+    apply add_right_eq_self.mpr,
+    by_cases hqn : n<q,
+    { exact Hσφ_eq_zero hqn (downgrade_vanishing v), },
+    { cases nat.le.dest (not_lt.mp hqn) with a ha,
+      have hnaq : n=a+q := by linarith,
+      simp [Hσφ_eq_neq_σδ hnaq (downgrade_vanishing v), neg_eq_zero],
+      have eq := v.vanishing ⟨a, by linarith⟩ _, swap,
+      { simp only [hnaq, fin.coe_mk, (show q.succ=q+1, by refl), add_assoc], },
+      simp only [fin.succ_mk] at eq,
+      simp only [← assoc, eq, zero_comp], }, },
+end
+  
+lemma P_is_a_projector (q : ℕ) : (P q : (alternating_face_map_complex C).obj X ⟶ _) ≫ P q = P q :=
+begin
+  ext n,
+  simp only [homological_complex.comp_f],
+  cases n,
+  { simp only [P_deg0_eq q, comp_id], },
+  { exact P_is_identity_where_faces_vanish (higher_faces_vanish_P q n), },
+end
 
 /- construction of homotopies P q ~ id by induction on q -/
-#check higher_faces_vanish
 
 
 end dold_kan
