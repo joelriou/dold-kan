@@ -63,6 +63,9 @@ def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X :=
 null_homotopic_chain_complex_map (hσ q)
 
+def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
+homotopy_of_null_homotopic_chain_complex_map (hσ q)
+
 /- definition of the projector P -/
 
 @[simp]
@@ -416,6 +419,25 @@ begin
 end
 
 /- construction of homotopies P q ~ id by induction on q -/
+
+
+lemma P_is_homotopic_to_id (q : ℕ) :
+  homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
+begin
+  induction q with q hq,
+  { unfold P, },
+  { unfold P,
+    simp only [comp_add, comp_id],
+    apply homotopy.equiv_sub_zero.inv_fun,
+    have h1 := homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q),
+    simp only [comp_zero] at h1,
+    have h2 := homotopy.equiv_sub_zero hq,
+    have h3 := add_equiv_zero h1 h2,
+    have lemm : ∀ (x y z : ((alternating_face_map_complex C).obj X) ⟶ 
+      ((alternating_face_map_complex C).obj X)), x+(y-z) = y+x-z,
+    { intros x y z, abel, },
+    rwa lemm at h3, }
+end
 
 
 end dold_kan
