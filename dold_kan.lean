@@ -420,23 +420,30 @@ end
 
 /- construction of homotopies P q ~ id by induction on q -/
 
-
-lemma P_is_homotopic_to_id (q : ℕ) :
-  homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
-begin
-  induction q with q hq,
-  { unfold P, },
-  { unfold P,
+def P_is_homotopic_to_id : Π (q : ℕ),
+  homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _)
+| 0     := homotopy.refl _
+| (q+1) :=
+  begin
+    unfold P,
     simp only [comp_add, comp_id],
     apply homotopy.equiv_sub_zero.inv_fun,
     have h1 := homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q),
     simp only [comp_zero] at h1,
-    have h2 := homotopy.equiv_sub_zero hq,
+    have h2 := homotopy.equiv_sub_zero (P_is_homotopic_to_id q),
     have h3 := add_equiv_zero h1 h2,
     have lemm : ∀ (x y z : ((alternating_face_map_complex C).obj X) ⟶ 
       ((alternating_face_map_complex C).obj X)), x+(y-z) = y+x-z,
     { intros x y z, abel, },
-    rwa lemm at h3, }
+    rwa lemm at h3,
+  end
+
+lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n≤q):
+  (((P_is_homotopic_to_id (q+1)).hom n (n+1)) : X _[n] ⟶ X _[n+1]) =
+  ((P_is_homotopic_to_id q).hom n (n+1)) := 
+begin
+  --unfold P_is_homotopic_to_id,
+  sorry,
 end
 
 /- construction of the projector P∞ -/
@@ -456,30 +463,30 @@ def P_infty : ((alternating_face_map_complex C).obj X ⟶
 (alternating_face_map_complex C).obj X) :=
 begin
   apply chain_complex.of_hom _ _ _ _ _ _
-    (λ n, ((P (n+1)).f n : X _[n] ⟶ _ )),
+    (λ n, ((P n).f n : X _[n] ⟶ _ )),
   intro n,
   simp only,
-  rw P_is_eventually_constant (rfl.ge : n+1 ≤ n+1),
+  rw ← P_is_eventually_constant (rfl.ge : n≤n),
   have eq : ((_ : _ ⟶ X _[n]) = _ ) :=  (P (n+1)).comm (n+1) n,
   erw chain_complex.of_d at eq,
   assumption,
 end
 
 lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = 
-  (P (n+1)).f n := by refl
+  (P n).f n := by refl
 
 lemma P_infty_is_a_projector (q : ℕ) : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
 begin
   ext n,
   simp only [homological_complex.comp_f, P_infty_termwise],
-  rw [← homological_complex.comp_f, P_is_a_projector (n+1)],
+  rw [← homological_complex.comp_f, P_is_a_projector n],
 end
 
 lemma P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
-begin
-  sorry
-end
+{ hom := λ i j, (P_is_homotopic_to_id i).hom i j,
+  zero' := λ i j, (P_is_homotopic_to_id i).zero' i j,
+  comm := sorry, }
 
 end dold_kan
 
