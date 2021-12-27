@@ -455,13 +455,30 @@ end
 def P_infty : ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X) :=
 begin
-  apply chain_complex.of_hom _ _ _ _ _ _ (λ n, ((P (n+1)).f n : X _[n] ⟶ _ )),
+  apply chain_complex.of_hom _ _ _ _ _ _
+    (λ n, ((P (n+1)).f n : X _[n] ⟶ _ )),
   intro n,
   simp only,
   rw P_is_eventually_constant (rfl.ge : n+1 ≤ n+1),
-  have eq : ((_ : _ ⟶ X _[n]) = _ ) :=  ((P (n+1)).comm (n+1) n),
+  have eq : ((_ : _ ⟶ X _[n]) = _ ) :=  (P (n+1)).comm (n+1) n,
   erw chain_complex.of_d at eq,
   assumption,
+end
+
+lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = 
+  (P (n+1)).f n := by refl
+
+lemma P_infty_is_a_projector (q : ℕ) : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
+begin
+  ext n,
+  simp only [homological_complex.comp_f, P_infty_termwise],
+  rw [← homological_complex.comp_f, P_is_a_projector (n+1)],
+end
+
+lemma P_infty_is_homotopic_to_id :
+  homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
+begin
+  sorry
 end
 
 end dold_kan
