@@ -439,6 +439,30 @@ begin
     rwa lemm at h3, }
 end
 
+/- construction of the projector P∞ -/
+
+lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
+((P (q+1)).f n : X _[n] ⟶ _ ) = (P q).f n :=
+begin
+  cases n,
+  { simp only [P_deg0_eq], },
+  { unfold P,
+    simp only [add_right_eq_self, comp_add, homological_complex.comp_f,
+      homological_complex.add_f_apply, comp_id],
+    exact Hσφ_eq_zero (nat.succ_le_iff.mp hqn) (higher_faces_vanish_P q n), }
+end
+
+def P_infty : ((alternating_face_map_complex C).obj X ⟶ 
+(alternating_face_map_complex C).obj X) :=
+begin
+  apply chain_complex.of_hom _ _ _ _ _ _ (λ n, ((P (n+1)).f n : X _[n] ⟶ _ )),
+  intro n,
+  simp only,
+  rw P_is_eventually_constant (rfl.ge : n+1 ≤ n+1),
+  have eq : ((_ : _ ⟶ X _[n]) = _ ) :=  ((P (n+1)).comm (n+1) n),
+  erw chain_complex.of_d at eq,
+  assumption,
+end
 
 end dold_kan
 
