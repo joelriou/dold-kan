@@ -4,11 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-import algebra.homology.homological_complex
 import algebra.homology.homotopy
 
 open category_theory
-open category_theory.preadditive
 open category_theory.category
 
 namespace homology
@@ -72,4 +70,32 @@ def homotopy_add {ι:Type*} {c : complex_shape ι} {K L : homological_complex C 
         add_monoid_hom.map_add],
       abel, }, }
 
+lemma mono_of_degreewise_mono {ι:Type*} {c : complex_shape ι} {K L : homological_complex C c} (φ : K ⟶ L) 
+(hφ : ∀ (i : ι), mono (φ.f i)) : mono φ :=
+{ right_cancellation := λ Z g h H, by
+  { ext i,
+    have rcancel := (hφ i).right_cancellation,
+    apply rcancel (g.f i) (h.f i),
+    simp only [← homological_complex.comp_f],
+    congr', }, }
+
+def mono_over.mk_from_mono {ι:Type*} {c : complex_shape ι} {K L : homological_complex C c}
+(φ : K ⟶ L) (hφ : ∀ (i : ι), mono (φ.f i)) : mono_over L := ⟨over.mk φ, mono_of_degreewise_mono φ hφ⟩
+
+lemma factors_of_degreewise_factors {ι:Type*} {c : complex_shape ι} {K L M : homological_complex C c} 
+{φ : K ⟶ L} {g : M ⟶ L} (hφ : ∀ (i : ι), mono (φ.f i)) (hg : ∀ (i : ι), (mono_over.mk' (φ.f i)).factors (g.f i)) :
+(mono_over.mk_from_mono φ hφ).factors g :=
+begin
+  let h : M ⟶ K :=
+  { f := λ i, mono_over.factor_thru (mono_over.mk' (φ.f i)) (g.f i) (hg i),
+    comm' := λ i j hij, by
+    { apply (cancel_mono (φ.f j)).mp,
+      slice_lhs 2 3 { rw ← φ.comm' i j hij, },
+      sorry, 
+    },
+  },
+  sorry,
+end
+
 end homology
+
