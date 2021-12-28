@@ -425,25 +425,24 @@ def P_is_homotopic_to_id : Π (q : ℕ),
 | 0     := homotopy.refl _
 | (q+1) :=
   begin
-    unfold P,
-    simp only [comp_add, comp_id],
-    apply homotopy.equiv_sub_zero.inv_fun,
-    have h1 := homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q),
-    simp only [comp_zero] at h1,
-    have h2 := homotopy.equiv_sub_zero (P_is_homotopic_to_id q),
-    have h3 := add_equiv_zero h1 h2,
-    have lemm : ∀ (x y z : ((alternating_face_map_complex C).obj X) ⟶ 
-      ((alternating_face_map_complex C).obj X)), x+(y-z) = y+x-z,
-    { intros x y z, abel, },
-    rwa lemm at h3,
+    have h := homotopy_add (P_is_homotopic_to_id q)
+      (homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q)),
+    refine homotopy.trans (homotopy.of_eq _) (homotopy.trans h (homotopy.of_eq _)),
+    { unfold P, simp only [comp_add, comp_id], },
+    { simp only [add_zero, comp_zero], }, 
   end
 
-lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n≤q):
+lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
   (((P_is_homotopic_to_id (q+1)).hom n (n+1)) : X _[n] ⟶ X _[n+1]) =
   ((P_is_homotopic_to_id q).hom n (n+1)) := 
 begin
-  --unfold P_is_homotopic_to_id,
-  sorry,
+  unfold P_is_homotopic_to_id,
+  simp only [homotopy.trans, homotopy.of_eq, homotopy_add, homotopy.comp_left,
+    pi.add_apply, add_right_eq_self, add_zero, pi.zero_apply, zero_add,  
+    homotopy_Hσ_to_zero, homotopy_of_null_homotopic_chain_complex_map,
+    null_homotopic_chain_complex_map_hom],
+  split_ifs, swap, { exfalso, apply h, refl, },
+  rw [hσ_eq_zero hqn, zero_comp, comp_zero],
 end
 
 /- construction of the projector P∞ -/
@@ -484,9 +483,23 @@ end
 
 lemma P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
-{ hom := λ i j, (P_is_homotopic_to_id i).hom i j,
-  zero' := λ i j, (P_is_homotopic_to_id i).zero' i j,
-  comm := sorry, }
+{ hom := λ i j, (P_is_homotopic_to_id (i+2)).hom i j,
+  zero' := λ i j, (P_is_homotopic_to_id (i+2)).zero' i j,
+  comm := λ n, by 
+    { cases n,
+      { have h : ((_ : X _[0] ⟶ _) = _) :=
+          (P_is_homotopic_to_id 2).comm 0,
+        rw [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,
+          zero_add] at h ⊢,
+        rwa [P_infty_termwise,← P_is_eventually_constant (rfl.ge : 0 ≤ 0),
+          ← P_is_eventually_constant (zero_le 1)], },
+      { have h : ((_ : X _[n.succ] ⟶ _) = _) :=
+          (P_is_homotopic_to_id n.succ.succ).comm n.succ,
+        rw [show n.succ=n+1, by refl] at h,
+        simp only [homotopy.prev_d_chain_complex, homological_complex.id_f,
+          homotopy.d_next_succ_chain_complex, P_infty_termwise] at ⊢ h,
+        rw homotopies_P_id_are_eventually_constant (lt_add_one n.succ),
+        rwa ← P_is_eventually_constant (rfl.ge : n.succ ≤ n.succ), }, }, }
 
 end dold_kan
 
