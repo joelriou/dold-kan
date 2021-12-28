@@ -532,36 +532,38 @@ def P_infty_factors_thru_Moore_complex_degwise (n : ℕ) :
   subobject.factors (normalized_Moore_complex.obj_X Y n) (P_infty.f n) :=
   sorry
 
-#check (normalized_Moore_complex.obj_X Y 0)
-#check (P_infty_factors_thru_Moore_complex_degwise 0)
+def P_infty_into_Moore_subcomplex (Y : simplicial_object A) :
+  (alternating_face_map_complex A).obj Y ⟶ (normalized_Moore_complex A).obj Y :=
+chain_complex.of_hom _ _ _ _ _ _
+  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degwise n))
+  (λ n,
+    begin
+      apply (cancel_mono (normalized_Moore_complex.obj_X Y n).arrow).mp,
+      simp only [assoc, factor_thru_arrow],
+      have eq := (inclusion_of_Moore_complex_map Y).comm' (n+1) n (by simp only [complex_shape.down_rel]),
+      rw [(show (inclusion_of_Moore_complex_map Y).f n = (normalized_Moore_complex.obj_X Y n).arrow, by refl),
+        (show ((normalized_Moore_complex A).obj Y).d (n+1) n = normalized_Moore_complex.obj_d Y n,
+          by erw chain_complex.of_d)] at eq,
+      erw [← eq, ← assoc, factor_thru_arrow,
+        P_infty.comm' (n+1) n (by simp only [complex_shape.down_rel]), chain_complex.of_d],   
+    end)
 
+lemma P_infty_is_a_retraction (Y : simplicial_object A) :
+  inclusion_of_Moore_complex_map Y ≫ P_infty_into_Moore_subcomplex Y = 𝟙 _ :=
+sorry
 
+lemma factors_P_infty (Y : simplicial_object A) :
+  P_infty_into_Moore_subcomplex Y ≫ inclusion_of_Moore_complex_map Y = P_infty :=
+sorry
 
 def homotopy_equiv_inclusion_of_Moore_complex :
   homotopy_equiv ((normalized_Moore_complex A).obj Y)
     ((alternating_face_map_complex A).obj Y) :=
 { hom := inclusion_of_Moore_complex_map Y,
-  inv := chain_complex.of_hom _ _ _ _ _ _
-  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degwise n))
-  (λ n,
-    begin
-      /- better do a more general construction for subcomplexes
-      apply (cancel_mono (normalized_Moore_complex.obj_X Y n).arrow).mp,
-      simp only [assoc, factor_thru_arrow],
-      cases n,
-      { sorry, },
-      { simp only [normalized_Moore_complex.obj_d],
-        sorry,
-      },-/
-    end),
-  homotopy_hom_inv_id := sorry,
-  homotopy_inv_hom_id := sorry,
-}
-
-#check homotopy_equiv_inclusion_of_Moore_complex
-
-
-
+  inv := P_infty_into_Moore_subcomplex Y,
+  homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
+  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
+      P_infty_is_homotopic_to_id, }
 
 end dold_kan
 
