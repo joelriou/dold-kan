@@ -501,6 +501,14 @@ lemma P_infty_is_homotopic_to_id :
         rw homotopies_P_id_are_eventually_constant (lt_add_one n.succ),
         rwa ← P_is_eventually_constant (rfl.ge : n.succ ≤ n.succ), }, }, }
 
+/- from now, we assume the category is abelian -/
+
+variables {A : Type*} [category A] [abelian A]
+variable {Y : simplicial_object A}
+
+
+
+
 end dold_kan
 
 end algebraic_topology
