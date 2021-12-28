@@ -474,14 +474,14 @@ end
 lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = 
   (P n).f n := by refl
 
-lemma P_infty_is_a_projector (q : ℕ) : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
+lemma P_infty_is_a_projector : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
 begin
   ext n,
   simp only [homological_complex.comp_f, P_infty_termwise],
   rw [← homological_complex.comp_f, P_is_a_projector n],
 end
 
-lemma P_infty_is_homotopic_to_id :
+def P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
 { hom := λ i j, (P_is_homotopic_to_id (i+2)).hom i j,
   zero' := λ i j, (P_is_homotopic_to_id (i+2)).zero' i j,
@@ -528,14 +528,24 @@ begin
     exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
 end
 
-def P_infty_factors_thru_Moore_complex_degwise (n : ℕ) :
+lemma P_infty_factors_thru_Moore_complex_degree_wise (n : ℕ) :
   subobject.factors (normalized_Moore_complex.obj_X Y n) (P_infty.f n) :=
-  sorry
+begin
+  simp only [P_infty_termwise],
+  cases n,
+  { simp only [normalized_Moore_complex.obj_X],
+    apply top_factors, },
+  { simp only [normalized_Moore_complex.obj_X],
+    rw finset_inf_factors _,
+    intros i hi,
+    apply limits.kernel_subobject_factors,
+    exact (higher_faces_vanish_P (n+1) n).vanishing i (le_add_self), }
+end
 
 def P_infty_into_Moore_subcomplex (Y : simplicial_object A) :
   (alternating_face_map_complex A).obj Y ⟶ (normalized_Moore_complex A).obj Y :=
 chain_complex.of_hom _ _ _ _ _ _
-  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degwise n))
+  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degree_wise n))
   (λ n,
     begin
       apply (cancel_mono (normalized_Moore_complex.obj_X Y n).arrow).mp,
@@ -550,11 +560,29 @@ chain_complex.of_hom _ _ _ _ _ _
 
 lemma P_infty_is_a_retraction (Y : simplicial_object A) :
   inclusion_of_Moore_complex_map Y ≫ P_infty_into_Moore_subcomplex Y = 𝟙 _ :=
-sorry
+begin
+  ext n,
+  simp only [homological_complex.comp_f, inclusion_of_Moore_complex_map_f, homological_complex.id_f, id_comp,
+    P_infty_into_Moore_subcomplex, chain_complex.of_hom],
+  slice_lhs 2 3 { erw factor_thru_arrow,},
+  simp only [P_infty_termwise],
+  cases n,
+  { simp only [P_deg0_eq 0, comp_id], },
+  { refine P_is_identity_where_faces_vanish _,
+    exact
+      { vanishing := λ j hj,
+        begin
+          dsimp,
+          rw [← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ _ j
+            (by simp only [finset.mem_univ])), assoc, kernel_subobject_arrow_comp, comp_zero],
+        end }, }
+end
 
 lemma factors_P_infty (Y : simplicial_object A) :
-  P_infty_into_Moore_subcomplex Y ≫ inclusion_of_Moore_complex_map Y = P_infty :=
-sorry
+  P_infty_into_Moore_subcomplex Y ≫ inclusion_of_Moore_complex_map Y = P_infty := by
+{ ext n,
+  simp only [P_infty_into_Moore_subcomplex, chain_complex.of_hom,
+    factor_thru_arrow, homological_complex.comp_f, inclusion_of_Moore_complex_map_f], }
 
 def homotopy_equiv_inclusion_of_Moore_complex :
   homotopy_equiv ((normalized_Moore_complex A).obj Y)
@@ -568,4 +596,3 @@ def homotopy_equiv_inclusion_of_Moore_complex :
 end dold_kan
 
 end algebraic_topology
-
