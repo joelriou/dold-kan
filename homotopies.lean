@@ -60,13 +60,16 @@ def homotopy_of_null_homotopic_chain_complex_map {K L : chain_complex C ℕ}
     { simp, apply add_comm, }
   end }
 
-theorem add_equiv_zero {ι:Type*} {c : complex_shape ι} {K L : homological_complex C c} {f g : K ⟶ L}
-  (hf : homotopy f 0) (hg : homotopy g 0) : homotopy (f+g) 0 :=
-begin
-  refine homotopy.trans (_ : homotopy (f+g) g) hg,
-  apply homotopy.equiv_sub_zero.inv_fun,
-  rw [add_sub_cancel],
-  exact hf,
-end
+
+@[simps]
+def homotopy_add {ι:Type*} {c : complex_shape ι} {K L : homological_complex C c} {f g f' g': K ⟶ L}
+  (h : homotopy f g) (h' : homotopy f' g') : homotopy (f+f') (g+g') :=
+{ hom := h.hom + h'.hom,
+  zero' := λ i j hij, by
+    rw [pi.add_apply, pi.add_apply, h.zero' i j hij, h'.zero' i j hij, add_zero],
+  comm := λ i, by
+    { simp only [homological_complex.add_f_apply, h.comm, h'.comm,
+        add_monoid_hom.map_add],
+      abel, }, }
 
 end homology
