@@ -506,6 +506,60 @@ lemma P_infty_is_homotopic_to_id :
 variables {A : Type*} [category A] [abelian A]
 variable {Y : simplicial_object A}
 
+lemma higher_faces_vanish_on_Moore_complex (n : ℕ) :
+  higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map Y).f (n+1)) := 
+{ vanishing := λ j hj,
+  begin
+    simp only [inclusion_of_Moore_complex_map, chain_complex.of_hom],
+    erw ← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ
+      _ j (by simp only [finset.mem_univ])),
+    slice_lhs 2 3 { rw kernel_subobject_arrow_comp, },
+    rwa [comp_zero],
+  end }
+
+lemma P_infty_on_Moore_complex :
+(inclusion_of_Moore_complex_map Y) ≫ P_infty = (inclusion_of_Moore_complex_map Y) :=
+begin
+  ext n,
+  simp only [homological_complex.comp_f],
+  cases n,
+  { simp only [P_infty_termwise, P_deg0_eq, comp_id], },
+  { simp only [P_infty_termwise],
+    exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
+end
+
+def P_infty_factors_thru_Moore_complex_degwise (n : ℕ) :
+  subobject.factors (normalized_Moore_complex.obj_X Y n) (P_infty.f n) :=
+  sorry
+
+#check (normalized_Moore_complex.obj_X Y 0)
+#check (P_infty_factors_thru_Moore_complex_degwise 0)
+
+
+
+def homotopy_equiv_inclusion_of_Moore_complex :
+  homotopy_equiv ((normalized_Moore_complex A).obj Y)
+    ((alternating_face_map_complex A).obj Y) :=
+{ hom := inclusion_of_Moore_complex_map Y,
+  inv := chain_complex.of_hom _ _ _ _ _ _
+  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degwise n))
+  (λ n,
+    begin
+      /- better do a more general construction for subcomplexes
+      apply (cancel_mono (normalized_Moore_complex.obj_X Y n).arrow).mp,
+      simp only [assoc, factor_thru_arrow],
+      cases n,
+      { sorry, },
+      { simp only [normalized_Moore_complex.obj_d],
+        sorry,
+      },-/
+    end),
+  homotopy_hom_inv_id := sorry,
+  homotopy_inv_hom_id := sorry,
+}
+
+#check homotopy_equiv_inclusion_of_Moore_complex
+
 
 
 
