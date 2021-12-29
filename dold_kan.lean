@@ -40,37 +40,47 @@ variables {X : simplicial_object C}
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
   else (-1 : ℤ)^(n-q) • X.σ ⟨n-q, nat.sub_lt_succ n q⟩
 
-@[simp]
-lemma hσ_eq_zero {q : ℕ} {n : ℕ} (hnq : n<q) : (hσ q n : X _[n] ⟶ X _[n+1])= 0 :=
+def c := complex_shape.down ℕ
+
+lemma c_deg (n : ℕ) : c.rel (n+1) n := by { have eq : n+1 = n+1 := rfl, assumption, }
+lemma c_degp (n : ℕ) : c.rel (n+2) (n+1) := by { have eq : (n+1)+1 = n+2 := rfl, assumption, }
+
+lemma c_deg0 : c.rel 1 0 := c_deg 0
+
+def c_lowerend (n : ℕ) : ¬c.rel 0 n := by
+{ intro h, have eq : n+1=0, by assumption, linarith, }
+
+def hσ' (q : ℕ) (n : ℕ) (m : ℕ) (hnm : c.rel m n): X _[n] ⟶ X _[m] :=
+  (hσ q n) ≫ eq_to_hom (by { rw [show n+1=m, by assumption], })
+  
+def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
+  (alternating_face_map_complex C).obj X := homotopy.null_homotopic_map' (hσ' q)
+
+def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
+homotopy.null_homotopy' (hσ' q)
+
+lemma hσ'_eq_zero {q n m : ℕ} (hnq : n<q) (hnm : c.rel m n) : (hσ' q n m hnm : X _[n] ⟶ X _[m])= 0 :=
 begin
-  unfold hσ,
-  rw ite_eq_left_iff,
-  intro h,
-  exfalso,
-  exact h hnq,
+  unfold hσ' hσ,
+  split_ifs,
+  exact zero_comp,
 end
 
-@[simp]
-lemma hσ_eq {q n a : ℕ} (ha : n=a+q) : (hσ q n : X _[n] ⟶ X _[n+1]) =
-    (-1 : ℤ)^a • X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm ha))⟩ :=
+lemma hσ'_eq {q n a m : ℕ} (ha : n=a+q) (hnm : c.rel m n) : (hσ' q n m hnm : X _[n] ⟶ X _[m]) =
+    ((-1 : ℤ)^a • X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm ha))⟩) ≫
+      eq_to_hom (by { rw [show n+1=m, by assumption], }) :=
 begin
-  unfold hσ,
+  unfold hσ' hσ,
   split_ifs,
   { exfalso, linarith, },
   { congr; exact tsub_eq_of_eq_add ha, }
 end
 
-def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
-  (alternating_face_map_complex C).obj X :=
-chain_complex.null_homotopic_map (hσ q)
-
-def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
-chain_complex.null_homotopy (hσ q)
 
 /- definition of the projector P -/
 
 @[simp]
-def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
+noncomputable def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X)
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
@@ -80,20 +90,23 @@ def P : ℕ → ((alternating_face_map_complex C).obj X ⟶
 lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
   induction q with q hq,
-  { simp, },
-  { simp [Hσ, hq],
-    cases q,
-    { erw chain_complex.of_d,
-      simp [hσ_eq (show 0=0+0, by refl), alternating_face_map_complex.obj_d],
-      rw [fin.sum_univ_two],
-      simp only [comp_neg, fin.coe_zero, comp_add, fin.coe_one, pow_one,
-        one_zsmul, pow_zero, neg_smul],
-      apply add_neg_eq_zero.mpr,
-      erw [δ_comp_σ_self, δ_comp_σ_succ], },
-    { simp, }, },
-end
+  { simp only [homological_complex.id_f, P], },
+  { unfold P,
+    simp only [homological_complex.comp_f, homological_complex.add_f_apply,
+      homological_complex.id_f, hq, comp_add, id_comp, add_right_eq_self,
+      Hσ, homotopy.null_homotopy_f_lower_end' c_deg0 c_lowerend],
+    cases q, swap, rw [hσ'_eq_zero (nat.succ_pos q) c_deg0, zero_comp],
+    simp only [hσ'_eq (show 0=0+0, by refl) c_deg0],
+    simp only [fin.mk_zero, one_zsmul, eq_to_hom_refl, comp_id, pow_zero],
+    erw chain_complex.of_d, simp [alternating_face_map_complex.obj_d],
+    simp only [fin.sum_univ_two, comp_neg, fin.coe_zero, comp_add, fin.coe_one,
+      pow_one, one_zsmul, pow_zero, neg_smul],
+    apply add_neg_eq_zero.mpr,
+    erw [δ_comp_σ_self, δ_comp_σ_succ], }
+end      
+    
 
-/- computation of the null_homotopic mapt Hσ -/
+/- computation of the null_homotopic map Hσ -/
 
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
   (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
@@ -151,21 +164,34 @@ lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1
 begin
   have hnaq_shift : Π d : ℕ, n+d=(a+d)+q,
   { intro d, rw [add_assoc, add_comm d, ← add_assoc, hnaq], },
-  simp only [Hσ, hσ_eq hnaq, hσ_eq (hnaq_shift 1), comp_add, chain_complex.null_homotopic_map,
-    nat.rec_add_one],
+  simp only [Hσ],
+  rw [homotopy.null_homotopy_f' (c_degp n) (c_deg n),
+    hσ'_eq hnaq (c_deg n), hσ'_eq (hnaq_shift 1) (c_degp n)],
   repeat { erw chain_complex.of_d, },
-  simp only [alternating_face_map_complex.obj_d, comp_sum, sum_comp],
+  simp only [alternating_face_map_complex.obj_d, eq_to_hom_refl, comp_id],
+  simp only [comp_sum, sum_comp, comp_id, comp_add],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
   have ineq1 : a<n+1 := nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)),
   have ineq2 : a+1< n+2 := nat.succ_lt_succ ineq1,
-  let term1 := λ (j : fin (n+3)), ((-1 : ℤ)^(a+1) * (-1 : ℤ)^(j : ℕ)) • (φ ≫ X.σ ⟨a+1, ineq2⟩) ≫ X.δ j,
-  let term2 := λ (j : fin (n+2)), ((-1 : ℤ)^(j : ℕ) * (-1 : ℤ)^a) • (φ ≫ X.δ j) ≫ X.σ ⟨a, ineq1⟩,
+  let term1 := λ (j : fin (n+2)), ((-1 : ℤ)^(j : ℕ) * (-1 : ℤ)^a) • (φ ≫ X.δ j) ≫ X.σ ⟨a, ineq1⟩,
+  let term2 := λ (j : fin (n+3)), ((-1 : ℤ)^(a+1) * (-1 : ℤ)^(j : ℕ)) • (φ ≫ X.σ ⟨a+1, ineq2⟩) ≫ X.δ j,
   let j : fin(n+1) := ⟨n-q, nat.sub_lt_succ n q⟩,
   simp only [← term1, ← term2],
   /- cleaning up the first sum -/
-  rw remove_trailing_zeros_in_sum (hnaq_shift 3) term1, swap,
+  rw remove_trailing_zeros_in_sum (hnaq_shift 2) term1, swap,
   { intro k,
     simp only [term1],
+    have hk := fin.is_lt k,
+    let i : fin (n+1) := ⟨a+k+1, by linarith⟩,
+    have eq := v.vanishing i (by { simp only [i, fin.coe_mk], linarith, }),
+    have hi : translate_fin (a+2) (hnaq_shift 2) k = i.succ,
+    { ext, simp only [fin.succ_mk, translate_fin, fin.coe_mk], linarith, },
+    rw [hi, eq],
+    simp only [smul_zero', zero_comp], },
+  /- cleaning up the second sum -/
+  rw remove_trailing_zeros_in_sum (hnaq_shift 3) term2, swap,
+  { intro k,
+    simp only [term2],
     have hk := fin.is_lt k,
     let i : fin(n+1) := ⟨a+1+(k : ℕ), by linarith⟩,
     have hia : fin.cast_succ (⟨a+1, by linarith⟩ : fin(n+1)) < i.succ,
@@ -180,26 +206,18 @@ begin
     have eq := v.vanishing i (by { simp only [i, fin.coe_mk], linarith, }),
     rw [← assoc, eq],
     simp only [smul_zero', zero_comp], },
-  /- cleaning up the second sum -/
-  rw remove_trailing_zeros_in_sum (hnaq_shift 2) term2, swap,
-  { intro k,
-    simp only [term2],
-    have hk := fin.is_lt k,
-    let i : fin (n+1) := ⟨a+k+1, by linarith⟩,
-    have eq := v.vanishing i (by { simp only [i, fin.coe_mk], linarith, }),
-    have hi : translate_fin (a+2) (hnaq_shift 2) k = i.succ,
-    { ext, simp only [fin.succ_mk, translate_fin, fin.coe_mk], linarith, },
-    rw [hi, eq],
-    simp only [smul_zero', zero_comp], },
   /- -/
   rw [leave_out_last_term (ineq2 : a+1<n+2),
     leave_out_last_term (show a+2<n+3, by linarith),
     leave_out_last_term (show a+1<n+3, by linarith)],
-  have simplif : ∀ (a b c d e f : Y ⟶ X _[n+1]), e=f → b+c=0 → a+d=0 → a+b+c+(d+e) =f,
+  /- the purpose of the following lemma is to create three subgoals in order
+    to finish the proof -/
+  have simplif : ∀ (a b c d e f : Y ⟶ X _[n+1]), b=f → d+e=0 → c+a=0 → a+b+(c+d+e) =f,
   { intros a b c d e f h1 h2 h3,
-    rw [add_assoc a b c, h2, add_zero, ← add_assoc a d e, h3, zero_add, h1], },
-  apply simplif _ _ _ _ _ _,
-  { simp only [term2],
+    rw [add_assoc c d e, h2, add_zero, add_comm a b, add_assoc,
+      add_comm a c, h3, add_zero, h1], },
+  apply simplif,
+  { simp only [term1],
     rw fin.coe_mk,
     have eq : (-1 : ℤ)^(a+1) * (-1 : ℤ)^a = -1,
     { calc (-1 : ℤ)^(a+1)*(-1 : ℤ)^a  = - ((-1 : ℤ)^a*(-1 : ℤ)^a) : by ring_exp
@@ -207,7 +225,7 @@ begin
       ...                             = - 1^a : by ring
       ...                             = - 1   : by ring_exp },
     rw [eq, neg_smul, one_zsmul, assoc], },
-  { simp only [term1],
+  { simp only [term2],
     let b : fin(n+2) := ⟨a+1, ineq2⟩,
     have eq1 : X.σ b ≫ X.δ (fin.cast_succ b) = 𝟙 _ := by rw δ_comp_σ_self,
     have eq2 : X.σ b ≫ X.δ b.succ = 𝟙 _ := by rw δ_comp_σ_succ,
@@ -224,8 +242,8 @@ begin
   { let ι : fin (n+2) → fin (n+3) := fin.cast_succ,
     let S := finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ,
     let T := finset.filter (λ i : fin(n+3), (i:ℕ)<a+1) finset.univ,
-    have eq : ∑ (s : fin(n+2)) in S, term1 (ι s) =
-              ∑ (t : fin(n+3)) in T, term1 t    := finset.sum_bij (λ (s : fin(n+2))
+    have eq : ∑ (s : fin(n+2)) in S, term2 (ι s) =
+              ∑ (t : fin(n+3)) in T, term2 t    := finset.sum_bij (λ (s : fin(n+2))
       (hs : s ∈ finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ), ι s) _ _ _ _, rotate,
       { intros a ha,
         simp only [true_and, finset.mem_univ, fin.coe_cast_succ,
@@ -269,13 +287,14 @@ lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
   by_cases hqnp : n+1<q;
-  simp only [Hσ, chain_complex.null_homotopic_map, nat.rec_add_one,
-      hσ_eq_zero hqn],
-  { simp only [hσ_eq_zero hqnp, add_zero, zero_comp, comp_zero], },
+  simp only [Hσ, homotopy.null_homotopy_f' (c_degp n) (c_deg n),
+    hσ'_eq_zero hqn (c_deg n)],
+  { simp only [hσ'_eq_zero hqnp (c_degp n), add_zero, zero_comp, comp_zero], },
   { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
-    simp only [hσ_eq (show n+1=0+q, by linarith), pow_zero, one_zsmul],
+    simp only [hσ'_eq (show n+1=0+q, by linarith) (c_degp n), eq_to_hom_refl,
+      pow_zero, one_zsmul, comp_id, comp_zero, zero_add],
     erw chain_complex.of_d,
-    simp only [alternating_face_map_complex.obj_d, add_zero, comp_zero, comp_sum],
+    simp only [alternating_face_map_complex.obj_d, comp_sum],
     rw remove_trailing_zeros_in_sum (show n+3=2+(n+1), by linarith),
     { rw [leave_out_last_term (show 1<n+3, by linarith),
         leave_out_last_term (show 0<n+3, by linarith)],
@@ -311,7 +330,7 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
     intros j hj,
     simp only [add_comp, comp_add, homological_complex.add_f_apply, homological_complex.id_f],
     erw comp_id,
-    -- when n < q, the result follows immediately from the assumtion
+    -- when n < q, the result follows immediately from the assumption
     by_cases hqn : n<q,
     { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v.vanishing j (by linarith)], },
     -- we now assume that n≥q, and write n=a+q
@@ -370,12 +389,13 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
 
-lemma higher_faces_vanish_P : Π (q : ℕ),
+def higher_faces_vanish_P : Π (q : ℕ),
   Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0    := λ n, { vanishing := by
-            { intros j hj, exfalso, have hj2 := fin.is_lt j, linarith, } }
-|(q+1) := λ n, { vanishing := 
-            (higher_faces_vanish_ind (higher_faces_vanish_P q n)).vanishing }
+  { intros j hj, exfalso, have hj2 := fin.is_lt j, linarith, } }
+|(q+1) := λ n, { vanishing := by
+  { unfold P,
+    exact (higher_faces_vanish_ind (higher_faces_vanish_P q n)).vanishing, }, }
 
 lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
@@ -421,7 +441,7 @@ end
 
 /- construction of homotopies P q ~ id by induction on q -/
 
-def P_is_homotopic_to_id : Π (q : ℕ),
+noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _)
 | 0     := homotopy.refl _
 | (q+1) :=
@@ -440,9 +460,9 @@ begin
   unfold P_is_homotopic_to_id,
   simp only [homotopy.trans, homotopy.of_eq, homotopy.add, homotopy.comp_left,
     pi.add_apply, add_right_eq_self, add_zero, pi.zero_apply, zero_add,  
-    homotopy_Hσ_to_zero, chain_complex.null_homotopy],
-  split_ifs, swap, { exfalso, apply h, refl, },
-  rw [hσ_eq_zero hqn, zero_comp, comp_zero],
+    homotopy_Hσ_to_zero, homotopy.null_homotopy', homotopy.null_homotopy],
+  split_ifs, swap, { exfalso, apply h, exact c_deg n, },
+  erw [hσ'_eq_zero hqn (c_deg n), comp_zero],
 end
 
 /- construction of the projector P∞ -/

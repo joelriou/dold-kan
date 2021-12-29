@@ -18,7 +18,7 @@ open category_theory.preadditive
 noncomputable theory
 open_locale classical
 
-namespace homological_complex
+namespace homotopy
 
 universes v u
 variables {ι : Type*}
@@ -163,5 +163,5 @@ lemma null_homotopy_f_middle_of_nowhere' {k₀ : ι}
   exact null_homotopy_f_middle_of_nowhere hk₀ hk₀'
     (λ i j, dite (c.rel j i) (h i j) (λ _, 0)), }
 
-end homological_complex
+end homotopy
 
