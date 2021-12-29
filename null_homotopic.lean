@@ -1,10 +1,15 @@
 /-
 Copyright (c) 2021 Joël Riou. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Author: Joël Riou
+Authors: Joël Riou
 -/
 
 import algebra.homology.homotopy
+
+/-!
+# Null homotopic chain complex maps
+
+-/
 
 open category_theory
 open category_theory.category
@@ -13,8 +18,8 @@ namespace chain_complex
 
 variables {V : Type*} [category V] [preadditive V]
 
-/- general stuff on homotopies -/
-
+/-- Given a sequence h of morphisms `C_n ⟶ D_{n+1}`, this is the chain
+complex morphism C ⟶ D given by the formula `dh+hd`. -/
 @[simps]
 def null_homotopic_map {C D : chain_complex V ℕ}
   (h : Π (n : ℕ), C.X n ⟶ D.X (n+1)) : C ⟶ D :=
@@ -33,6 +38,7 @@ def null_homotopic_map {C D : chain_complex V ℕ}
         preadditive.comp_add, zero_add, homological_complex.d_comp_d_assoc,
         assoc], }, }, }
 
+/-- Morphisms constructed by `null_homotopic_map` are homotopic to the zero map. -/
 @[simps]
 def null_homotopy {C D : chain_complex V ℕ}
   (h : Π (n : ℕ), C.X n ⟶ D.X (n+1)) :
