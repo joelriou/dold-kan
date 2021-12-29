@@ -87,7 +87,7 @@ induced by the null homotopic maps constructed with `null_homotopic_map` or
 lemma null_homotopy_f {k₂ k₁ k₀ : ι} (r₂₁ : c.rel k₂ k₁) (r₁₀ : c.rel k₁ k₀)
   (hom : Π i j, C.X i ⟶ D.X j) :
   (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom k₀ k₁ + hom k₁ k₂ ≫ D.d k₂ k₁ := by
-{ dsimp, rw [d_next_eq hom r₁₀, prev_d_eq hom r₂₁], }
+{ dsimp [null_homotopic_map], rw [d_next_eq hom r₁₀, prev_d_eq hom r₂₁], }
 
 @[simp]
 lemma null_homotopy_f' {k₂ k₁ k₀  : ι} (r₂₁ : c.rel k₂ k₁) (r₁₀ : c.rel k₁ k₀)
@@ -104,7 +104,7 @@ lemma null_homotopy_f_lower_end {k₁ k₀ : ι} (r₁₀ : c.rel k₁ k₀)
   (hk₀ : ∀ l : ι, ¬c.rel k₀ l)
   (hom : Π i j, C.X i ⟶ D.X j) :
   (null_homotopic_map hom).f k₀ = hom k₀ k₁ ≫ D.d k₁ k₀ := by
-{ dsimp,
+{ dsimp [null_homotopic_map],
   rw prev_d_eq hom r₁₀,
   rcases h : c.next k₀ with _|⟨l,w⟩, swap, exfalso, exact hk₀ l w,
   dsimp [d_next], rw h, erw zero_add, }
@@ -125,7 +125,7 @@ lemma null_homotopy_f_higher_end {k₁ k₀ : ι} (r₁₀ : c.rel k₁ k₀)
   (hk₁ : ∀ l : ι, ¬c.rel l k₁)
   (hom : Π i j, C.X i ⟶ D.X j) :
   (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom k₀ k₁ := by
-{ dsimp,
+{ dsimp [null_homotopic_map],
   rw d_next_eq hom r₁₀,
   rcases h : c.prev k₁ with _|⟨l,w⟩, swap, exfalso, exact hk₁ l w,
   dsimp [prev_d], rw h, erw add_zero, }
@@ -146,7 +146,7 @@ lemma null_homotopy_f_middle_of_nowhere {k₀ : ι}
   (hk₀ : ∀ l : ι, ¬c.rel k₀ l) (hk₀' : ∀ l : ι, ¬c.rel l k₀)
   (hom : Π i j, C.X i ⟶ D.X j) :
   (null_homotopic_map hom).f k₀ = 0 := by
-{ dsimp,
+{ dsimp [null_homotopic_map],
   rcases h1 : c.next k₀ with _|⟨l,w⟩, swap, exfalso, exact hk₀ l w,
   rcases h2 : c.prev k₀ with _|⟨l,w⟩, swap, exfalso, exact hk₀' l w,
   dsimp [d_next, prev_d],
