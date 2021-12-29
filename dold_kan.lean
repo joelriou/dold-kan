@@ -11,7 +11,7 @@ import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
 
 import homotopies
-open homology
+import null_homotopic
 
 open category_theory
 open category_theory.limits
@@ -19,6 +19,7 @@ open category_theory.subobject
 open category_theory.preadditive
 open category_theory.simplicial_object
 open category_theory.category
+open homology
 open opposite
 
 open_locale big_operators
@@ -61,10 +62,10 @@ end
 
 def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X :=
-null_homotopic_chain_complex_map (hσ q)
+chain_complex.null_homotopic_map (hσ q)
 
 def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
-homotopy_of_null_homotopic_chain_complex_map (hσ q)
+chain_complex.null_homotopy (hσ q)
 
 /- definition of the projector P -/
 
@@ -150,8 +151,8 @@ lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1
 begin
   have hnaq_shift : Π d : ℕ, n+d=(a+d)+q,
   { intro d, rw [add_assoc, add_comm d, ← add_assoc, hnaq], },
-  simp only [Hσ, hσ_eq hnaq, hσ_eq (hnaq_shift 1), null_homotopic_chain_complex_map_f_2,
-    null_homotopic_chain_complex_map_f, comp_add],
+  simp only [Hσ, hσ_eq hnaq, hσ_eq (hnaq_shift 1), comp_add, chain_complex.null_homotopic_map,
+    nat.rec_add_one],
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, comp_sum, sum_comp],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
@@ -268,8 +269,8 @@ lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
   by_cases hqnp : n+1<q;
-  simp only [Hσ, null_homotopic_chain_complex_map_f_2,
-      null_homotopic_chain_complex_map_f, hσ_eq_zero hqn],
+  simp only [Hσ, chain_complex.null_homotopic_map, nat.rec_add_one,
+      hσ_eq_zero hqn],
   { simp only [hσ_eq_zero hqnp, add_zero, zero_comp, comp_zero], },
   { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
     simp only [hσ_eq (show n+1=0+q, by linarith), pow_zero, one_zsmul],
@@ -425,7 +426,7 @@ def P_is_homotopic_to_id : Π (q : ℕ),
 | 0     := homotopy.refl _
 | (q+1) :=
   begin
-    have h := homotopy_add (P_is_homotopic_to_id q)
+    have h := homotopy.add (P_is_homotopic_to_id q)
       (homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q)),
     refine homotopy.trans (homotopy.of_eq _) (homotopy.trans h (homotopy.of_eq _)),
     { unfold P, simp only [comp_add, comp_id], },
@@ -437,10 +438,9 @@ lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
   ((P_is_homotopic_to_id q).hom n (n+1)) := 
 begin
   unfold P_is_homotopic_to_id,
-  simp only [homotopy.trans, homotopy.of_eq, homotopy_add, homotopy.comp_left,
+  simp only [homotopy.trans, homotopy.of_eq, homotopy.add, homotopy.comp_left,
     pi.add_apply, add_right_eq_self, add_zero, pi.zero_apply, zero_add,  
-    homotopy_Hσ_to_zero, homotopy_of_null_homotopic_chain_complex_map,
-    null_homotopic_chain_complex_map_hom],
+    homotopy_Hσ_to_zero, chain_complex.null_homotopy],
   split_ifs, swap, { exfalso, apply h, refl, },
   rw [hσ_eq_zero hqn, zero_comp, comp_zero],
 end
