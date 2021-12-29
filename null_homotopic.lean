@@ -25,12 +25,23 @@ variables {ι : Type*}
 variables {V : Type u} [category.{v} V] [preadditive V]
 variables {c : complex_shape ι} {C D : homological_complex V c}
 
-@[simps]
+/-!
+Null homotopic maps can be constructed using the formula `hd+dh`. We show that
+these morphisms are homotopic to `0` and provide some convenient simplification
+lemmas that give a degreewise description of `hd+dh`, depending on whether we have 
+two differentials going to and from a certain degree, only one, or none.
+-/
+
+/-- The null homotopic map associated to a family `hom` of morphisms `C_i ⟶ D_j`.
+This is the same datum as from the field `hom` in the structure `homotopy`. For
+this definition, we do not need the field `zero` as the definition uses
+only the maps `C_i ⟶ C_j` when `c.rel j i`. -/
+
 def null_homotopic_map (hom : Π i j, C.X i ⟶ D.X j) : C ⟶ D :=
 { f      := λ i, d_next i hom + prev_d i hom,
   comm'  := λ i j hij,
   begin
-    have eq1 :prev_d i hom ≫ D.d i j = 0,
+    have eq1 : prev_d i hom ≫ D.d i j = 0,
     { rcases h : c.prev i with _|⟨i',w⟩,
       { dsimp [prev_d], rw h, erw zero_comp, },
       { rw [prev_d_eq hom w, assoc, D.d_comp_d' i' i j w hij, comp_zero], }, },
@@ -42,10 +53,13 @@ def null_homotopic_map (hom : Π i j, C.X i ⟶ D.X j) : C ⟶ D :=
       eq1, eq2, add_zero, zero_add, assoc], 
   end }
 
-@[simp]
+/-- Variant of `null_homotopic_map` where the input consists only of the
+relevant maps `C_i ⟶ D_j` such that `c.rel j i`. -/
 def null_homotopic_map' (h : Π i j, c.rel j i → (C.X i ⟶ D.X j)) : C ⟶ D :=
 null_homotopic_map (λ i j, dite (c.rel j i) (h i j) (λ _, 0))
 
+/-- Tautological construction of the `homotopy` to zero for maps constructed by
+`null_homotopic_map`, at least when we have the `zeros` condition. -/
 @[simps]
 def null_homotopy (hom : Π i j, C.X i ⟶ D.X j) (zero' : ∀ i j, ¬ c.rel j i → hom i j = 0) :
   homotopy (null_homotopic_map hom) 0 :=
@@ -53,6 +67,7 @@ def null_homotopy (hom : Π i j, C.X i ⟶ D.X j) (zero' : ∀ i j, ¬ c.rel j i
   zero' := zero',
   comm := by { intro i, rw [homological_complex.zero_f_apply, add_zero], refl, }, }
 
+/-- Homotopy to zero of maps constructed with `null_homotopic_map'` -/
 @[simps]
 def null_homotopy' (h : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
   homotopy (null_homotopic_map' h) 0 := by
@@ -63,6 +78,10 @@ def null_homotopy' (h : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
   intro hij',
   exfalso,
   exact hij hij', }
+
+/-! The following lemmas can be used in order to compute the degreewise morphisms
+induced by the null homotopic maps constructed with `null_homotopic_map` or
+`null_homotopic_map'` -/
 
 @[simp]
 lemma null_homotopy_f {k₂ k₁ k₀ : ι} (r₂₁ : c.rel k₂ k₁) (r₁₀ : c.rel k₁ k₀)
