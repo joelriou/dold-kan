@@ -13,6 +13,38 @@ import algebraic_topology.alternating_face_map_complex
 import homotopies
 import null_homotopic
 
+/-!
+
+# The Dold-Kan correspondence
+
+The Dold-Kan correspondance states that for any abelian category `A`, there is
+an equivalence between the category of simplicial objects in `A` and the
+category of chain complexes in `A` (with degrees indexed by `ℕ` and the
+homological convention that the degree is decreased by the differentials).
+
+More generally, this results holds for pseudo-abelian categories. Taking this
+into consideration, the strategy of proof that is used here is to state and
+prove most of the technical results without referring to notions of kernel,
+images, etc.
+
+The overall plan is as follows:
+
+* show that the normalized Moore complex is an homotopy equivalent direct factor of
+the alternating face map complex, see `P_infty`
+and `homotopy_equiv_inclusion_of_Moore_complex`
+* show that a morphism of simplicial objects is an isomorphisms if and only if it
+induces an isomorphism on normalized Moore complexes (TODO)
+* construct the inverse functor from chain complexes to simplicial objects (TODO)
+* check that this gives the expected equivalence of categories (TODO)
+
+## References
+* Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
+Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
+* Paul G. Goerss, John F. Jardine, Simplical Homotopy Theory, Modern Birkhäuser Classics,
+Reprint of the 1999 edition.
+
+-/
+
 open category_theory
 open category_theory.limits
 open category_theory.subobject
@@ -31,29 +63,54 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [preadditive C]
+/-!
+## The normalized Moore complex, as a direct factor of the alternating face map complex
 
-/- construction of homotopies -/
+In this section, we construct an endomorphism `P_infty` of the alternating face
+map complex of a simplicial object `X`. In the case of abelian cateogies, this
+shall be the projector with image the normalized Moore complex and kernel the
+subcomplex spanned by degeneracies.
+
+By induction, we first construct a sequence of projectors `P q` for
+`(q : ℕ)`. In the abelian category case, the image of `P q` is the subcomplex
+which in degree n is given by the intersection of the q higher faces
+(excluding `δ 0`) and whose kernel shall be the sum of the images of the q
+higher degeneracies (also excluding `sigma q`). By construction, they are all
+homotopic to the identity, in degreewise, `P q` is eventually constant, which will
+make the construction of `P_infty` possible.
+
+-/
+
+variables {C : Type*} [category C] [preadditive C]
 
 variables {X : simplicial_object C}
 
+/-- the sequence of maps that provide the null homotopic map that is used in
+the inductive construction of projectors `P q` -/
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
   else (-1 : ℤ)^(n-q) • X.σ ⟨n-q, nat.sub_lt_succ n q⟩
 
+/-- As we are using chain complexes indexed by ℕ, we shall need the relation
+`c` such `c m n` if and only if $m=n+1$. -/
 def c := complex_shape.down ℕ
 
+/-- The degree is decreased by the diffential. -/
 lemma c_succ (n : ℕ) : c.rel (n+1) n := by { have eq : n+1 = n+1 := rfl, assumption, }
 lemma c_succ0 : c.rel 1 0 := c_succ 0
 
+/-- There is no differential from the object in degree 0. -/
 def c_lowerend (n : ℕ) : ¬c.rel 0 n := by
 { intro h, have eq : n+1=0, by assumption, linarith, }
 
+/-- for type theory reasons, we need to extend `hσ` -/
 def hσ' (q : ℕ) (n : ℕ) (m : ℕ) (hnm : c.rel m n): X _[n] ⟶ X _[m] :=
   (hσ q n) ≫ eq_to_hom (by { rw [show n+1=m, by assumption], })
   
+/-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
 def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X := homotopy.null_homotopic_map' (hσ' q)
 
+/-- `Hσ` is null homotopic -/
 def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
 homotopy.null_homotopy' (hσ' q)
 
@@ -75,16 +132,27 @@ begin
 end
 
 
-/- definition of the projector P -/
+/-- This is the inductive definition of the projectors `P q`, with `P 0 := Id` and
+`P (q+1) := P q ≫ (𝟙 _ + Hσ q)`.
 
+By our construction, we can take for granted that these are morphisms of chain
+complexes, all of which are homotopic to the identity.
+
+We shall give simple formulas for the composition `P q ≫ Hσ q` in lemmas
+`Hσφ_eq_neg_σδ` (which involve compositions `δ (a+1) ≫ σ a`) and `Hσφ_eq_zero`.
+Instead of inductive definition we have chosen, similarly as the approach in the
+mathematical references, we could have your these degreewise formulas in order
+to define the sequence of `P q`, but then it would have been necessary to check
+that they commute with the differentials. The approach we have chosen saves some
+calculations.
+-/
 @[simp]
 noncomputable def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X)
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
-/- these endormorphismes P q coincide with `𝟙` in degree 0 -/
-
+/- All the `P q` coincide with `𝟙` in degree 0. -/
 lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
   induction q with q hq,
@@ -104,18 +172,25 @@ begin
 end      
     
 
-/- computation of the null_homotopic map Hσ -/
-
+/-- As we want to construct projectors `P q` which, in the abelian category case,
+factors through the kernel of some of differentials, we introduce this
+`structure higher_faces_vanish` which expresses that a certain map
+`φ : Y ⟶ X _[n+1]` is such that `φ ≫ X.δ i` for the q biggest possible indices
+`i`, excluding 0.
+-/
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
   (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
 
+/-- the map $a \longmapsto a+i$ from `fin` q to `fin n`, when $n=a+q$ -/
 @[simp]
-def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin(q)) : fin(n) :=
+def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin q) : fin n :=
 ⟨a+(i:ℕ), (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))⟩
 
-lemma remove_trailing_zeros_in_sum {β : Type*} [add_comm_monoid β] {n a q : ℕ} (hnaq : n=a+q)
-  (f : fin(n) → β) (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
-  ∑ (i : fin(n)), f i = ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i := 
+lemma remove_trailing_zeros_in_sum {β : Type*} [add_comm_monoid β] {n a q : ℕ}
+  (hnaq : n=a+q) (f : fin(n) → β)
+  (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
+  ∑ (i : fin(n)), f i =
+  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i := 
 begin
   let lt_a := λ (i : fin(n)), (i:ℕ)<a,
   have vanishing : ∀ (i : fin(n)), i ∈ (finset.univ : finset(fin(n))) → f i ≠ 0 → lt_a i,
@@ -155,7 +230,7 @@ begin
   conv { to_rhs, rw or.comm, congr, skip, rw [fin.ext_iff, fin.coe_mk], },
 end
 
-lemma Hσφ_eq_neq_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
+lemma Hσφ_eq_neg_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
   - φ ≫ X.δ ⟨a+1, nat.succ_lt_succ (nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)))⟩ ≫
   X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
@@ -204,7 +279,7 @@ begin
     have eq := v.vanishing i (by { simp only [i, fin.coe_mk], linarith, }),
     rw [← assoc, eq],
     simp only [smul_zero', zero_comp], },
-  /- -/
+  /- leaving out three terms -/
   rw [leave_out_last_term (ineq2 : a+1<n+2),
     leave_out_last_term (show a+2<n+3, by linarith),
     leave_out_last_term (show a+1<n+3, by linarith)],
@@ -215,7 +290,8 @@ begin
     rw [add_assoc c d e, h2, add_zero, add_comm a b, add_assoc,
       add_comm a c, h3, add_zero, h1], },
   apply simplif,
-  { simp only [term1],
+  { /- b=f -/
+    simp only [term1],
     rw fin.coe_mk,
     have eq : (-1 : ℤ)^(a+1) * (-1 : ℤ)^a = -1,
     { calc (-1 : ℤ)^(a+1)*(-1 : ℤ)^a  = - ((-1 : ℤ)^a*(-1 : ℤ)^a) : by ring_exp
@@ -223,7 +299,8 @@ begin
       ...                             = - 1^a : by ring
       ...                             = - 1   : by ring_exp },
     rw [eq, neg_smul, one_zsmul, assoc], },
-  { simp only [term2],
+  { /- d+e=0 -/
+    simp only [term2],
     let b : fin(n+2) := ⟨a+1, ineq2⟩,
     have eq1 : X.σ b ≫ X.δ (fin.cast_succ b) = 𝟙 _ := by rw δ_comp_σ_self,
     have eq2 : X.σ b ≫ X.δ b.succ = 𝟙 _ := by rw δ_comp_σ_succ,
@@ -237,12 +314,15 @@ begin
       congr' 1, },
     simp only [eq3, neg_mul_eq_neg_mul_symm, one_mul,
       mul_neg_eq_neg_mul_symm, neg_neg, neg_smul], },
-  { let ι : fin (n+2) → fin (n+3) := fin.cast_succ,
+  { /- c+a=0 -/
+    let ι : fin (n+2) → fin (n+3) := fin.cast_succ,
     let S := finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ,
     let T := finset.filter (λ i : fin(n+3), (i:ℕ)<a+1) finset.univ,
     have eq : ∑ (s : fin(n+2)) in S, term2 (ι s) =
               ∑ (t : fin(n+3)) in T, term2 t    := finset.sum_bij (λ (s : fin(n+2))
       (hs : s ∈ finset.filter (λ i : fin(n+2), (i:ℕ)<a+1) finset.univ), ι s) _ _ _ _, rotate,
+    /- we check that we have a bijection between S:= {0,...,a} as a subset of fin(n+2)
+      and T := {0,...,a} as a subset of fin(n+3) -/
       { intros a ha,
         simp only [true_and, finset.mem_univ, fin.coe_cast_succ,
           finset.mem_filter] at ha ⊢,
@@ -259,12 +339,13 @@ begin
         split,
           { simp only [true_and, finset.mem_univ, finset.mem_filter, fin.coe_mk], exact hb, },
           { simp only [ι, fin.cast_succ_mk, fin.eta], }, },
-    { rw [← eq, ← finset.sum_add_distrib],
-      apply finset.sum_eq_zero,
-      intros i hi,
-      simp only [term1, term2],
-      repeat { rw assoc, },
-      simp only [true_and, finset.mem_univ, finset.mem_filter] at hi,
+    /- now we can concentrate on the last calculation -/
+    rw [← eq, ← finset.sum_add_distrib],
+    apply finset.sum_eq_zero,
+    intros i hi,
+    simp only [term1, term2],
+    repeat { rw assoc, },
+    simp only [true_and, finset.mem_univ, finset.mem_filter] at hi,
     have hia : i≤ fin.cast_succ (⟨a, by linarith⟩ : fin(n+1)),
     { simp only [fin.cast_succ_mk],
       rw fin.le_iff_coe_le_coe,
@@ -277,8 +358,7 @@ begin
     rw ← neg_smul,
     congr',
     simp only [fin.coe_cast_succ],
-    ring_exp, }
-  },
+    ring_exp, },
 end
 
 lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
@@ -334,7 +414,7 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
     -- we now assume that n≥q, and write n=a+q
     rw [not_lt] at hqn,
     cases nat.le.dest hqn with a ha,
-    rw [Hσφ_eq_neq_σδ (show n=a+q, by linarith) v,
+    rw [Hσφ_eq_neg_σδ (show n=a+q, by linarith) v,
       neg_comp, add_neg_eq_zero, assoc, assoc],
     cases n with m hm,
     -- the boundary case n=0
@@ -387,6 +467,8 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
 
+/-- This definition expresses that the vanishing of
+`(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
 def higher_faces_vanish_P : Π (q : ℕ),
   Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0    := λ n, { vanishing := by
@@ -421,7 +503,7 @@ begin
     { exact Hσφ_eq_zero hqn (downgrade_vanishing v), },
     { cases nat.le.dest (not_lt.mp hqn) with a ha,
       have hnaq : n=a+q := by linarith,
-      simp [Hσφ_eq_neq_σδ hnaq (downgrade_vanishing v), neg_eq_zero],
+      simp [Hσφ_eq_neg_σδ hnaq (downgrade_vanishing v), neg_eq_zero],
       have eq := v.vanishing ⟨a, by linarith⟩ _, swap,
       { simp only [hnaq, fin.coe_mk, (show q.succ=q+1, by refl), add_assoc], },
       simp only [fin.succ_mk] at eq,
@@ -437,8 +519,7 @@ begin
   { exact P_is_identity_where_faces_vanish (higher_faces_vanish_P q n), },
 end
 
-/- construction of homotopies P q ~ id by induction on q -/
-
+/- inductive construction of homotopies from `P q` to `𝟙` -/
 noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _)
 | 0     := homotopy.refl _
@@ -463,8 +544,6 @@ begin
   erw [hσ'_eq_zero hqn (c_succ n), comp_zero],
 end
 
-/- construction of the projector P∞ -/
-
 lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
 ((P (q+1)).f n : X _[n] ⟶ _ ) = (P q).f n :=
 begin
@@ -476,6 +555,7 @@ begin
     exact Hσφ_eq_zero (nat.succ_le_iff.mp hqn) (higher_faces_vanish_P q n), }
 end
 
+/-- Definition of P_infty from the P q -/
 def P_infty : ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X) :=
 begin
@@ -499,6 +579,8 @@ begin
   rw [← homological_complex.comp_f, P_is_a_projector n],
 end
 
+/-- Construction of the homotopy from `P_infty` to the identity using eventually 
+(termwise) constant homotopies from `P q` to the identity for all q -/
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
 { hom := λ i j, (P_is_homotopic_to_id (i+2)).hom i j,
@@ -519,7 +601,9 @@ def P_infty_is_homotopic_to_id :
         rw homotopies_P_id_are_eventually_constant (lt_add_one n.succ),
         rwa ← P_is_eventually_constant (rfl.ge : n.succ ≤ n.succ), }, }, }
 
-/- from now, we assume the category is abelian -/
+/-!
+## Results when the category is abelian
+-/
 
 variables {A : Type*} [category A] [abelian A]
 variable {Y : simplicial_object A}
