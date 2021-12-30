@@ -12,6 +12,7 @@ import algebraic_topology.alternating_face_map_complex
 
 import homotopies
 import null_homotopic
+import dold_kan1
 
 /-!
 
@@ -39,6 +40,52 @@ namespace algebraic_topology
 
 namespace dold_kan
 
+variables {C : Type*} [category C] [preadditive C]
+#check hσ
+
+def hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+  (f.app (op (simplex_category.mk n)) ≫ hσ q n : X _[n] ⟶ Y _[n+1]) =
+  hσ q n ≫ f.app (op (simplex_category.mk (n+1))) :=
+begin
+  by_cases hqn : n<q; unfold hσ; split_ifs,
+  { simp only [zero_comp, comp_zero], },
+  { simp only [zsmul_comp, comp_zsmul],
+    apply congr_arg,
+    erw f.naturality,
+    refl, },
+end
+
+def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
+  (alternating_face_map_complex C)) :=
+{ app := λ _, Hσ q,
+  naturality' := λ X Y f,
+  begin
+    ext n,
+    simp only [Hσ],
+    cases n,
+    { simp only [homological_complex.comp_f, chain_complex.of_hom_f],
+      simp only [homotopy.null_homotopy_f_lower_end' (c_succ0) (c_lowerend)],
+      sorry, },
+    { sorry, },
+  end}
+
+def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
+  (alternating_face_map_complex C)) :=
+{ app := λ _, P q,
+  naturality' := λ X Y f,
+  begin
+    induction q with q hq,
+    { simp only [P, id_comp, comp_id], },
+    { unfold P,
+      simp only [add_comp, comp_add, assoc, comp_id],
+      rw hq,
+      apply congr_arg,
+      rw [← assoc, hq, assoc],
+      apply congr_arg,
+      exact (nat_trans_Hσ q).naturality' f, }
+  end }
+
+variables {X Y : simplicial_object C}
 
 end dold_kan
 
