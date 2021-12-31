@@ -41,7 +41,6 @@ namespace algebraic_topology
 namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
-#check hσ
 
 def hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
   (f.app (op (simplex_category.mk n)) ≫ hσ q n : X _[n] ⟶ Y _[n+1]) =
@@ -55,6 +54,17 @@ begin
     refl, },
 end
 
+def hσ'_naturality (q n m : ℕ) (hnm : c.rel m n)
+  {X Y : simplicial_object C} (f : X ⟶ Y) :
+  (f.app (op (simplex_category.mk n)) ≫ hσ' q n m hnm) =
+  hσ' q n m hnm ≫ f.app (op (simplex_category.mk m)) :=
+begin
+  simp only [hσ', ← assoc, hσ_naturality],
+  have eq := f.naturality (eq_to_hom (show op [n+1] = op [m], by { congr, exact hnm, })),
+  simp only [eq_to_hom_map] at eq,
+  simp only [assoc, eq],
+end
+
 def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
   (alternating_face_map_complex C)) :=
 { app := λ _, Hσ q,
@@ -63,10 +73,23 @@ def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
     ext n,
     simp only [Hσ],
     cases n,
-    { simp only [homological_complex.comp_f, chain_complex.of_hom_f],
-      simp only [homotopy.null_homotopy_f_lower_end' (c_succ0) (c_lowerend)],
-      sorry, },
-    { sorry, },
+    { simp only [homological_complex.comp_f,
+        homotopy.null_homotopy_f_lower_end' (c_succ0) (c_lowerend), ← assoc],
+      erw hσ'_naturality q 0 1 c_succ0,
+      simp only [assoc, ← ((alternating_face_map_complex C).map f).comm,
+        alternating_face_map_complex],
+      simp only [chain_complex.of_hom_f, alternating_face_map_complex_map,
+        alternating_face_map_complex.map], },
+    { simp only [homological_complex.comp_f,
+        homotopy.null_homotopy_f' (c_succ (n+1)) (c_succ n), comp_add, add_comp],
+      rw ← assoc,
+      erw [((alternating_face_map_complex C).map f).comm],
+      conv { to_rhs, congr, skip, rw assoc, erw ← ((alternating_face_map_complex C).map f).comm, },
+      conv { to_lhs, congr, rw assoc, skip, rw ← assoc, },
+      erw hσ'_naturality q n (n+1) (c_succ n),
+      erw hσ'_naturality q (n+1) (n+2) (c_succ (n+1)),
+      simp only [chain_complex.of_hom_f, assoc, alternating_face_map_complex_map,
+        alternating_face_map_complex.map], },
   end}
 
 def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
