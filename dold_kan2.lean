@@ -118,7 +118,8 @@ congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
 structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
   (a : X _[n+1] ⟶ Z) (b : fin(n+1) → (X _[n] ⟶ Z))
 
-def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) : X _[n+1] ⟶ Z :=
+def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
+  X _[n+1] ⟶ Z :=
   P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)), (((P i).f (n+1)) ≫ (X.δ i) ≫ (f.b i)) 
 
 def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
@@ -168,8 +169,8 @@ end
 
 theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
   (f : X ⟶ Y) (g : alternating_face_map_complex.obj Y ⟶ alternating_face_map_complex.obj X)
-  (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g ≫ P_infty = 𝟙 _)
-  (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f ≫ P_infty = 𝟙 _) : is_iso f :=
+  (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
+  (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
   begin
     /- start by restating the result in a way that allows induction on the degree n -/
     haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
@@ -186,19 +187,41 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
     { use g.f 0,
       split,
       { have eq := congr_arg (proj 0 _ _) hgf,
-        simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
-          homological_complex.id_f, alternating_face_map_complex.map, P_infty_termwise,
-          P_deg0_eq, id_comp] at eq,
-        erw [comp_id] at eq,
-        exact eq, },
+        simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+          alternating_face_map_complex.map, P_infty_termwise,
+          P_deg0_eq, id_comp] using eq, },
       { have eq := congr_arg (proj 0 _ _) hfg,
-        simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+        simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
           homological_complex.id_f, alternating_face_map_complex.map, P_infty_termwise,
-          P_deg0_eq, id_comp] at eq,
-        erw [comp_id] at eq,
-        exact eq, }, },
+          P_deg0_eq, id_comp] using eq, }, },
     /- isomorphism in degree n+1 of an isomorphism in degree n -/
-    { sorry, }
+    { resetI,
+      let γ : morph_components Y n (X _[n+1]) :=
+      { a := P_infty.f (n+1) ≫ g.f (n+1),
+        b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
+      use F γ,
+      split,
+      { rw [← comp_F, ← F_id],
+        congr,
+        dsimp [comp_morph_components, morph_components_id],
+        ext,
+        { have eq := congr_arg (proj (n+1) _ _) hgf,
+          simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+          alternating_face_map_complex.map, P_infty_termwise] at eq ⊢,
+          rw [← assoc] at eq ⊢,
+          simpa only [← P_termwise_naturality] using eq, },
+        { simp only [is_iso.hom_inv_id_assoc], }, },
+      { rw [← F_comp, ← F_id],
+        congr,
+        dsimp [morph_components_comp, morph_components_id],
+        ext,
+        { have eq := congr_arg (proj (n+1) _ _) hfg,
+          simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+          alternating_face_map_complex.map, P_infty_termwise, assoc] using eq, },
+        { simp only [assoc],
+          erw f.naturality,
+          simp only [is_iso.inv_hom_id_assoc],
+          refl, }, }, },
   end
 
 end dold_kan
