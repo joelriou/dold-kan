@@ -10,8 +10,6 @@ import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
 
-import homotopies
-import null_homotopic
 import dold_kan1
 
 /-!
@@ -74,14 +72,14 @@ def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
     simp only [Hσ],
     cases n,
     { simp only [homological_complex.comp_f,
-        homotopy.null_homotopy_f_lower_end' (c_succ0) (c_lowerend), ← assoc],
+        homotopy.null_homotopic_map'_f_of_not_rel_left c_succ0 c_lowerend, ← assoc],
       erw hσ'_naturality q 0 1 c_succ0,
       simp only [assoc, ← ((alternating_face_map_complex C).map f).comm,
         alternating_face_map_complex],
       simp only [chain_complex.of_hom_f, alternating_face_map_complex_map,
         alternating_face_map_complex.map], },
     { simp only [homological_complex.comp_f,
-        homotopy.null_homotopy_f' (c_succ (n+1)) (c_succ n), comp_add, add_comp],
+        homotopy.null_homotopic_map'_f (c_succ (n+1)) (c_succ n), comp_add, add_comp],
       rw ← assoc,
       erw [((alternating_face_map_complex C).map f).comm],
       conv { to_rhs, congr, skip, rw assoc, erw ← ((alternating_face_map_complex C).map f).comm, },
@@ -107,6 +105,76 @@ def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
       apply congr_arg,
       exact (nat_trans_Hσ q).naturality' f, }
   end }
+
+def P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+   f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
+congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
+  ((alternating_face_map_complex C).obj Y)) → (_ ⟶ _ ))
+  ((nat_trans_P q).naturality f)
+
+/- TODO, P q vanishes on the q higher degeneracies -/
+
+@[ext]
+structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
+  (a : X _[n+1] ⟶ Z) (b : fin(n+1) → (X _[n] ⟶ Z))
+
+def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) : X _[n+1] ⟶ Z :=
+  P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)), (((P i).f (n+1)) ≫ (X.δ i) ≫ (f.b i)) 
+
+def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
+  (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
+{ a := f.a ≫ g,
+  b := λ i, f.b i ≫ g }
+
+lemma F_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C} (f : morph_components X n Z)
+  (g : Z ⟶ Z') : F (morph_components_comp f g) = F f ≫ g :=
+begin
+  unfold F morph_components_comp,
+  simp only [add_comp, sum_comp, assoc],
+end
+
+def comp_morph_components {X' X : simplicial_object C} {n : ℕ} {Z : C}
+  (g : X' ⟶ X) (f : morph_components X n Z) : morph_components X' n Z :=
+{ a := g.app (op [n+1]) ≫ f.a,
+  b := λ i, g.app (op [n]) ≫ f.b i }
+
+lemma comp_F {X' X : simplicial_object C} {n : ℕ} {Z : C}
+  (g : X' ⟶ X) (f : morph_components X n Z) :
+  F (comp_morph_components g f) = g.app (op [n+1]) ≫ F f :=
+begin
+  unfold F comp_morph_components,
+  simp only [P_infty_termwise, comp_add],
+  congr' 1,
+  { simp only [← assoc, P_termwise_naturality], },
+  { simp only [comp_sum],
+    congr,
+    ext,
+    slice_rhs 1 2 {rw P_termwise_naturality, },
+    slice_lhs 2 3 {erw g.naturality, },
+    simp only [assoc],
+    refl, }
+end
+
+def morph_components_id (X : simplicial_object C) (n : ℕ) :
+  morph_components X n (X _[n+1]) :=
+{ a := P_infty.f (n+1),
+  b := λ i, X.σ i, }
+
+lemma F_id (X : simplicial_object C) (n : ℕ) :
+  F (morph_components_id X n) = 𝟙 _ :=
+begin
+  sorry
+end
+
+theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
+  (f : X ⟶ Y) (g : Y ⟶ X)
+  (hgf : P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty = 𝟙 _)
+  (hgf : P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty = 𝟙 _)
+  (n : ℕ) : 0 = 0 :=
+  begin
+    have foo := P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty,
+    sorry,
+  end
 
 variables {X Y : simplicial_object C}
 

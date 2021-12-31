@@ -10,9 +10,6 @@ import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
 
-import homotopies
-import null_homotopic
-
 /-!
 
 # The Dold-Kan correspondence
@@ -160,7 +157,7 @@ begin
   { unfold P,
     simp only [homological_complex.comp_f, homological_complex.add_f_apply,
       homological_complex.id_f, hq, comp_add, id_comp, add_right_eq_self,
-      Hσ, homotopy.null_homotopy_f_lower_end' c_succ0 c_lowerend],
+      Hσ, homotopy.null_homotopic_map'_f_of_not_rel_left c_succ0 c_lowerend],
     cases q, swap, rw [hσ'_eq_zero (nat.succ_pos q) c_succ0, zero_comp],
     simp only [hσ'_eq (show 0=0+0, by refl) c_succ0],
     simp only [fin.mk_zero, one_zsmul, eq_to_hom_refl, comp_id, pow_zero],
@@ -238,7 +235,7 @@ begin
   have hnaq_shift : Π d : ℕ, n+d=(a+d)+q,
   { intro d, rw [add_assoc, add_comm d, ← add_assoc, hnaq], },
   simp only [Hσ],
-  rw [homotopy.null_homotopy_f' (c_succ (n+1)) (c_succ n),
+  rw [homotopy.null_homotopic_map'_f (c_succ (n+1)) (c_succ n),
     hσ'_eq hnaq (c_succ n), hσ'_eq (hnaq_shift 1) (c_succ (n+1))],
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, eq_to_hom_refl, comp_id],
@@ -365,7 +362,7 @@ lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
   by_cases hqnp : n+1<q;
-  simp only [Hσ, homotopy.null_homotopy_f' (c_succ (n+1)) (c_succ n),
+  simp only [Hσ, homotopy.null_homotopic_map'_f (c_succ (n+1)) (c_succ n),
     hσ'_eq_zero hqn (c_succ n)],
   { simp only [hσ'_eq_zero hqnp (c_succ (n+1)), add_zero, zero_comp, comp_zero], },
   { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
