@@ -167,16 +167,39 @@ begin
 end
 
 theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
-  (f : X ⟶ Y) (g : Y ⟶ X)
-  (hgf : P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty = 𝟙 _)
-  (hgf : P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty = 𝟙 _)
-  (n : ℕ) : 0 = 0 :=
+  (f : X ⟶ Y) (g : alternating_face_map_complex.obj Y ⟶ alternating_face_map_complex.obj X)
+  (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g ≫ P_infty = 𝟙 _)
+  (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f ≫ P_infty = 𝟙 _) : is_iso f :=
   begin
-    have foo := P_infty ≫ alternating_face_map_complex.map (f ≫ g) ≫ P_infty,
-    sorry,
+    /- start by restating the result in a way that allows induction on the degree n -/
+    haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
+    { exact nat_iso.is_iso_of_is_iso_app f, },
+    intro s,
+    let m := simplex_category.len (unop s),
+    rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
+    generalize : m = n,
+    /- -/
+    let proj : Π (n : ℕ) (A B : chain_complex C ℕ) (f : A ⟶ B), A.X n ⟶ B.X n := λ n A B f, f.f n,
+    /- we have to construct an inverse to f in degree n, by induction on n -/
+    induction n with n hn,
+    /- degree 0 -/
+    { use g.f 0,
+      split,
+      { have eq := congr_arg (proj 0 _ _) hgf,
+        simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+          homological_complex.id_f, alternating_face_map_complex.map, P_infty_termwise,
+          P_deg0_eq, id_comp] at eq,
+        erw [comp_id] at eq,
+        exact eq, },
+      { have eq := congr_arg (proj 0 _ _) hfg,
+        simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+          homological_complex.id_f, alternating_face_map_complex.map, P_infty_termwise,
+          P_deg0_eq, id_comp] at eq,
+        erw [comp_id] at eq,
+        exact eq, }, },
+    /- isomorphism in degree n+1 of an isomorphism in degree n -/
+    { sorry, }
   end
-
-variables {X Y : simplicial_object C}
 
 end dold_kan
 
