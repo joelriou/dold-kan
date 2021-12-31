@@ -103,7 +103,7 @@ def c_lowerend (n : ℕ) : ¬c.rel 0 n := by
 { intro h, have eq : n+1=0, by assumption, linarith, }
 
 /-- for type theory reasons, we need to extend `hσ` -/
-def hσ' (q : ℕ) (n : ℕ) (m : ℕ) (hnm : c.rel m n): X _[n] ⟶ X _[m] :=
+def hσ' (q n m : ℕ) (hnm : c.rel m n): X _[n] ⟶ X _[m] :=
   (hσ q n) ≫ eq_to_hom (by { rw [show n+1=m, by assumption], })
   
 /-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
