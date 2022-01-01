@@ -17,7 +17,8 @@ import dold_kan1
 
 Goal : 
 * show that a morphism of simplicial objects is an isomorphisms if and only if it
-induces an isomorphism on normalized Moore complexes
+induces an isomorphism on normalized Moore complexes,
+this is `normalized_Moore_complex_reflects_iso`
 
 -/
 
@@ -48,7 +49,7 @@ begin
   by_cases hqn : n<q; unfold hσ; split_ifs,
   { simp only [zero_comp, comp_zero], },
   { simp only [zsmul_comp, comp_zsmul],
-    apply congr_arg,
+    congr' 1,
     erw f.naturality,
     refl, },
 end
@@ -77,8 +78,6 @@ def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
       alternating_face_map_complex_map, alternating_face_map_complex.map],
   end }
 
-#exit
-
 def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
   (alternating_face_map_complex C)) :=
 { app := λ _, P q,
@@ -89,9 +88,9 @@ def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
     { unfold P,
       simp only [add_comp, comp_add, assoc, comp_id],
       rw hq,
-      apply congr_arg,
+      congr' 1,
       rw [← assoc, hq, assoc],
-      apply congr_arg,
+      congr' 1,
       exact (nat_trans_Hσ q).naturality' f, }
   end }
 
@@ -194,7 +193,7 @@ begin
   dsimp [comp_morph_components, morph_components_id, F],
   simp only [P_infty_termwise],
   rw [← homological_complex.comp_f, P_is_a_projector (n+1)],
-  rw [show 𝟙 (X.obj (op [n + 1])) = (P (n+1)).f (n+1)+(Q (n+1)).f (n+1), by
+  rw [show 𝟙 (X.obj (op [n+1])) = (P (n+1)).f (n+1)+(Q (n+1)).f (n+1), by
   { unfold Q, simp only [homological_complex.sub_f_apply, add_sub_cancel'_right,
     homological_complex.id_f], refl, }],
   congr,
@@ -209,6 +208,9 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
   (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
   (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
   begin
+    /- from the assumptions hgf & hfg, we can get degreewise identities of morphisms in C
+      using congr_arg (proj n _ _) -/
+    let proj : Π (n : ℕ) (A B : chain_complex C ℕ) (f : A ⟶ B), A.X n ⟶ B.X n := λ n A B f, f.f n,
     /- restating the result in a way that allows induction on the degree n -/
     haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
     { exact nat_iso.is_iso_of_is_iso_app f, },
@@ -216,21 +218,16 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
     let m := simplex_category.len (unop s),
     rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
     generalize : m = n,
-    /- from the assumptions hgf & hfg, we can get degreewise identities of morphisms in C
-      using congr_arg (proj n _ _) -/
-    let proj : Π (n : ℕ) (A B : chain_complex C ℕ) (f : A ⟶ B), A.X n ⟶ B.X n := λ n A B f, f.f n,
     /- we have to construct an inverse to f in degree n, by induction on n -/
     induction n with n hn,
     /- degree 0 -/
     { use g.f 0,
       split,
-      { have eq := congr_arg (proj 0 _ _) hgf,
+      have eq := congr_arg (proj 0 _ _) hgf, swap,
+      have eq := congr_arg (proj 0 _ _) hfg,
+      all_goals {
         simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
           alternating_face_map_complex.map, P_infty_termwise,
-          P_deg0_eq, id_comp] using eq, },
-      { have eq := congr_arg (proj 0 _ _) hfg,
-        simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
-          homological_complex.id_f, alternating_face_map_complex.map, P_infty_termwise,
           P_deg0_eq, id_comp] using eq, }, },
     /- isomorphism in degree n+1 of an isomorphism in degree n -/
     { resetI,
@@ -258,8 +255,7 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
           alternating_face_map_complex.map, P_infty_termwise, assoc] using eq, },
         { simp only [assoc],
           erw f.naturality,
-          simp only [is_iso.inv_hom_id_assoc],
-          refl, }, }, },
+          simpa only [is_iso.inv_hom_id_assoc], }, }, },
   end
 
 end dold_kan

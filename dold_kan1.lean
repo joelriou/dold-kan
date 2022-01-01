@@ -681,6 +681,7 @@ lemma factors_P_infty (Y : simplicial_object A) :
   simp only [P_infty_into_Moore_subcomplex, chain_complex.of_hom,
     factor_thru_arrow, homological_complex.comp_f, inclusion_of_Moore_complex_map_f], }
 
+@[ext]
 def homotopy_equiv_inclusion_of_Moore_complex :
   homotopy_equiv ((normalized_Moore_complex A).obj Y)
     ((alternating_face_map_complex A).obj Y) :=
