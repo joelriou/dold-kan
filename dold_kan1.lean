@@ -166,8 +166,7 @@ begin
       pow_one, one_zsmul, pow_zero, neg_smul],
     apply add_neg_eq_zero.mpr,
     erw [δ_comp_σ_self, δ_comp_σ_succ], }
-end      
-    
+end
 
 /-- As we want to construct projectors `P q` which, in the abelian category case,
 factors through the kernel of some of differentials, we introduce this

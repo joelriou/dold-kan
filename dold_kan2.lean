@@ -40,7 +40,7 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-def hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+lemma hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
   (f.app (op (simplex_category.mk n)) ≫ hσ q n : X _[n] ⟶ Y _[n+1]) =
   hσ q n ≫ f.app (op (simplex_category.mk (n+1))) :=
 begin
@@ -52,7 +52,7 @@ begin
     refl, },
 end
 
-def hσ'_naturality (q n m : ℕ) (hnm : c.rel m n)
+lemma hσ'_naturality (q n m : ℕ) (hnm : c.rel m n)
   {X Y : simplicial_object C} (f : X ⟶ Y) :
   (f.app (op (simplex_category.mk n)) ≫ hσ' q n m hnm) =
   hσ' q n m hnm ≫ f.app (op (simplex_category.mk m)) :=
@@ -106,21 +106,30 @@ def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
       exact (nat_trans_Hσ q).naturality' f, }
   end }
 
-def P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+lemma P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
    f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
 congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
   ((alternating_face_map_complex C).obj Y)) → (_ ⟶ _ ))
   ((nat_trans_P q).naturality f)
 
-/- TODO, P q vanishes on the q higher degeneracies -/
-
 @[ext]
 structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
   (a : X _[n+1] ⟶ Z) (b : fin(n+1) → (X _[n] ⟶ Z))
 
+def reverse_fin {n : ℕ} (i : fin(n+1)) : fin(n+1):= ⟨n-i, nat.sub_lt_succ n ↑i⟩
+
+lemma reverse_fin_eq {n a : ℕ} (i : fin(n+1)) (hnaq : n=a+i) : reverse_fin i = 
+  ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
+begin
+  ext,
+  simp only [reverse_fin, fin.coe_mk],
+  exact tsub_eq_of_eq_add hnaq,
+end
+
 def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
   X _[n+1] ⟶ Z :=
-  P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)), (((P i).f (n+1)) ≫ (X.δ i) ≫ (f.b i)) 
+  P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)),
+  (((P i).f (n+1)) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i))) 
 
 def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
   (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
@@ -161,10 +170,49 @@ def morph_components_id (X : simplicial_object C) (n : ℕ) :
 { a := P_infty.f (n+1),
   b := λ i, X.σ i, }
 
+def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
+(alternating_face_map_complex C).obj X) := 𝟙 _ - P q
+
+lemma decomposition_Q {X : simplicial_object C} (n q : ℕ) (hqn : q≤n+1) :
+  ((Q q).f (n+1) : X _[n+1] ⟶ X _[n+1]) =
+  ∑ (i : fin(n+1)) in finset.filter (λ i : fin(n+1), (i:ℕ)<q) finset.univ,
+    (P i).f (n+1) ≫ X.δ (reverse_fin i).succ ≫ X.σ (reverse_fin i) :=
+begin
+  revert hqn,
+  induction q with q hq,
+  { intro hqn,
+    simp only [Q, P, nat.not_lt_zero, finset.sum_empty, finset.filter_false,
+      homological_complex.zero_f_apply, sub_self], },
+  { intro hqn,
+    rw [leave_out_last_term (nat.succ_le_iff.mp hqn), ← hq (nat.le_of_succ_le hqn)],
+    cases nat.le.dest (nat.succ_le_succ_iff.mp hqn) with a ha,
+    let i : fin(n+1) := ⟨q,nat.lt_succ_iff.mpr (nat.le.intro ha)⟩,
+    simp only [fin.succ_mk, fin.coe_mk, norm_num.sub_nat_pos n q a ha,
+      reverse_fin_eq i (show n=a+i, by { simp only [fin.coe_mk, add_comm, ha], })],
+    have eq : ((_ : X _[n+1] ⟶ _) = _ ) := eq_neg_of_eq_neg 
+      (Hσφ_eq_neg_σδ (show n=a+q, by linarith) (higher_faces_vanish_P q n)),
+    rw eq,
+    unfold Q P,
+    simp only [homological_complex.sub_f_apply, comp_add, homological_complex.comp_f,
+      homological_complex.add_f_apply, homological_complex.id_f, comp_id],
+    abel,
+  },
+end
+
 lemma F_id (X : simplicial_object C) (n : ℕ) :
   F (morph_components_id X n) = 𝟙 _ :=
 begin
-  sorry
+  dsimp [comp_morph_components, morph_components_id, F],
+  simp only [P_infty_termwise],
+  rw [← homological_complex.comp_f, P_is_a_projector (n+1)],
+  rw [show 𝟙 (X.obj (op [n + 1])) = (P (n+1)).f (n+1)+(Q (n+1)).f (n+1), by
+  { unfold Q, simp only [homological_complex.sub_f_apply, add_sub_cancel'_right,
+    homological_complex.id_f], refl, }],
+  congr,
+  rw decomposition_Q n (n+1) rfl.ge,
+  congr,
+  ext,
+  simp only [true_and, true_iff, finset.mem_univ, finset.mem_filter, fin.is_lt],
 end
 
 theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
@@ -172,14 +220,15 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
   (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
   (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
   begin
-    /- start by restating the result in a way that allows induction on the degree n -/
+    /- restating the result in a way that allows induction on the degree n -/
     haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
     { exact nat_iso.is_iso_of_is_iso_app f, },
     intro s,
     let m := simplex_category.len (unop s),
     rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
     generalize : m = n,
-    /- -/
+    /- from the assumptions hgf & hfg, we can get degreewise identities of morphisms in C
+      using congr_arg (proj n _ _) -/
     let proj : Π (n : ℕ) (A B : chain_complex C ℕ) (f : A ⟶ B), A.X n ⟶ B.X n := λ n A B f, f.f n,
     /- we have to construct an inverse to f in degree n, by induction on n -/
     induction n with n hn,
