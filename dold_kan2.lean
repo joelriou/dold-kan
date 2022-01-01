@@ -5,7 +5,8 @@ Author: Joël Riou
 -/
 
 import algebra.homology.homological_complex
-import algebra.homology.homotopy
+import homotopy
+--import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
@@ -16,7 +17,7 @@ import dold_kan1
 
 Goal : 
 * show that a morphism of simplicial objects is an isomorphisms if and only if it
-induces an isomorphism on normalized Moore complexes (TODO)
+induces an isomorphism on normalized Moore complexes
 
 -/
 
@@ -72,14 +73,14 @@ def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
     simp only [Hσ],
     cases n,
     { simp only [homological_complex.comp_f,
-        homotopy.null_homotopic_map'_f_of_not_rel_left c_succ0 c_lowerend, ← assoc],
+        homotopy.null_homotopic_map_f_of_not_rel_left c_succ0 c_lowerend, ← assoc],
       erw hσ'_naturality q 0 1 c_succ0,
       simp only [assoc, ← ((alternating_face_map_complex C).map f).comm,
         alternating_face_map_complex],
       simp only [chain_complex.of_hom_f, alternating_face_map_complex_map,
         alternating_face_map_complex.map], },
     { simp only [homological_complex.comp_f,
-        homotopy.null_homotopic_map'_f (c_succ (n+1)) (c_succ n), comp_add, add_comp],
+        homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n), comp_add, add_comp],
       rw ← assoc,
       erw [((alternating_face_map_complex C).map f).comm],
       conv { to_rhs, congr, skip, rw assoc, erw ← ((alternating_face_map_complex C).map f).comm, },
