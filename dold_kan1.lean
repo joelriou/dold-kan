@@ -534,9 +534,9 @@ lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
   (P_is_homotopic_to_id q).hom n (n+1) (c_succ n):= 
 begin
   unfold P_is_homotopic_to_id,
-  simp only [homotopy.trans, homotopy.of_eq, homotopy.add, homotopy.comp_left,
-    homotopy_add_apply, homotopy_zero_apply, zero_add, add_zero, add_right_eq_self,
-    homotopy_Hσ_to_zero, homotopy.null_homotopy],
+  simp only [homotopy.trans, homotopy.of_eq, homotopy.comp_left, homotopy.add,
+    zero_add, homotopy.comp_null_homotopy, homotopy.add_apply, homotopy.zero_apply,
+    add_zero, add_right_eq_self, homotopy_Hσ_to_zero, homotopy.null_homotopy],
   erw [hσ'_eq_zero hqn (c_succ n), comp_zero],
 end
 
@@ -579,21 +579,22 @@ end
 (termwise) constant homotopies from `P q` to the identity for all q -/
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
-{ hom := λ i j, (P_is_homotopic_to_id (i+2)).hom i j,
-  comm := λ n, by 
-    { cases n,
-      { have h : ((_ : X _[0] ⟶ _) = _) := (P_is_homotopic_to_id 2).comm 0,
-        rw [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,
-          zero_add] at h ⊢,
-        rwa [P_infty_termwise,← P_is_eventually_constant (rfl.ge : 0 ≤ 0),
-          ← P_is_eventually_constant (zero_le 1)], },
-      { have h : ((_ : X _[n.succ] ⟶ _) = _) :=
-          (P_is_homotopic_to_id n.succ.succ).comm n.succ,
-        rw [show n.succ=n+1, by refl] at h,
-        simp only [homotopy.prev_d_chain_complex, homological_complex.id_f,
-          homotopy.d_next_succ_chain_complex, P_infty_termwise] at ⊢ h,
-        erw homotopies_P_id_are_eventually_constant (lt_add_one n.succ),
-        rwa ← P_is_eventually_constant (rfl.ge : n.succ ≤ n.succ), }, }, }
+{ hom := λ i j hij, (P_is_homotopic_to_id (i+2)).hom i j hij,
+  comm := begin 
+    ext n,
+    cases n,
+    { have h : ((_ : X _[0] ⟶ _) = _) := (P_is_homotopic_to_id 2).comm_ext 0,
+      simp only [P_infty_termwise, homological_complex.add_f_apply,
+        homological_complex.id_f] at h ⊢,
+      erw homotopy.null_homotopic_map_f_of_not_rel_left c_succ0 c_lowerend at h ⊢,
+      simpa only [P_deg0_eq] using h, },
+    { have h : ((_ : X _[n+1] ⟶ _) = _) :=
+        (P_is_homotopic_to_id (n+2)).comm_ext (n+1),
+      simp only [P_infty_termwise, homological_complex.add_f_apply],
+      erw homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n) at h ⊢,
+      rw homotopies_P_id_are_eventually_constant (lt_add_one (n+1)),
+      rwa ← P_is_eventually_constant (rfl.ge : n+1 ≤ n+1), },
+  end }
 
 /-!
 ## Results when the category is abelian

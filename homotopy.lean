@@ -33,16 +33,16 @@ instance add_zero_class : add_comm_group (Π i j, c.rel j i → (C.X i ⟶ D.X j
 { zero := λ _ _ _, 0,
   add := λ f g, λ i j hij, (f i j hij) + (g i j hij),
   neg := λ f, λ i j hij, -(f i j hij),
---  sub := λ f g, λ i j hij, (f i j hij) - (g i j hij),
+  sub := λ f g, λ i j hij, (f i j hij) - (g i j hij),
   add_comm := λ f g,       by { ext i j hij, apply_rules [add_comm], },
   add_left_neg := λ f,     by { ext i j hij, apply_rules [add_left_neg], },
   add_zero := λ f,         by { ext i j hij, apply_rules [add_zero], },
   zero_add := λ f,         by { ext i j hij, apply_rules [zero_add], },
   add_assoc := λ f g h,    by { ext i j hij, apply_rules [add_assoc], },
---  sub_eq_add_neg := λ f g, by { ext i j hij, apply_rules [sub_eq_add_neg], },
+  sub_eq_add_neg := λ f g, by { ext i j hij, apply_rules [sub_eq_add_neg], },
   }
 
-/-
+
 @[simp]
 lemma add_apply (f g : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (i j : ι) (hij : c.rel j i) :
   (f+g) i j hij = f i j hij + g i j hij := by refl
@@ -53,7 +53,7 @@ lemma sub_apply (f g : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (i j : ι) (hij 
 
 @[simp]
 lemma zero_apply (i j : ι) (hij : c.rel j i) :
-  (0 : Π i j, c.rel j i → (C.X i ⟶ D.X j)) i j hij = 0 := by refl-/
+  (0 : Π i j, c.rel j i → (C.X i ⟶ D.X j)) i j hij = 0 := by refl
 
 /-- The composition of `C.d i i' ≫ f i' i` if there is some `i'` coming after `i`,
 and `0` otherwise. -/
@@ -315,6 +315,14 @@ structure homotopy (f g : C ⟶ D) :=
 
 variables {f g}
 namespace homotopy
+
+lemma comm_ext (e : homotopy f g) (i : ι) :
+  f.f i = (null_homotopic_map e.hom).f i + g.f i :=
+begin
+  have H := congr_arg (λ φ, φ.f i : (C ⟶ D) → (C.X i ⟶ D.X i)) e.comm,
+  simp only [add_f_apply] at H,
+  exact H,
+end
 
 /-- Tautological construction of the `homotopy` to zero for maps constructed by
 `null_homotopic_map` -/
@@ -676,7 +684,7 @@ def functor.map_homotopy (F : V ⥤ W) [F.additive] {f g : C ⟶ D} (h : homotop
 { hom := λ i j hij, F.map (h.hom i j hij),
   comm := begin
     ext i,
-    have := congr_arg (λ φ, φ.f i : (C ⟶ D) → (C.X i ⟶ D.X i)) h.comm,
+    have := homotopy.comm_ext h i,
     dsimp [homotopy.null_homotopic_map, homotopy.d_next, homotopy.prev_d] at *,
     rcases c.next i with _|⟨inext,wn⟩;
     rcases c.prev i with _|⟨iprev,wp⟩;
