@@ -623,11 +623,21 @@ variable [has_zero_object V]
 Null homotopic maps induce the zero map on homology.
 -/
 theorem homology_map_eq_zero (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (i : ι) :
-  (homology_functor V c i).map f = 0 :=
+  (homology_functor V c i).map (homotopy.null_homotopic_map hom) = 0 :=
 begin
-  dsimp [homology_functor, homology.map],
-  sorry
+  dsimp [homology_functor, kernel_subobject_map, homotopy.null_homotopic_map],
+  ext,
+  simp only [homology.π_map, comp_zero],
+  dsimp [kernel_subobject_map],
+  simp only [preadditive.comp_add, homotopy.d_next_eq_d_from_from_next,
+    kernel_subobject_arrow_comp_assoc, zero_comp,zero_add],
+  erw [subobject.factor_thru_of_le (D.boundaries_le_cycles i)],
+  { simp only [comp_zero, image_to_kernel_as_boundaries_to_cycles,
+    homology.condition, category.assoc], },
+  { rw [homotopy.prev_d_eq_to_prev_d_to, ← category.assoc],
+    apply image_subobject_factors_comp_self, },
 end
+
 /--
 Homotopic maps induce the same map on homology.
 -/
@@ -638,26 +648,6 @@ begin
   simp only [add_left_eq_self, functor.map_add],
   exact homology_map_eq_zero h.hom i,
 end
-
-/-
-theorem homology_map_eq_of_homotopy (h : homotopy f g) (i : ι) :
-  (homology_functor V c i).map f = (homology_functor V c i).map g :=
-begin
-  dsimp [homology_functor],
-  apply eq_of_sub_eq_zero,
-  ext,
-  simp only [homology.π_map, comp_zero, preadditive.comp_sub],
-  dsimp [kernel_subobject_map],
-  simp_rw [h.comm i],
-  simp only [zero_add, zero_comp, d_next_eq_d_from_from_next, kernel_subobject_arrow_comp_assoc,
-    preadditive.comp_add],
-  rw [←preadditive.sub_comp],
-  simp only [category_theory.subobject.factor_thru_add_sub_factor_thru_right],
-  erw [subobject.factor_thru_of_le (D.boundaries_le_cycles i)],
-  { simp, },
-  { rw [prev_d_eq_to_prev_d_to, ←category.assoc],
-    apply image_subobject_factors_comp_self, },
-end-/
 
 /-- Homotopy equivalent complexes have isomorphic homologies. -/
 def homology_obj_iso_of_homotopy_equiv (f : homotopy_equiv C D) (i : ι) :
@@ -674,7 +664,6 @@ def homology_obj_iso_of_homotopy_equiv (f : homotopy_equiv C D) (i : ι) :
   end, }
 
 end
-#exit
 
 namespace category_theory
 
@@ -685,14 +674,14 @@ variables {W : Type*} [category W] [preadditive W]
 def functor.map_homotopy (F : V ⥤ W) [F.additive] {f g : C ⟶ D} (h : homotopy f g) :
   homotopy ((F.map_homological_complex c).map f) ((F.map_homological_complex c).map g) :=
 { hom := λ i j hij, F.map (h.hom i j hij),
-  comm := λ i, begin
-    have := h.comm i,
-    dsimp [d_next, prev_d] at *,
+  comm := begin
+    ext i,
+    have := congr_arg (λ φ, φ.f i : (C ⟶ D) → (C.X i ⟶ D.X i)) h.comm,
+    dsimp [homotopy.null_homotopic_map, homotopy.d_next, homotopy.prev_d] at *,
     rcases c.next i with _|⟨inext,wn⟩;
     rcases c.prev i with _|⟨iprev,wp⟩;
-    dsimp [d_next, prev_d] at *;
-    { intro h,
-      simp [h] },
+    dsimp [homotopy.d_next, homotopy.prev_d] at *;
+    { intro h, simp only [h, functor.map_add, zero_add, functor.map_comp, functor.map_zero], },
   end, }
 
 /-- An additive functor preserves homotopy equivalences. -/
