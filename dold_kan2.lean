@@ -69,27 +69,15 @@ def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
 { app := λ _, Hσ q,
   naturality' := λ X Y f,
   begin
-    ext n,
-    simp only [Hσ],
-    cases n,
-    { simp only [homological_complex.comp_f,
-        homotopy.null_homotopic_map_f_of_not_rel_left c_succ0 c_lowerend, ← assoc],
-      erw hσ'_naturality q 0 1 c_succ0,
-      simp only [assoc, ← ((alternating_face_map_complex C).map f).comm,
-        alternating_face_map_complex],
-      simp only [chain_complex.of_hom_f, alternating_face_map_complex_map,
-        alternating_face_map_complex.map], },
-    { simp only [homological_complex.comp_f,
-        homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n), comp_add, add_comp],
-      rw ← assoc,
-      erw [((alternating_face_map_complex C).map f).comm],
-      conv { to_rhs, congr, skip, rw assoc, erw ← ((alternating_face_map_complex C).map f).comm, },
-      conv { to_lhs, congr, rw assoc, skip, rw ← assoc, },
-      erw hσ'_naturality q n (n+1) (c_succ n),
-      erw hσ'_naturality q (n+1) (n+2) (c_succ (n+1)),
-      simp only [chain_complex.of_hom_f, assoc, alternating_face_map_complex_map,
-        alternating_face_map_complex.map], },
-  end}
+    unfold Hσ,
+    rw [← homotopy.comp_null_homotopic_map, ← homotopy.null_homotopic_map_comp],
+    congr,
+    rw [homotopy.comp_null_homotopy, homotopy.null_homotopy_comp],
+    simp only [hσ'_naturality, chain_complex.of_hom_f,
+      alternating_face_map_complex_map, alternating_face_map_complex.map],
+  end }
+
+#exit
 
 def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
   (alternating_face_map_complex C)) :=
