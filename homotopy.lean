@@ -113,7 +113,7 @@ begin
   exact preadditive.add_comp _ _ _ _ _ _,
 end
 
-/-- `f j j'` if `j'` comes after `j`, and 0 if there's no such `j'`.
+/-- `f ⟨⟨j,j⟩,_⟩'` if `j'` comes after `j`, and 0 if there's no such `j'`.
 Hopefully there won't be much need for this, except in `d_next_eq_d_from_from_next`
 to see that `d_next` factors through `C.d_from i`. -/
 def to_prev [has_zero_object V] (j : ι) : prehomotopy C D →+ (C.X j ⟶ D.X_prev j) :=
@@ -193,7 +193,7 @@ def null_homotopic_map (hom : prehomotopy C D) : C ⟶ D :=
       eq1, eq2, add_zero, zero_add, category.assoc], 
   end }
 
-def null_homotopic_map_add_monoid_hom : prehomotopy C D →+ (C ⟶ D) :=
+def add_monoid_hom_null_homotopic_map : prehomotopy C D →+ (C ⟶ D) :=
 add_monoid_hom.mk' null_homotopic_map
 begin
   intros hom₁ hom₂,
@@ -205,9 +205,9 @@ begin
 end
 
 /-- If we need the additivity of `null_homotopic_map`, we can use this lemma -/
-lemma null_homotopic_map_additive (hom : prehomotopy C D) :
-   null_homotopic_map hom = null_homotopic_map_add_monoid_hom hom :=
-by { dsimp [null_homotopic_map_add_monoid_hom], refl, }
+lemma additive_null_homotopic_map (hom : prehomotopy C D) :
+   null_homotopic_map hom = add_monoid_hom_null_homotopic_map hom :=
+by { dsimp [add_monoid_hom_null_homotopic_map], refl, }
 
 /-- null homotopies can be postcompose with a morphism of complexes,
 and the corresponding null homotopic maps are computed by `null_homotopic_map_comp` -/
@@ -333,7 +333,7 @@ def equiv_sub_zero : homotopy f g ≃ homotopy (f - g) 0 :=
 @[simps]
 def of_eq (h : f = g) : homotopy f g :=
 { hom := 0,
-  comm := by { simpa only [null_homotopic_map_additive, zero_add, map_zero], }, }
+  comm := by { simpa only [additive_null_homotopic_map, zero_add, map_zero], }, }
 
 /-- Every chain map is homotopic to itself. -/
 @[simps, refl]
@@ -347,7 +347,7 @@ def symm {f g : C ⟶ D} (h : homotopy f g) : homotopy g f :=
   comm :=
   begin
     have H := h.comm,
-    simp only [null_homotopic_map_additive, map_neg] at H ⊢,
+    simp only [additive_null_homotopic_map, map_neg] at H ⊢,
     exact eq_neg_add_of_add_eq (eq.symm H),
   end }
 
@@ -358,10 +358,8 @@ def trans {e f g : C ⟶ D} (h : homotopy e f) (k : homotopy f g) : homotopy e g
   comm :=
   begin
     have H := eq.trans h.comm (congr_arg (has_add.add _) k.comm),
-    simpa only [null_homotopic_map_additive, map_add, add_assoc] using H,
+    simpa only [additive_null_homotopic_map, map_add, add_assoc] using H,
   end }
-
---lemma pif (a b c d : ℤ) (H1 : a=b) (H2 : c=d) : a+c = b+d := congr (congr_arg has_add.add H1) H2
 
 /-- the sum of two homotopies is a homotopy between the sum of the respective morphisms. -/
 @[simps]
@@ -372,12 +370,12 @@ def add {f₁ g₁ f₂ g₂: C ⟶ D}
   begin
     have H1 := h₁.comm,
     have H2 := h₂.comm,
-    simp only [null_homotopic_map_additive, map_add] at H1 H2 ⊢,
+    simp only [additive_null_homotopic_map, map_add] at H1 H2 ⊢,
     simp only [congr (congr_arg has_add.add H1) H2],
     abel,
   end }
 
-/-- the sum of two homotopies is a homotopy between the sum of the respective morphisms. -/
+/-- the difference of two homotopies is a homotopy between the differences of the respective morphisms. -/
 @[simps]
 def sub {f₁ g₁ f₂ g₂: C ⟶ D}
   (h₁ : homotopy f₁ g₁) (h₂ : homotopy f₂ g₂) : homotopy (f₁-f₂) (g₁-g₂) :=
@@ -386,7 +384,7 @@ def sub {f₁ g₁ f₂ g₂: C ⟶ D}
   begin
     have H1 := h₁.comm,
     have H2 := h₂.comm,
-    simp only [null_homotopic_map_additive, map_sub] at H1 H2 ⊢,
+    simp only [additive_null_homotopic_map, map_sub] at H1 H2 ⊢,
     simp only [congr (congr_arg has_sub.sub H1) H2],
     abel,
   end }
