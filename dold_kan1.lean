@@ -95,15 +95,10 @@ def c := complex_shape.down ℕ
 def cs_down_succ := homotopy.cs_down_succ
 def cs_down_0_not_rel_left := homotopy.cs_down_0_not_rel_left
 
---lemma c_succ0 : c.rel 1 0 := c_succ 0
-
-/-- There is no differential from the object in degree 0. -/
-def c_lowerend (n : ℕ) : ¬c.rel 0 n := by
-{ intro h, have eq : n+1=0, by assumption, linarith, }
-
 /-- for type theory reasons, we need to extend `hσ` -/
-def hσ' (q n m : ℕ) (hnm : c.rel m n): X _[n] ⟶ X _[m] :=
-  (hσ q n) ≫ eq_to_hom (by { rw [show n+1=m, by assumption], })
+def hσ' (q : ℕ) : prehomotopy ((alternating_face_map_complex C).obj X)
+  ((alternating_face_map_complex C).obj X) := λ ij,
+(hσ q ij.val.1) ≫ eq_to_hom (by { congr', exact ij.property, })
   
 /-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
 def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
@@ -113,18 +108,18 @@ def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
 def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
 homotopy.null_homotopy (hσ' q)
 
-lemma hσ'_eq_zero {q n m : ℕ} (hnq : n<q) (hnm : c.rel m n) : (hσ' q n m hnm : X _[n] ⟶ X _[m])= 0 :=
+lemma hσ'_eq_zero {q n m : ℕ} (hnq : n<q) (hnm : c.rel m n) : (hσ' q ⟨⟨n,m⟩,hnm⟩ : X _[n] ⟶ X _[m])= 0 :=
 begin
-  unfold hσ' hσ,
+  simp only [hσ', hσ],
   split_ifs,
   exact zero_comp,
 end
 
-lemma hσ'_eq {q n a m : ℕ} (ha : n=a+q) (hnm : c.rel m n) : (hσ' q n m hnm : X _[n] ⟶ X _[m]) =
+lemma hσ'_eq {q n a m : ℕ} (ha : n=a+q) (hnm : c.rel m n) : (hσ' q ⟨⟨n,m⟩,hnm⟩ : X _[n] ⟶ X _[m]) =
     ((-1 : ℤ)^a • X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm ha))⟩) ≫
-      eq_to_hom (by { rw [show n+1=m, by assumption], }) :=
+      eq_to_hom (by { congr', }) :=
 begin
-  unfold hσ' hσ,
+  simp only [hσ', hσ],
   split_ifs,
   { exfalso, linarith, },
   { congr; exact tsub_eq_of_eq_add ha, }
@@ -532,12 +527,12 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   end
 
 lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
-  (((P_is_homotopic_to_id (q+1)).hom n (n+1) (cs_down_succ n)) : X _[n] ⟶ X _[n+1]) =
-  (P_is_homotopic_to_id q).hom n (n+1) (cs_down_succ n):= 
+  (((P_is_homotopic_to_id (q+1)).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩) : X _[n] ⟶ X _[n+1]) =
+  (P_is_homotopic_to_id q).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩ := 
 begin
   unfold P_is_homotopic_to_id,
   simp only [homotopy.trans, homotopy.of_eq, homotopy.comp_left, homotopy.add,
-    zero_add, homotopy.comp_null_homotopy, homotopy.add_apply, homotopy.zero_apply,
+    zero_add, homotopy.comp_prehomotopy, pi.add_apply,
     add_zero, add_right_eq_self, homotopy_Hσ_to_zero, homotopy.null_homotopy],
   erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero],
 end
@@ -581,7 +576,7 @@ end
 (termwise) constant homotopies from `P q` to the identity for all q -/
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
-{ hom := λ i j hij, (P_is_homotopic_to_id (i+2)).hom i j hij,
+{ hom := λ ij, (P_is_homotopic_to_id (ij.val.1+2)).hom ij,
   comm := begin 
     ext n,
     cases n,
