@@ -31,12 +31,12 @@ namespace homotopy
 
 def set_of_cs (c : complex_shape ι): set (ι × ι) := λ (x : ι × ι), c.rel x.2 x.1
 
-abbreviation prehomotopy (C D : homological_complex V c) :=
+abbreviation null_homotopy (C D : homological_complex V c) :=
 Π (ij : set_of_cs c), C.X ij.val.1 ⟶ D.X ij.val.2
 
 /-- The composition of `C.d i i' ≫ f ⟨⟨i',i⟩,_⟩` if there is some `i'` coming after `i`,
 and `0` otherwise. -/
-def d_next (i : ι) : prehomotopy C D →+ (C.X i ⟶ D.X i) :=
+def d_next (i : ι) : null_homotopy C D →+ (C.X i ⟶ D.X i) :=
 add_monoid_hom.mk' (λ f, match c.next i with
 | none := 0
 | some ⟨i',w⟩ := C.d i i' ≫ f ⟨⟨i',i⟩,w⟩
@@ -51,7 +51,7 @@ end
 /-- `f ⟨⟨i',i⟩,_⟩` if `i'` comes after `i`, and 0 if there's no such `i'`.
 Hopefully there won't be much need for this, except in `d_next_eq_d_from_from_next`
 to see that `d_next` factors through `C.d_from i`. -/
-def from_next [has_zero_object V] (i : ι) : prehomotopy C D →+ (C.X_next i ⟶ D.X i) :=
+def from_next [has_zero_object V] (i : ι) : null_homotopy C D →+ (C.X_next i ⟶ D.X i) :=
 add_monoid_hom.mk' (λ f, match c.next i with
 | none := 0
 | some ⟨i',w⟩ := (C.X_next_iso w).hom ≫ f ⟨⟨i',i⟩,w⟩
@@ -63,7 +63,7 @@ begin
   exact preadditive.comp_add _ _ _ _ _ _,
 end
 
-lemma d_next_eq_d_from_from_next [has_zero_object V] (f : prehomotopy C D) (i : ι) :
+lemma d_next_eq_d_from_from_next [has_zero_object V] (f : null_homotopy C D) (i : ι) :
   d_next i f = C.d_from i ≫ from_next i f :=
 begin
   dsimp [d_next, from_next],
@@ -71,7 +71,7 @@ begin
   { dsimp [d_next, from_next], simp },
 end
 
-lemma d_next_eq (f : prehomotopy C D) {i i' : ι} (w : c.rel i i') :
+lemma d_next_eq (f : null_homotopy C D) {i i' : ι} (w : c.rel i i') :
   d_next i f = C.d i i' ≫ f ⟨⟨i',i⟩,w⟩ :=
 begin
   dsimp [d_next],
@@ -79,8 +79,8 @@ begin
   refl,
 end
 
-@[simp] lemma d_next_comp_left (f : C ⟶ D) (g : Π i j, c.rel j i → (D.X i ⟶ E.X j)) (i : ι) :
-  d_next i (λ i j hij, f.f i ≫ g i j hij) = f.f i ≫ d_next i g :=
+@[simp] lemma d_next_comp_left (f : C ⟶ D) (g : null_homotopy D E) (i : ι) :
+  d_next i (λ ij, f.f ij.val.1 ≫ g ij) = f.f i ≫ d_next i g :=
 begin
   dsimp [d_next],
   rcases c.next i with _|⟨i',w⟩,
@@ -89,8 +89,8 @@ begin
     simp, },
 end
 
-@[simp] lemma d_next_comp_right (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) (i : ι) :
-  d_next i (λ i j hij, f i j hij ≫ g.f j) = d_next i f ≫ g.f i :=
+@[simp] lemma d_next_comp_right (f : null_homotopy C D) (g : D ⟶ E) (i : ι) :
+  d_next i (λ ij, f ij ≫ g.f ij.val.2) = d_next i f ≫ g.f i :=
 begin
   dsimp [d_next],
   rcases c.next i with _|⟨i',w⟩,
@@ -99,12 +99,12 @@ begin
     simp, },
 end
 
-/-- The composition of `f j j' ≫ D.d j' j` if there is some `j'` coming before `j`,
+/-- The composition of `f ⟨⟨j,j'⟩,_⟩ ≫ D.d j' j` if there is some `j'` coming before `j`,
 and `0` otherwise. -/
-def prev_d (j : ι) : (Π i j, c.rel j i → (C.X i ⟶ D.X j)) →+ (C.X j ⟶ D.X j) :=
+def prev_d (j : ι) : null_homotopy C D →+ (C.X j ⟶ D.X j) :=
 add_monoid_hom.mk' (λ f, match c.prev j with
 | none := 0
-| some ⟨j',w⟩ := f j j' w ≫ D.d j' j
+| some ⟨j',w⟩ := f ⟨⟨j,j'⟩,w⟩ ≫ D.d j' j
 end)
 begin
   intros f g,
@@ -116,10 +116,10 @@ end
 /-- `f j j'` if `j'` comes after `j`, and 0 if there's no such `j'`.
 Hopefully there won't be much need for this, except in `d_next_eq_d_from_from_next`
 to see that `d_next` factors through `C.d_from i`. -/
-def to_prev [has_zero_object V] (j : ι) : (Π i j, c.rel j i → (C.X i ⟶ D.X j)) →+ (C.X j ⟶ D.X_prev j) :=
+def to_prev [has_zero_object V] (j : ι) : null_homotopy C D →+ (C.X j ⟶ D.X_prev j) :=
 add_monoid_hom.mk' (λ f, match c.prev j with
 | none := 0
-| some ⟨j',w⟩ := f j j' w ≫ (D.X_prev_iso w).inv
+| some ⟨j',w⟩ := f ⟨⟨j,j'⟩,w⟩ ≫ (D.X_prev_iso w).inv
 end)
 begin
   intros f g,
@@ -128,8 +128,7 @@ begin
   exact preadditive.add_comp _ _ _ _ _ _,
 end
 
-lemma prev_d_eq_to_prev_d_to [has_zero_object V]
-  (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (j : ι) :
+lemma prev_d_eq_to_prev_d_to [has_zero_object V] (f : null_homotopy C D) (j : ι) :
   prev_d j f = to_prev j f ≫ D.d_to j :=
 begin
   dsimp [prev_d, to_prev],
@@ -138,8 +137,8 @@ begin
 end
 
 lemma prev_d_eq
-  (f : Π i j, c.rel j i → (C.X i ⟶  D.X j)) {j j' : ι} (w : c.rel j' j) :
-  prev_d j f = f j j' w ≫ D.d j' j :=
+  (f : null_homotopy C D) {j j' : ι} (w : c.rel j' j) :
+  prev_d j f = f ⟨⟨j,j'⟩,w⟩ ≫ D.d j' j :=
 begin
   dsimp [prev_d],
   rw c.prev_eq_some w,
@@ -147,8 +146,8 @@ begin
 end
 
 @[simp] lemma prev_d_comp_left
-  (f : C ⟶ D) (g : Π i j, c.rel j i → (D.X i ⟶ E.X j)) (j : ι) :
-  prev_d j (λ i j hij, f.f i ≫ g i j hij) = f.f j ≫ prev_d j g :=
+  (f : C ⟶ D) (g : null_homotopy D E) (j : ι) :
+  prev_d j (λ ij, f.f ij.val.1 ≫ g ij) = f.f j ≫ prev_d j g :=
 begin
   dsimp [prev_d],
   rcases c.prev j with _|⟨j',w⟩,
@@ -158,8 +157,8 @@ begin
 end
 
 @[simp] lemma to_prev'_comp_right
-  (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) (j : ι) :
-  prev_d j (λ i j hij, f i j hij ≫ g.f j) = prev_d j f ≫ g.f j :=
+  (f : null_homotopy C D) (g : D ⟶ E) (j : ι) :
+  prev_d j (λ ij, f ij ≫ g.f ij.val.2) = prev_d j f ≫ g.f j :=
 begin
   dsimp [prev_d],
   rcases c.prev j with _|⟨j',w⟩,
@@ -178,7 +177,7 @@ only one, or none.
 /-- The null homotopic map associated to a family `hom` of morphisms `C_i ⟶ D_j`
 when `c.rel j i`. This is the same datum as for the field `hom` in the structure
 `homotopy`. -/
-def null_homotopic_map (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) : C ⟶ D :=
+def null_homotopic_map (hom : null_homotopy C D) : C ⟶ D :=
 { f      := λ i, d_next i hom + prev_d i hom,
   comm'  := λ i j hij,
   begin
@@ -194,7 +193,7 @@ def null_homotopic_map (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) : C ⟶ D
       eq1, eq2, add_zero, zero_add, category.assoc], 
   end }
 
-def null_homotopic_map_add_monoid_hom : (Π i j, c.rel j i → (C.X i ⟶ D.X j)) →+ (C ⟶ D) :=
+def null_homotopic_map_add_monoid_hom : null_homotopy C D →+ (C ⟶ D) :=
 add_monoid_hom.mk' null_homotopic_map
 begin
   intros hom₁ hom₂,
@@ -206,38 +205,38 @@ begin
 end
 
 /-- If we need the additivity of `null_homotopic_map`, we can use this lemma -/
-lemma null_homotopic_map_additive (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
+lemma null_homotopic_map_additive (hom : null_homotopy C D) :
    null_homotopic_map hom = null_homotopic_map_add_monoid_hom hom :=
 by { dsimp [null_homotopic_map_add_monoid_hom], refl, }
 
 /-- null homotopies can be postcompose with a morphism of complexes,
 and the corresponding null homotopic maps are computed by `null_homotopic_map_comp` -/
 @[simp]
-def prehomotopy_comp (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) :
-  (Π i j, c.rel j i → (C.X i ⟶ E.X j)) := λ i j hij, (hom i j hij) ≫ g.f j 
+def null_homotopy_comp (hom : null_homotopy C D) (g : D ⟶ E) : null_homotopy C E :=
+λ ij, hom ij ≫ g.f ij.val.2 
 
 /-- null homotopies can be precomposed with a morphism of complexes,
 and the corresponding null homotopic maps are computed by `comp_null_homotopic_map` -/
 @[simp]
-def comp_prehomotopy (g : C ⟶ D) (hom : Π i j, c.rel j i → (D.X i ⟶ E.X j))  :
-  (Π i j, c.rel j i → (C.X i ⟶ E.X j)) := λ i j hij, g.f i ≫ (hom i j hij) 
+def comp_null_homotopy (g : C ⟶ D) (hom : null_homotopy D E) : null_homotopy C E :=
+λ ij, g.f ij.val.1 ≫ hom ij
 
 @[simp]
-lemma null_homotopic_map_comp (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) :
-  null_homotopic_map (prehomotopy_comp hom g) = null_homotopic_map hom ≫ g :=
+lemma null_homotopic_map_comp (hom : null_homotopy C D) (g : D ⟶ E) :
+  null_homotopic_map (null_homotopy_comp hom g) = null_homotopic_map hom ≫ g :=
 begin
   ext,
-  simp only [null_homotopic_map, prehomotopy_comp, d_next_comp_right, preadditive.add_comp,
+  simp only [null_homotopic_map, null_homotopy_comp, d_next_comp_right, preadditive.add_comp,
     to_prev'_comp_right, comp_f],
 end
 
 @[simp]
-lemma comp_null_homotopic_map (g : C ⟶ D) (hom : Π i j, c.rel j i → (D.X i ⟶ E.X j))  :
-  null_homotopic_map (comp_prehomotopy g hom) = g ≫ null_homotopic_map hom :=
+lemma comp_null_homotopic_map (g : C ⟶ D) (hom : null_homotopy D E)  :
+  null_homotopic_map (comp_null_homotopy g hom) = g ≫ null_homotopic_map hom :=
 begin
   ext,
   simp only [null_homotopic_map, d_next_comp_left, prev_d_comp_left, preadditive.comp_add,
-    comp_prehomotopy, comp_f],
+    comp_null_homotopy, comp_f],
 end
 
 /-! This lemma and the following ones can be used in order to compute
@@ -245,15 +244,14 @@ the degreewise morphisms induced by the null homotopic maps constructed
 with `null_homotopic_map` -/
 @[simp]
 lemma null_homotopic_map_f {k₂ k₁ k₀ : ι} (r₂₁ : c.rel k₂ k₁) (r₁₀ : c.rel k₁ k₀)
-  (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
-  (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom k₀ k₁ r₁₀+ hom k₁ k₂ r₂₁ ≫ D.d k₂ k₁ :=
+  (hom : null_homotopy C D) :
+  (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom ⟨⟨k₀,k₁⟩,r₁₀⟩ + hom ⟨⟨k₁,k₂⟩,r₂₁⟩ ≫ D.d k₂ k₁ :=
 by { dsimp [null_homotopic_map], rw [d_next_eq hom r₁₀, prev_d_eq hom r₂₁], }
 
 @[simp]
 lemma null_homotopic_map_f_of_not_rel_left {k₁ k₀ : ι} (r₁₀ : c.rel k₁ k₀)
-  (hk₀ : ∀ l : ι, ¬c.rel k₀ l)
-  (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
-  (null_homotopic_map hom).f k₀ = hom k₀ k₁ r₁₀ ≫ D.d k₁ k₀ :=
+  (hk₀ : ∀ l : ι, ¬c.rel k₀ l) (hom : null_homotopy C D) :
+  (null_homotopic_map hom).f k₀ = hom ⟨⟨k₀,k₁⟩,r₁₀⟩ ≫ D.d k₁ k₀ :=
 begin
   dsimp [null_homotopic_map],
   rw prev_d_eq hom r₁₀,
@@ -264,8 +262,8 @@ end
 @[simp]
 lemma null_homotopic_map_f_of_not_rel_right {k₁ k₀ : ι} (r₁₀ : c.rel k₁ k₀)
   (hk₁ : ∀ l : ι, ¬c.rel l k₁)
-  (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
-  (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom k₀ k₁ r₁₀ :=
+  (hom : null_homotopy C D) :
+  (null_homotopic_map hom).f k₁ = C.d k₁ k₀ ≫ hom ⟨⟨k₀,k₁⟩,r₁₀⟩ :=
 begin
   dsimp [null_homotopic_map],
   rw d_next_eq hom r₁₀,
@@ -276,7 +274,7 @@ end
 @[simp]
 lemma null_homotopic_map_f_eq_zero {k₀ : ι} 
   (hk₀ : ∀ l : ι, ¬c.rel k₀ l) (hk₀' : ∀ l : ι, ¬c.rel l k₀)
-  (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
+  (hom : null_homotopy C D) :
   (null_homotopic_map hom).f k₀ = 0 :=
 begin
   dsimp [null_homotopic_map],
@@ -296,7 +294,7 @@ when `c.rel j i`, such the difference between `f` and `g` is the `null_homotopic
 attached to h. -/
 @[ext, nolint has_inhabited_instance]
 structure homotopy (f g : C ⟶ D) :=
-(hom : Π i j, c.rel j i → (C.X i ⟶ D.X j))
+(hom : homotopy.null_homotopy C D)
 (comm : f = homotopy.null_homotopic_map hom + g)
 
 variables {f g}
@@ -313,7 +311,7 @@ end
 /-- Tautological construction of the `homotopy` to zero for maps constructed by
 `null_homotopic_map` -/
 @[simps]
-def null_homotopy (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
+def null_homotopy (hom : null_homotopy C D) :
   homotopy (null_homotopic_map hom) 0 :=
 { hom := hom,
   comm := by simp only [add_zero], }
