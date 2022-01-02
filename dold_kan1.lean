@@ -92,9 +92,10 @@ def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
 `c` such `c m n` if and only if $m=n+1$. -/
 def c := complex_shape.down ℕ
 
-/-- The degree is decreased by the diffential. -/
-lemma c_succ (n : ℕ) : c.rel (n+1) n := by { have eq : n+1 = n+1 := rfl, assumption, }
-lemma c_succ0 : c.rel 1 0 := c_succ 0
+def cs_down_succ := homotopy.cs_down_succ
+def cs_down_0_not_rel_left := homotopy.cs_down_0_not_rel_left
+
+--lemma c_succ0 : c.rel 1 0 := c_succ 0
 
 /-- There is no differential from the object in degree 0. -/
 def c_lowerend (n : ℕ) : ¬c.rel 0 n := by
@@ -158,9 +159,10 @@ begin
   { unfold P,
     simp only [homological_complex.comp_f, homological_complex.add_f_apply,
       homological_complex.id_f, hq, comp_add, id_comp, add_right_eq_self,
-      Hσ, homotopy.null_homotopic_map_f_of_not_rel_left c_succ0 c_lowerend],
-    cases q, swap, rw [hσ'_eq_zero (nat.succ_pos q) c_succ0, zero_comp],
-    simp only [hσ'_eq (show 0=0+0, by refl) c_succ0],
+      Hσ, homotopy.null_homotopic_map_f_of_not_rel_left
+        (cs_down_succ 0) cs_down_0_not_rel_left],
+    cases q, swap, rw [hσ'_eq_zero (nat.succ_pos q) (cs_down_succ 0), zero_comp],
+    simp only [hσ'_eq (show 0=0+0, by refl) (cs_down_succ 0)],
     simp only [fin.mk_zero, one_zsmul, eq_to_hom_refl, comp_id, pow_zero],
     erw chain_complex.of_d, simp [alternating_face_map_complex.obj_d],
     simp only [fin.sum_univ_two, comp_neg, fin.coe_zero, comp_add, fin.coe_one,
@@ -235,8 +237,8 @@ begin
   have hnaq_shift : Π d : ℕ, n+d=(a+d)+q,
   { intro d, rw [add_assoc, add_comm d, ← add_assoc, hnaq], },
   simp only [Hσ],
-  rw [homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n),
-    hσ'_eq hnaq (c_succ n), hσ'_eq (hnaq_shift 1) (c_succ (n+1))],
+  rw [homotopy.null_homotopic_map_f (cs_down_succ (n+1)) (cs_down_succ n),
+    hσ'_eq hnaq (cs_down_succ n), hσ'_eq (hnaq_shift 1) (cs_down_succ (n+1))],
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, eq_to_hom_refl, comp_id],
   simp only [comp_sum, sum_comp, comp_id, comp_add],
@@ -362,11 +364,11 @@ lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
   by_cases hqnp : n+1<q;
-  simp only [Hσ, homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n),
-    hσ'_eq_zero hqn (c_succ n)],
-  { simp only [hσ'_eq_zero hqnp (c_succ (n+1)), add_zero, zero_comp, comp_zero], },
+  simp only [Hσ, homotopy.null_homotopic_map_f (cs_down_succ (n+1)) (cs_down_succ n),
+    hσ'_eq_zero hqn (cs_down_succ n)],
+  { simp only [hσ'_eq_zero hqnp (cs_down_succ (n+1)), add_zero, zero_comp, comp_zero], },
   { have eqq := le_antisymm (not_lt.mp hqnp) (nat.succ_le_iff.mpr hqn),
-    simp only [hσ'_eq (show n+1=0+q, by linarith) (c_succ (n+1)), eq_to_hom_refl,
+    simp only [hσ'_eq (show n+1=0+q, by linarith) (cs_down_succ (n+1)), eq_to_hom_refl,
       pow_zero, one_zsmul, comp_id, comp_zero, zero_add],
     erw chain_complex.of_d,
     simp only [alternating_face_map_complex.obj_d, comp_sum],
@@ -530,14 +532,14 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   end
 
 lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
-  (((P_is_homotopic_to_id (q+1)).hom n (n+1) (c_succ n)) : X _[n] ⟶ X _[n+1]) =
-  (P_is_homotopic_to_id q).hom n (n+1) (c_succ n):= 
+  (((P_is_homotopic_to_id (q+1)).hom n (n+1) (cs_down_succ n)) : X _[n] ⟶ X _[n+1]) =
+  (P_is_homotopic_to_id q).hom n (n+1) (cs_down_succ n):= 
 begin
   unfold P_is_homotopic_to_id,
   simp only [homotopy.trans, homotopy.of_eq, homotopy.comp_left, homotopy.add,
     zero_add, homotopy.comp_null_homotopy, homotopy.add_apply, homotopy.zero_apply,
     add_zero, add_right_eq_self, homotopy_Hσ_to_zero, homotopy.null_homotopy],
-  erw [hσ'_eq_zero hqn (c_succ n), comp_zero],
+  erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero],
 end
 
 lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
@@ -586,12 +588,13 @@ def P_infty_is_homotopic_to_id :
     { have h : ((_ : X _[0] ⟶ _) = _) := (P_is_homotopic_to_id 2).comm_ext 0,
       simp only [P_infty_termwise, homological_complex.add_f_apply,
         homological_complex.id_f] at h ⊢,
-      erw homotopy.null_homotopic_map_f_of_not_rel_left c_succ0 c_lowerend at h ⊢,
+      erw homotopy.null_homotopic_map_f_of_not_rel_left
+        (cs_down_succ 0) cs_down_0_not_rel_left at h ⊢,
       simpa only [P_deg0_eq] using h, },
     { have h : ((_ : X _[n+1] ⟶ _) = _) :=
         (P_is_homotopic_to_id (n+2)).comm_ext (n+1),
       simp only [P_infty_termwise, homological_complex.add_f_apply],
-      erw homotopy.null_homotopic_map_f (c_succ (n+1)) (c_succ n) at h ⊢,
+      erw homotopy.null_homotopic_map_f (cs_down_succ (n+1)) (cs_down_succ n) at h ⊢,
       rw homotopies_P_id_are_eventually_constant (lt_add_one (n+1)),
       rwa ← P_is_eventually_constant (rfl.ge : n+1 ≤ n+1), },
   end }

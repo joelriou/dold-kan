@@ -39,9 +39,7 @@ instance add_zero_class : add_comm_group (Π i j, c.rel j i → (C.X i ⟶ D.X j
   add_zero := λ f,         by { ext i j hij, apply_rules [add_zero], },
   zero_add := λ f,         by { ext i j hij, apply_rules [zero_add], },
   add_assoc := λ f g h,    by { ext i j hij, apply_rules [add_assoc], },
-  sub_eq_add_neg := λ f g, by { ext i j hij, apply_rules [sub_eq_add_neg], },
-  }
-
+  sub_eq_add_neg := λ f g, by { ext i j hij, apply_rules [sub_eq_add_neg], }, }
 
 @[simp]
 lemma add_apply (f g : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (i j : ι) (hij : c.rel j i) :
@@ -149,7 +147,8 @@ begin
   exact preadditive.add_comp _ _ _ _ _ _,
 end
 
-lemma prev_d_eq_to_prev_d_to [has_zero_object V] (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (j : ι) :
+lemma prev_d_eq_to_prev_d_to [has_zero_object V]
+  (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (j : ι) :
   prev_d j f = to_prev j f ≫ D.d_to j :=
 begin
   dsimp [prev_d, to_prev],
@@ -157,7 +156,8 @@ begin
   { dsimp [prev_d, to_prev], simp },
 end
 
-lemma prev_d_eq (f : Π i j, c.rel j i → (C.X i ⟶  D.X j)) {j j' : ι} (w : c.rel j' j) :
+lemma prev_d_eq
+  (f : Π i j, c.rel j i → (C.X i ⟶  D.X j)) {j j' : ι} (w : c.rel j' j) :
   prev_d j f = f j j' w ≫ D.d j' j :=
 begin
   dsimp [prev_d],
@@ -165,7 +165,8 @@ begin
   refl,
 end
 
-@[simp] lemma prev_d_comp_left (f : C ⟶ D) (g : Π i j, c.rel j i → (D.X i ⟶ E.X j)) (j : ι) :
+@[simp] lemma prev_d_comp_left
+  (f : C ⟶ D) (g : Π i j, c.rel j i → (D.X i ⟶ E.X j)) (j : ι) :
   prev_d j (λ i j hij, f.f i ≫ g i j hij) = f.f j ≫ prev_d j g :=
 begin
   dsimp [prev_d],
@@ -175,7 +176,8 @@ begin
     simp, },
 end
 
-@[simp] lemma to_prev'_comp_right (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) (j : ι) :
+@[simp] lemma to_prev'_comp_right
+  (f : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) (j : ι) :
   prev_d j (λ i j hij, f i j hij ≫ g.f j) = prev_d j f ≫ g.f j :=
 begin
   dsimp [prev_d],
@@ -222,20 +224,25 @@ begin
   abel, 
 end
 
+/-- If we need the additivity of `null_homotopic_map`, we can use this lemma -/
 lemma null_homotopic_map_additive (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) :
    null_homotopic_map hom = null_homotopic_map_add_monoid_hom hom :=
 by { dsimp [null_homotopic_map_add_monoid_hom], refl, }
 
+/-- null homotopies can be postcompose with a morphism of complexes,
+and the corresponding null homotopic maps are computed by `null_homotopic_map_comp` -/
 @[simp]
 def null_homotopy_comp (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) :
   (Π i j, c.rel j i → (C.X i ⟶ E.X j)) := λ i j hij, (hom i j hij) ≫ g.f j 
 
+/-- null homotopies can be precomposed with a morphism of complexes,
+and the corresponding null homotopic maps are computed by `comp_null_homotopic_map` -/
 @[simp]
 def comp_null_homotopy (g : C ⟶ D) (hom : Π i j, c.rel j i → (D.X i ⟶ E.X j))  :
   (Π i j, c.rel j i → (C.X i ⟶ E.X j)) := λ i j hij, g.f i ≫ (hom i j hij) 
 
 @[simp]
-def null_homotopic_map_comp (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) :
+lemma null_homotopic_map_comp (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j)) (g : D ⟶ E) :
   null_homotopic_map (null_homotopy_comp hom g) = null_homotopic_map hom ≫ g :=
 begin
   ext,
@@ -244,7 +251,7 @@ begin
 end
 
 @[simp]
-def comp_null_homotopic_map (g : C ⟶ D) (hom : Π i j, c.rel j i → (D.X i ⟶ E.X j))  :
+lemma comp_null_homotopic_map (g : C ⟶ D) (hom : Π i j, c.rel j i → (D.X i ⟶ E.X j))  :
   null_homotopic_map (comp_null_homotopy g hom) = g ≫ null_homotopic_map hom :=
 begin
   ext,
@@ -300,14 +307,12 @@ begin
   refl,
 end
 
-
 end homotopy
 
 /--
 A homotopy `h` between chain maps `f` and `g` consists of components `h i j : C.X i ⟶ D.X j`
 when `c.rel j i`, such the difference between `f` and `g` is the `null_homotopic_map`
-attached to h.
--/
+attached to h. -/
 @[ext, nolint has_inhabited_instance]
 structure homotopy (f g : C ⟶ D) :=
 (hom : Π i j, c.rel j i → (C.X i ⟶ D.X j))
@@ -342,8 +347,8 @@ def equiv_sub_zero : homotopy f g ≃ homotopy (f - g) 0 :=
   inv_fun := λ h,
   { hom := h.hom,
     comm := by { simpa only [add_zero] using eq_add_of_sub_eq h.comm, }, },
-  left_inv := by { intro, ext, dsimp, refl, },
-  right_inv := by { intro, ext, dsimp, refl, }, }
+  left_inv  := by { intro, dsimp, ext, refl, },
+  right_inv := by { intro, dsimp, ext, refl, }, }
 
 /-- Equal chain maps are homotopic. -/
 @[simps]
@@ -390,6 +395,20 @@ def add {f₁ g₁ f₂ g₂: C ⟶ D}
     have H2 := h₂.comm,
     simp only [null_homotopic_map_additive, map_add] at H1 H2 ⊢,
     simp only [congr (congr_arg has_add.add H1) H2],
+    abel,
+  end }
+
+/-- the sum of two homotopies is a homotopy between the sum of the respective morphisms. -/
+@[simps]
+def sub {f₁ g₁ f₂ g₂: C ⟶ D}
+  (h₁ : homotopy f₁ g₁) (h₂ : homotopy f₂ g₂) : homotopy (f₁-f₂) (g₁-g₂) :=
+{ hom := h₁.hom - h₂.hom,
+  comm := 
+  begin
+    have H1 := h₁.comm,
+    have H2 := h₂.comm,
+    simp only [null_homotopic_map_additive, map_sub] at H1 H2 ⊢,
+    simp only [congr (congr_arg has_sub.sub H1) H2],
     abel,
   end }
 
@@ -448,9 +467,9 @@ section mk_inductive
 
 variables {P Q : chain_complex V ℕ}
 
-lemma c_down (j : ℕ) : (complex_shape.down ℕ).rel (j+1) j :=
+lemma cs_down_succ (j : ℕ) : (complex_shape.down ℕ).rel (j+1) j :=
 by { have eq : j+1 = j+1 := rfl, assumption, }
-lemma c_0_not_rel_left (j : ℕ) : ¬(complex_shape.down ℕ).rel 0 j :=
+lemma cs_down_0_not_rel_left (j : ℕ) : ¬(complex_shape.down ℕ).rel 0 j :=
 begin
   intro h,
   dsimp at h,
@@ -458,16 +477,18 @@ begin
   rw [show j.succ=j+1, by refl, h],
 end
 
-@[simp] lemma prev_d_chain_complex (f : Π (i j : ℕ), (complex_shape.down ℕ).rel j i → (P.X i ⟶ Q.X j)) (j : ℕ) :
-  prev_d j f = f j (j+1) (c_down j) ≫ Q.d _ _ :=
+@[simp] lemma prev_d_chain_complex
+  (f : Π (i j : ℕ), (complex_shape.down ℕ).rel j i → (P.X i ⟶ Q.X j)) (j : ℕ) :
+  prev_d j f = f j (j+1) (cs_down_succ j) ≫ Q.d _ _ :=
 begin
   dsimp [prev_d],
   simp only [chain_complex.prev],
   refl,
 end
 
-@[simp] lemma d_next_succ_chain_complex (f : Π i j, (complex_shape.down ℕ).rel j i → (P.X i ⟶ Q.X j)) (i : ℕ) :
-  d_next (i+1) f = P.d _ _ ≫ f i (i+1) (c_down i) :=
+@[simp] lemma d_next_succ_chain_complex
+  (f : Π i j, (complex_shape.down ℕ).rel j i → (P.X i ⟶ Q.X j)) (i : ℕ) :
+  d_next (i+1) f = P.d _ _ ≫ f i (i+1) (cs_down_succ i) :=
 begin
   dsimp [d_next],
   simp only [chain_complex.next_nat_succ],
@@ -553,15 +574,17 @@ def mk_inductive : homotopy e 0 :=
     dsimp, simp only [add_zero],
     convert (mk_inductive_aux₂ e zero comm_zero one comm_one succ i).2.2,
     { rcases i with (_|_|_|i),
-      { simp only [null_homotopic_map_f_of_not_rel_left (c_down 0) c_0_not_rel_left],
+      { simp only [null_homotopic_map_f_of_not_rel_left
+          (cs_down_succ 0) cs_down_0_not_rel_left],
         dsimp,
         simp only [zero_add, comp_zero],
         slice_rhs 2 3 { erw X_prev_iso_comp_d_to, },
         slice_lhs 2 3 { erw iso.inv_hom_id, },
         simp only [category.id_comp], },
-      simp only [null_homotopic_map_f (c_down 1) (c_down 0)], rotate,
-      simp only [null_homotopic_map_f (c_down 2) (c_down 1)], rotate,
-      simp only [null_homotopic_map_f (c_down (i.succ.succ.succ)) (c_down (i.succ.succ))],
+      simp only [null_homotopic_map_f (cs_down_succ 1) (cs_down_succ 0)], rotate,
+      simp only [null_homotopic_map_f (cs_down_succ 2) (cs_down_succ 1)], rotate,
+      simp only [null_homotopic_map_f (cs_down_succ (i.succ.succ.succ))
+        (cs_down_succ (i.succ.succ))],
       all_goals
       { dsimp,
         simp only [d_from_comp_X_next_iso_assoc, category.assoc],
