@@ -65,19 +65,21 @@ begin
   simp only [assoc, eq],
 end
 
+/-- For each q, Hσ q is a natural transformation. -/
 def nat_trans_Hσ (q : ℕ) : ((alternating_face_map_complex C) ⟶
   (alternating_face_map_complex C)) :=
 { app := λ _, Hσ q,
   naturality' := λ X Y f,
   begin
     unfold Hσ,
-    rw [← homotopy.comp_null_homotopic_map, ← homotopy.null_homotopic_map_comp],
+    rw [homotopy.comp_null_homotopic_map, homotopy.null_homotopic_map_comp],
     congr,
     rw [homotopy.comp_prehomotopy, homotopy.prehomotopy_comp],
     simp only [hσ'_naturality, chain_complex.of_hom_f,
       alternating_face_map_complex_map, alternating_face_map_complex.map],
   end }
 
+/-- For each q, P q is a natural transformation. -/
 def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
   (alternating_face_map_complex C)) :=
 { app := λ _, P q,
@@ -100,10 +102,12 @@ congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
   ((alternating_face_map_complex C).obj Y)) → (_ ⟶ _ ))
   ((nat_trans_P q).naturality f)
 
-@[ext]
-structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
-  (a : X _[n+1] ⟶ Z) (b : fin(n+1) → (X _[n] ⟶ Z))
 
+/-- Q q is the complement projector associated to P q -/
+def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
+(alternating_face_map_complex C).obj X) := 𝟙 _ - P q
+
+/-- This is the decreasing involution of `fin (n+1)` which appears in `decomposition_Q`. -/
 def reverse_fin {n : ℕ} (i : fin(n+1)) : fin(n+1):= ⟨n-i, nat.sub_lt_succ n ↑i⟩
 
 lemma reverse_fin_eq {n a : ℕ} (i : fin(n+1)) (hnaq : n=a+i) : reverse_fin i = 
@@ -114,53 +118,10 @@ begin
   exact tsub_eq_of_eq_add hnaq,
 end
 
-def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
-  X _[n+1] ⟶ Z :=
-  P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)),
-  (((P i).f (n+1)) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i))) 
-
-def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
-  (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
-{ a := f.a ≫ g,
-  b := λ i, f.b i ≫ g }
-
-lemma F_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C} (f : morph_components X n Z)
-  (g : Z ⟶ Z') : F (morph_components_comp f g) = F f ≫ g :=
-begin
-  unfold F morph_components_comp,
-  simp only [add_comp, sum_comp, assoc],
-end
-
-def comp_morph_components {X' X : simplicial_object C} {n : ℕ} {Z : C}
-  (g : X' ⟶ X) (f : morph_components X n Z) : morph_components X' n Z :=
-{ a := g.app (op [n+1]) ≫ f.a,
-  b := λ i, g.app (op [n]) ≫ f.b i }
-
-lemma comp_F {X' X : simplicial_object C} {n : ℕ} {Z : C}
-  (g : X' ⟶ X) (f : morph_components X n Z) :
-  F (comp_morph_components g f) = g.app (op [n+1]) ≫ F f :=
-begin
-  unfold F comp_morph_components,
-  simp only [P_infty_termwise, comp_add],
-  congr' 1,
-  { simp only [← assoc, P_termwise_naturality], },
-  { simp only [comp_sum],
-    congr,
-    ext,
-    slice_rhs 1 2 {rw P_termwise_naturality, },
-    slice_lhs 2 3 {erw g.naturality, },
-    simp only [assoc],
-    refl, }
-end
-
-def morph_components_id (X : simplicial_object C) (n : ℕ) :
-  morph_components X n (X _[n+1]) :=
-{ a := P_infty.f (n+1),
-  b := λ i, X.σ i, }
-
-def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
-(alternating_face_map_complex C).obj X) := 𝟙 _ - P q
-
+/-- We decompose the identity using `P_q` and degeneracies. In the case of a simplicial
+abelian group, this means we can decompose a $(n+1)$-simplex $x$ as
+$x = x' + \sum (i=0}^{q-1} σ_{n-i}(y_i)$ where $x'$ is in the image of `P_q$ and
+the $y_i$ are in degree $n$. -/
 lemma decomposition_Q {X : simplicial_object C} (n q : ℕ) (hqn : q≤n+1) :
   ((Q q).f (n+1) : X _[n+1] ⟶ X _[n+1]) =
   ∑ (i : fin(n+1)) in finset.filter (λ i : fin(n+1), (i:ℕ)<q) finset.univ,
@@ -187,20 +148,81 @@ begin
   },
 end
 
+/-- The structure `morph_components` is an ad hoc structure that is used the 
+proof of `normalized_Moore_complex_reflects_iso`. The fields are the data
+that are needed in order to construct a morphism `X _[n+1] ⟶ Z` (see `F`)
+using the decomposition of the identity given by `decomposition_Q n (n+1)`.
+
+In the proof of `normalized_Moore_complex_reflects_iso`, in order to check
+that two maps coincide, we only need to verify that the `morph_components`
+they come from are equal.
+-/
+@[ext, nolint has_inhabited_instance]
+structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
+  (a : X _[n+1] ⟶ Z) (b : fin(n+1) → (X _[n] ⟶ Z))
+
+/-- The morphism `X _[n+1] ⟶ Z ` associated to a `morph_components X n Z`-/
+def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
+  X _[n+1] ⟶ Z :=
+  P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)),
+  (((P i).f (n+1)) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i))) 
+
+/-- the canonical `morph_components` whose associated morphism is the identity
+(see `F_id`) thanks to `decomposition_Q n (n+1)` -/
+def morph_components_id (X : simplicial_object C) (n : ℕ) :
+  morph_components X n (X _[n+1]) :=
+{ a := P_infty.f (n+1),
+  b := λ i, X.σ i, }
+
 lemma F_id (X : simplicial_object C) (n : ℕ) :
   F (morph_components_id X n) = 𝟙 _ :=
 begin
-  dsimp [comp_morph_components, morph_components_id, F],
-  simp only [P_infty_termwise],
-  rw [← homological_complex.comp_f, P_is_a_projector (n+1)],
-  rw [show 𝟙 (X.obj (op [n+1])) = (P (n+1)).f (n+1)+(Q (n+1)).f (n+1), by
-  { unfold Q, simp only [homological_complex.sub_f_apply, add_sub_cancel'_right,
-    homological_complex.id_f], refl, }],
+  simp only [morph_components_id, F, P_infty_termwise,
+    ← homological_complex.comp_f, P_is_a_projector (n+1),
+    (show 𝟙 (X.obj (op [n+1])) = (P (n+1)).f (n+1)+(Q (n+1)).f (n+1), by
+  { simp only [Q, homological_complex.sub_f_apply, add_sub_cancel'_right,
+    homological_complex.id_f], refl, })],
   congr,
   rw decomposition_Q n (n+1) rfl.ge,
   congr,
   ext,
   simp only [true_and, true_iff, finset.mem_univ, finset.mem_filter, fin.is_lt],
+end
+
+/-- A `morph_components` can be postcomposed with a map `Z ⟶ Z'`. -/
+def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
+  (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
+{ a := f.a ≫ g,
+  b := λ i, f.b i ≫ g }
+
+lemma F_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C} (f : morph_components X n Z)
+  (g : Z ⟶ Z') : F (morph_components_comp f g) = F f ≫ g :=
+begin
+  unfold F morph_components_comp,
+  simp only [add_comp, sum_comp, assoc],
+end
+
+/-- A `morph_components` can be precomposed with a map `X' ⟶ X`. -/
+def comp_morph_components {X' X : simplicial_object C} {n : ℕ} {Z : C}
+  (g : X' ⟶ X) (f : morph_components X n Z) : morph_components X' n Z :=
+{ a := g.app (op [n+1]) ≫ f.a,
+  b := λ i, g.app (op [n]) ≫ f.b i }
+
+lemma comp_F {X' X : simplicial_object C} {n : ℕ} {Z : C}
+  (g : X' ⟶ X) (f : morph_components X n Z) :
+  F (comp_morph_components g f) = g.app (op [n+1]) ≫ F f :=
+begin
+  unfold F comp_morph_components,
+  simp only [P_infty_termwise, comp_add],
+  congr' 1,
+  { simp only [← assoc, P_termwise_naturality], },
+  { simp only [comp_sum],
+    congr,
+    ext,
+    slice_rhs 1 2 {rw P_termwise_naturality, },
+    slice_lhs 2 3 {erw g.naturality, },
+    simp only [assoc],
+    refl, }
 end
 
 theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}

@@ -83,19 +83,21 @@ variables {C : Type*} [category C] [preadditive C]
 
 variables {X : simplicial_object C}
 
+/-- As we are using chain complexes indexed by ℕ, we shall need the relation
+`c` such `c m n` if and only if $m=n+1$. -/
+def c := complex_shape.down ℕ
+/-! Restatement of `homotopy.cs_down_succ` and `homotopy.cs_down_0_not_rel_left`,
+  which avoids opening `homotopy`. -/
+lemma cs_down_succ (j : ℕ) : (complex_shape.down ℕ).rel (j+1) j := homotopy.cs_down_succ j
+lemma cs_down_0_not_rel_left (j : ℕ) : ¬(complex_shape.down ℕ).rel 0 j := homotopy.cs_down_0_not_rel_left j
+
 /-- the sequence of maps that provide the null homotopic map that is used in
 the inductive construction of projectors `P q` -/
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
   else (-1 : ℤ)^(n-q) • X.σ ⟨n-q, nat.sub_lt_succ n q⟩
 
-/-- As we are using chain complexes indexed by ℕ, we shall need the relation
-`c` such `c m n` if and only if $m=n+1$. -/
-def c := complex_shape.down ℕ
-
-def cs_down_succ := homotopy.cs_down_succ
-def cs_down_0_not_rel_left := homotopy.cs_down_0_not_rel_left
-
-/-- for type theory reasons, we need to extend `hσ` -/
+/-- We can turn `hσ` into a `prehomotopy`. However, this requires using
+`eq_to_hom`. -/
 def hσ' (q : ℕ) : prehomotopy ((alternating_face_map_complex C).obj X)
   ((alternating_face_map_complex C).obj X) := λ ij,
 (hσ q ij.val.1) ≫ eq_to_hom (by { congr', exact ij.property, })
@@ -461,9 +463,9 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
 
-/-- This definition expresses that the vanishing of
+/-- This lemma expresses that the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
-def higher_faces_vanish_P : Π (q : ℕ),
+lemma higher_faces_vanish_P : Π (q : ℕ),
   Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0    := λ n, { vanishing := by
   { intros j hj, exfalso, have hj2 := fin.is_lt j, linarith, } }
@@ -513,7 +515,7 @@ begin
   { exact P_is_identity_where_faces_vanish (higher_faces_vanish_P q n), },
 end
 
-/- inductive construction of homotopies from `P q` to `𝟙` -/
+/-- inductive construction of homotopies from `P q` to `𝟙` -/
 noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   homotopy (P q : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _)
 | 0     := homotopy.refl _
@@ -637,6 +639,7 @@ begin
     exact (higher_faces_vanish_P (n+1) n).vanishing i (le_add_self), }
 end
 
+/-- P_infty factors through the normalized_Moore_complex -/
 def P_infty_into_Moore_subcomplex (Y : simplicial_object A) :
   (alternating_face_map_complex A).obj Y ⟶ (normalized_Moore_complex A).obj Y :=
 chain_complex.of_hom _ _ _ _ _ _
@@ -679,6 +682,8 @@ lemma factors_P_infty (Y : simplicial_object A) :
   simp only [P_infty_into_Moore_subcomplex, chain_complex.of_hom,
     factor_thru_arrow, homological_complex.comp_f, inclusion_of_Moore_complex_map_f], }
 
+/-- the inclusion of the Moore complex in the alternating face map complex
+is an homotopy equivalence -/
 @[ext]
 def homotopy_equiv_inclusion_of_Moore_complex :
   homotopy_equiv ((normalized_Moore_complex A).obj Y)

@@ -27,8 +27,10 @@ variables (f g : C ⟶ D) (h k : D ⟶ E) (i : ι)
 
 section 
 
+/-- The subset of ι × ι consisting of (i,j such that c.rel j i) -/
 def homotopy.set_of_cs (c : complex_shape ι): set (ι × ι) := λ (x : ι × ι), c.rel x.2 x.1
 
+/-- A prehomotopy C D consists of morphisms C.X i ⟶ C.X j when c.rel j i -/
 abbreviation prehomotopy (C D : homological_complex V c) :=
 Π (ij : homotopy.set_of_cs c), C.X ij.val.1 ⟶ D.X ij.val.2
 
@@ -193,6 +195,7 @@ def null_homotopic_map (hom : prehomotopy C D) : C ⟶ D :=
       eq1, eq2, add_zero, zero_add, category.assoc], 
   end }
 
+/-- make `null_homotopic_map` into an additive map of monoids -/
 def add_monoid_hom_null_homotopic_map : prehomotopy C D →+ (C ⟶ D) :=
 add_monoid_hom.mk' null_homotopic_map
 begin
@@ -204,12 +207,12 @@ begin
   abel, 
 end
 
-/-- If we need the additivity of `null_homotopic_map`, we can use this lemma -/
+/-- Use this lemma when you need the additivity of `null_homotopic_map` -/
 lemma additive_null_homotopic_map (hom : prehomotopy C D) :
    null_homotopic_map hom = add_monoid_hom_null_homotopic_map hom :=
 by { dsimp [add_monoid_hom_null_homotopic_map], refl, }
 
-/-- null homotopies can be postcompose with a morphism of complexes,
+/-- null homotopies can be postcomposed with a morphism of complexes,
 and the corresponding null homotopic maps are computed by `null_homotopic_map_comp` -/
 @[simp]
 def prehomotopy_comp (hom : prehomotopy C D) (g : D ⟶ E) : prehomotopy C E :=
@@ -223,7 +226,7 @@ def comp_prehomotopy (g : C ⟶ D) (hom : prehomotopy D E) : prehomotopy C E :=
 
 @[simp]
 lemma null_homotopic_map_comp (hom : prehomotopy C D) (g : D ⟶ E) :
-  null_homotopic_map (prehomotopy_comp hom g) = null_homotopic_map hom ≫ g :=
+  null_homotopic_map hom ≫ g = null_homotopic_map (prehomotopy_comp hom g) :=
 begin
   ext,
   simp only [null_homotopic_map, prehomotopy_comp, d_next_comp_right, preadditive.add_comp,
@@ -232,7 +235,7 @@ end
 
 @[simp]
 lemma comp_null_homotopic_map (g : C ⟶ D) (hom : prehomotopy D E)  :
-  null_homotopic_map (comp_prehomotopy g hom) = g ≫ null_homotopic_map hom :=
+   g ≫ null_homotopic_map hom = null_homotopic_map (comp_prehomotopy g hom) :=
 begin
   ext,
   simp only [null_homotopic_map, d_next_comp_left, prev_d_comp_left, preadditive.comp_add,
@@ -340,8 +343,8 @@ def of_eq (h : f = g) : homotopy f g :=
 def refl (f : C ⟶ D) : homotopy f f :=
 of_eq (rfl : f = f)
 
-/- `f` is homotopic to `g` iff `g` is homotopic to `f`. -/
---  @[simps, symm]
+/-- `f` is homotopic to `g` iff `g` is homotopic to `f`. -/
+@[simps, symm]
 def symm {f g : C ⟶ D} (h : homotopy f g) : homotopy g f :=
 { hom := -h.hom,
   comm :=
@@ -351,7 +354,7 @@ def symm {f g : C ⟶ D} (h : homotopy f g) : homotopy g f :=
     exact eq_neg_add_of_add_eq (eq.symm H),
   end }
 
-/- homotopy is a transitive relation. -/
+/-- homotopy is a transitive relation. -/
 @[simps, trans]
 def trans {e f g : C ⟶ D} (h : homotopy e f) (k : homotopy f g) : homotopy e g :=
 { hom := h.hom + k.hom,
@@ -395,7 +398,7 @@ def comp_right {e f : C ⟶ D} (h : homotopy e f) (g : D ⟶ E) : homotopy (e �
 { hom := prehomotopy_comp h.hom g,
   comm :=
   begin
-    simp only [null_homotopic_map_comp, ← preadditive.add_comp],
+    simp only [← null_homotopic_map_comp, ← preadditive.add_comp],
     congr',
     exact h.comm,
   end}
@@ -406,7 +409,7 @@ def comp_left {f g : D ⟶ E} (h : homotopy f g) (e : C ⟶ D) : homotopy (e ≫
 { hom := comp_prehomotopy e h.hom,
   comm :=
   begin
-    simp only [comp_null_homotopic_map, ← preadditive.comp_add],
+    simp only [← comp_null_homotopic_map, ← preadditive.comp_add],
     congr',
     exact h.comm,
   end}
@@ -446,6 +449,7 @@ variables {P Q : chain_complex V ℕ}
 
 lemma cs_down_succ (j : ℕ) : (complex_shape.down ℕ).rel (j+1) j :=
 by { have eq : j+1 = j+1 := rfl, assumption, }
+
 lemma cs_down_0_not_rel_left (j : ℕ) : ¬(complex_shape.down ℕ).rel 0 j :=
 begin
   intro h,
