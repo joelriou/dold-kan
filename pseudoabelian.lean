@@ -5,7 +5,6 @@ Authors: Joël Riou
 -/
 import category_theory.preadditive
 import category_theory.limits.shapes.biproducts
-import category_theory.limits.shapes.kernels
 
 /-!
 # Pseudoabelian categories
@@ -13,7 +12,7 @@ import category_theory.limits.shapes.kernels
 -/
 
 open category_theory
-open category_theory.preadditive
+open category_theory.category
 open category_theory.limits
 
 noncomputable theory
@@ -28,6 +27,7 @@ variable {X : C}
 
 class is_projector (p : X ⟶ X) : Prop := (idempotence : p ≫ p = p)
 
+@[simp]
 def binary_bicone_of_projector {X : C} (p : X ⟶ X)
   [h : is_projector p] [has_kernel p] [has_kernel (𝟙 X - p)] :
   binary_bicone (kernel (𝟙 X - p)) (kernel p) :=
@@ -38,13 +38,30 @@ def binary_bicone_of_projector {X : C} (p : X ⟶ X)
     (by { rw [comp_sub, category.comp_id, sub_eq_zero], exact h.idempotence.symm, }),
   snd := kernel.lift p (𝟙 X - p)
     (by { rw [sub_comp, category.id_comp, sub_eq_zero], exact h.idempotence.symm, }),
-  inl_snd' := by { dsimp, ext, simp only [limits.zero_comp, limits.kernel.condition,
-    category.assoc, limits.kernel.lift_ι], },
-  inr_fst' := by { dsimp, ext, simp only [limits.zero_comp, limits.kernel.condition,
-    category.assoc, limits.kernel.lift_ι], },
-  inl_fst' := sorry,
-  inr_snd' := sorry,
-}
+  inl_snd' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
+    assoc, kernel.lift_ι], },
+  inr_fst' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
+    assoc, kernel.lift_ι], },
+  inl_fst' :=
+  begin
+    ext,
+    rw [assoc, limits.kernel.lift_ι, limits.equalizer_as_kernel, id_comp],
+    symmetry,
+    conv { to_lhs, rw ← comp_id (kernel.ι _), },
+    apply sub_eq_zero.mp,
+    rw [← comp_sub, kernel.condition],
+  end,
+  inr_snd' := by { ext, rw [assoc, kernel.lift_ι, equalizer_as_kernel, id_comp, comp_sub,
+      kernel.condition, sub_zero, comp_id], }, }
+
+def has_binary_biproduct_of_binary_bicone_of_projector {X : C} (p : X ⟶ X)
+  [h : is_projector p] [has_kernel p] [has_kernel (𝟙 X - p)] :
+  has_binary_biproduct (kernel (𝟙 X - p)) (kernel p) :=
+  has_binary_biproduct_of_total (binary_bicone_of_projector p)
+begin
+  dsimp [binary_bicone_of_projector],
+  simp only [kernel.lift_ι, add_sub_cancel'_right],
+end
 
 class is_pseudoabelian (C : Type*) [category C] [preadditive C] : Prop :=
 (projectors_have_kernels : Π (X : C) (p : X ⟶ X), is_projector p → has_kernel p)
