@@ -27,7 +27,7 @@ variables (f g : C ⟶ D) (h k : D ⟶ E) (i : ι)
 
 section 
 
-/-- The subset of ι × ι consisting of (i,j such that c.rel j i) -/
+/-- The subset of ι × ι consisting of those (i,j) such that c.rel j i) -/
 def homotopy.set_of_cs (c : complex_shape ι): set (ι × ι) := λ (x : ι × ι), c.rel x.2 x.1
 
 /-- A prehomotopy C D consists of morphisms C.X i ⟶ C.X j when c.rel j i -/
