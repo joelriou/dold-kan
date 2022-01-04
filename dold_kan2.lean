@@ -5,8 +5,7 @@ Author: Joël Riou
 -/
 
 import algebra.homology.homological_complex
-import homotopy
---import algebra.homology.homotopy
+import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex

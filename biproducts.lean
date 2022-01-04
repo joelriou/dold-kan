@@ -1048,7 +1048,7 @@ section
 variables {X Y : C} [has_binary_biproduct X Y]
 
 /--
-In any preadditive category, any binary biproduct satsifies
+In any preadditive category, any binary biproduct satisfies
 `biprod.fst ≫ biprod.inl + biprod.snd ≫ biprod.inr = 𝟙 (X ⊞ Y)`.
 -/
 @[simp] lemma biprod.total : biprod.fst ≫ biprod.inl + biprod.snd ≫ biprod.inr = 𝟙 (X ⊞ Y) :=
