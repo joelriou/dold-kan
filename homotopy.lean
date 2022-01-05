@@ -138,8 +138,7 @@ begin
   { dsimp [prev_d, to_prev], simp },
 end
 
-lemma prev_d_eq
-  (f : prehomotopy C D) {j j' : ι} (w : c.rel j' j) :
+lemma prev_d_eq (f : prehomotopy C D) {j j' : ι} (w : c.rel j' j) :
   prev_d j f = f ⟨⟨j,j'⟩,w⟩ ≫ D.d j' j :=
 begin
   dsimp [prev_d],
@@ -147,8 +146,7 @@ begin
   refl,
 end
 
-@[simp] lemma prev_d_comp_left
-  (f : C ⟶ D) (g : prehomotopy D E) (j : ι) :
+@[simp] lemma prev_d_comp_left (f : C ⟶ D) (g : prehomotopy D E) (j : ι) :
   prev_d j (λ ij, f.f ij.val.1 ≫ g ij) = f.f j ≫ prev_d j g :=
 begin
   dsimp [prev_d],
@@ -158,8 +156,7 @@ begin
     simp, },
 end
 
-@[simp] lemma to_prev'_comp_right
-  (f : prehomotopy C D) (g : D ⟶ E) (j : ι) :
+@[simp] lemma to_prev'_comp_right (f : prehomotopy C D) (g : D ⟶ E) (j : ι) :
   prev_d j (λ ij, f ij ≫ g.f ij.val.2) = prev_d j f ≫ g.f j :=
 begin
   dsimp [prev_d],
@@ -292,9 +289,9 @@ end
 end homotopy
 
 /--
-A homotopy `h` between chain maps `f` and `g` consists of components `h i j : C.X i ⟶ D.X j`
-when `c.rel j i`, such the difference between `f` and `g` is the `null_homotopic_map`
-attached to h. -/
+A homotopy `h` between chain maps `f` and `g` consists of a prehomotopy `hom`
+such the difference between `f` and `g` is the `null_homotopic_map`
+attached to hom. -/
 @[ext, nolint has_inhabited_instance]
 structure homotopy (f g : C ⟶ D) :=
 (hom : prehomotopy C D)
