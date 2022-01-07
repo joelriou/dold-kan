@@ -61,8 +61,7 @@ def strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  (hf : epi f) :
 def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
   strong_epi_mono_factorisation f :=
 begin
-  let α := { j : fin(y.len+1) //
-     ∃ (i : fin(x.len+1)), f.to_order_hom i = j },
+  let α := { j : fin(y.len+1) // ∃ (i : fin(x.len+1)), f.to_order_hom i = j },
   let n := fintype.card α-1,
   have eq : fintype.card α = n+1 := begin
     by_cases fintype.card α ≥ 1,
@@ -109,6 +108,9 @@ begin
         function.comp_app, order_hom.comp_coe, order_hom.coe_fun_mk], }, },
 end
 
+instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
+  has_strong_epi_mono_factorisations.mk
+  (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
 end epi_mono
 
