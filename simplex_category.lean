@@ -9,56 +9,54 @@ namespace simplex_category
 
 section epi_mono
 
-/-
-      f
-x ----->> y
-|         |
-|u        |v
-v    w    v 
-a >-----> b
- -/
-
-noncomputable def unique_of_existence_and_uniqueness {X : Type*} (existence : ∃ (x : X), true)
-  (uniqueness : ∀ (x y : X), x=y) : unique X :=
-let h : nonempty X := exists_true_iff_nonempty.mp existence in
-{ default := h.some,
-  uniq := λ x, uniqueness x h.some, }
-
-def kind_of_strong_epi_of_function_surjective {X Y : Type*} {f : X → Y} (hf : function.surjective f) 
-  {A B : Type*} (u : X → A) (v : Y → B) (w : A → B) (w_inj : function.injective w)
-  (h : ∀ (x:X), w (u x) = v (f x)) :
-  ∃ g : Y → A, (∀ (x : X), u x = g (f x)) ∧ (∀ (y : Y), v y = w (g y)) :=
-begin
-  let p : Y → set A := λ y a, ∃ (x:X), a = u(x) ∧ y = f(x),
-  have G : Π (y : Y), unique ((p y) : Type*) := begin
-    intro y,
-    have hpy : nonempty (p y) := begin
-      apply exists_true_iff_nonempty.mp,
-      cases hf y with x hx,
-      use ⟨u x, by { use x, split, refl, exact hx.symm, }⟩,
-    end,
-    exact {
-      default := hpy.some,
-      uniq := begin
-        intro a,
-        simp only [subtype.ext_iff_val],
-        rcases a.2 with ⟨x, ⟨hx₁,hx₂⟩⟩,
-        rcases hpy.some.2 with ⟨x', ⟨hx'₁,hx'₂⟩⟩,
-        have hxx' : w (u x) = w (u x') := by rw [h, h, ← hx₂, ← hx'₂],
-        exact ((eq.symm hx₁).congr (eq.symm hx'₁)).mp (w_inj hxx'),
+def strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  (hf : epi f) :
+  strong_epi f :=
+{ epi := hf,
+  has_lift := λ A B u v w hw comm,
+  begin
+    have comm' := λ (x : fin (X.len+1)), congr_arg (λ F, hom.to_order_hom F x) comm,
+    simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
+      hom.comp, small_category_comp] at comm',
+    let p : fin (Y.len+1) → set (fin (X.len+1)) := λ y x, f.to_order_hom x = y,
+    have exists_lift : ∀ (y : fin (Y.len+1)),
+      ∃ (x : fin (X.len+1)), f.to_order_hom x = y := λ y,
+    by { cases epi_iff_surjective.mp hf y with a ha, use a, exact ha, },
+    let lift : fin (Y.len+1) → fin (X.len+1) := λ y, classical.some (exists_lift y),
+    have hlift : ∀ (y : fin (Y.len+1)), f.to_order_hom (lift y) = y :=
+      λ y, classical.some_spec (exists_lift y),
+    let γ' : fin (Y.len+1) → fin (A.len+1) := λ y, u.to_order_hom (lift y),
+    have hγ' : ∀ (x : fin (X.len+1)), γ' (f.to_order_hom x) = u.to_order_hom x,
+    { intro x,
+      apply mono_iff_injective.mp hw,
+      simp only [comm', hlift], },
+    let γ : Y ⟶ A := simplex_category.hom.mk
+      { to_fun := γ',
+        monotone' := λ y₁ y₂ h, begin
+          cases eq_or_lt_of_le h with h' h',
+          { rw h', },
+          { apply (hom.to_order_hom u).monotone',
+            by_contradiction h'',
+            have ineq := (hom.to_order_hom f).monotone' (le_of_lt (not_le.mp h'')),
+            simp only [hlift, order_hom.to_fun_eq_coe] at ineq,
+            rw [le_antisymm h ineq] at h',
+            exact (irrefl y₂ : ¬(y₂<y₂)) h', },
+        end, },
+    use {
+      lift := γ,
+      fac_left' := begin
+        ext x,
+        dsimp,
+        simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
+          order_hom.coe_fun_mk, hγ'],
+      end,
+      fac_right' := begin
+        ext y,
+      dsimp,
+      simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
+        order_hom.coe_fun_mk],
+      rw [← hlift y, hγ', comm'],
       end, },
-  end,
-  use λ y, (G y).default,
-  split,
-  { intro x,
-    simpa only [subtype.ext_iff_val]
-      using (G (f x)).uniq ⟨u x,by { use x, split; refl, }⟩, },
-  { intro y,
-    cases (G y).default.2 with x' hx',
-    simp only [subtype.val_eq_coe] at hx',
-    rw [hx'.left, hx'.right],
-    exact (h x').symm, },
-end
+  end }
 
 def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
   strong_epi_mono_factorisation f :=
@@ -81,7 +79,16 @@ begin
     by { rintros ⟨i₁,_⟩ ⟨i₂,_⟩ h, simpa only using h, }⟩,
   let e : x ⟶ simplex_category.mk n := simplex_category.hom.mk (order_hom.comp
       (order_embedding.to_order_hom (order_iso.to_order_embedding φ.symm)) ψ), 
-  haveI : strong_epi e := sorry,
+  haveI : strong_epi e := strong_epi_of_epi (begin 
+    apply epi_iff_surjective.mpr,
+    intro k,
+    cases ((order_iso.to_order_embedding φ) k).2 with i hi,
+    use i,
+    simp only [e, ψ, hi, hom.to_order_hom_mk, order_iso.coe_to_order_embedding,
+      order_embedding.to_order_hom_coe, function.comp_app,
+      order_hom.comp_coe, order_hom.coe_fun_mk,
+      order_iso.symm_apply_apply, subtype.coe_eta, subtype.val_eq_coe],
+  end),
   exact
   { I := simplex_category.mk n,
     m := simplex_category.hom.mk (order_hom.comp
