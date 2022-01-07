@@ -60,8 +60,8 @@ begin
     exact (h x').symm, },
 end
 
-def canonical_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
-  mono_factorisation f :=
+def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
+  strong_epi_mono_factorisation f :=
 begin
   let α := { j : fin(y.len+1) //
      ∃ (i : fin(x.len+1)), f.to_order_hom i = j },
@@ -79,12 +79,14 @@ begin
   let φ := mono_equiv_of_fin α eq,
   let γ : order_hom α (fin (y.len+1)) := ⟨λ j, j.1,
     by { rintros ⟨i₁,_⟩ ⟨i₂,_⟩ h, simpa only using h, }⟩,
+  let e : x ⟶ simplex_category.mk n := simplex_category.hom.mk (order_hom.comp
+      (order_embedding.to_order_hom (order_iso.to_order_embedding φ.symm)) ψ), 
+  haveI : strong_epi e := sorry,
   exact
   { I := simplex_category.mk n,
     m := simplex_category.hom.mk (order_hom.comp
       γ (order_embedding.to_order_hom (order_iso.to_order_embedding φ))),
-    e := simplex_category.hom.mk (order_hom.comp
-      (order_embedding.to_order_hom (order_iso.to_order_embedding φ.symm)) ψ),
+    e := e,
     m_mono := begin
       apply mono_iff_injective.mpr,
       intros i₁ i₂ h,
