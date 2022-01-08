@@ -118,24 +118,35 @@ begin
         function.comp_app, order_hom.comp_coe, order_hom.coe_fun_mk], }, },
 end
 
-lemma t (a b c : ℤ) (hac : a=c) (hbc: b=c) : a=b := (rfl.congr (eq.symm hbc)).mp hac
+@[simp]
+def order_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
+  fin(x.len+1) ≃o fin(y.len+1) := equiv.to_order_iso
+  {
+    to_fun    := e.hom.to_order_hom,
+    inv_fun   := e.inv.to_order_hom,
+    left_inv  := λ i, begin
+      have h := congr_arg (λ φ, (hom.to_order_hom φ) i) e.hom_inv_id',
+      simpa using h,
+    end,
+    right_inv  := λ i, begin
+      have h := congr_arg (λ φ, (hom.to_order_hom φ) i) e.inv_hom_id',
+      simpa using h,
+    end, }
+    e.hom.to_order_hom.monotone e.inv.to_order_hom.monotone
 
 lemma iso_refl_of_iso {x : simplex_category.{u}} (e : x ≅ x) :
   e = iso.refl x :=
 begin
-  ext,
-  let k := x.len + 1,
-  let f₁ : fin(k) ↪o fin(k) := sorry,
-  let f₂ : fin(k) ↪o fin(k) := sorry,
-  let fink : finset (fin(k)) := finset.univ,
-  let fink_card : fink.card = k := finset.card_fin k,
+  let X : finset (fin(x.len+1)) := finset.univ,
+  let X_card : X.card = x.len+1 := finset.card_fin (x.len+1),
   have eq₁ := finset.order_emb_of_fin_unique'
-    fink_card (λ x, finset.mem_univ (f₁ x)),
+    X_card (λ i, finset.mem_univ ((order_iso_of_iso e) i)),
   have eq₂ := finset.order_emb_of_fin_unique'
-    fink_card (λ x, finset.mem_univ (f₂ x)),
+    X_card (λ i, finset.mem_univ ((order_iso_of_iso (iso.refl x)) i)),
   rw ← eq₂ at eq₁,
-
-  sorry,
+  ext1, ext1, ext1, ext1 i,
+  have h := congr_arg (λ φ, (order_embedding.to_order_hom φ) i) eq₁,
+  simpa only using h,
 end
 
 lemma eq_to_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
