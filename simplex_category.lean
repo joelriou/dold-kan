@@ -118,6 +118,10 @@ begin
         function.comp_app, order_hom.comp_coe, order_hom.coe_fun_mk], }, },
 end
 
+instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
+  has_strong_epi_mono_factorisations.mk
+  (λ _ _ f, canonical_strong_epi_mono_factorisation f)
+
 @[simp]
 def order_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
   fin(x.len+1) ≃o fin(y.len+1) := equiv.to_order_iso
@@ -153,29 +157,18 @@ lemma eq_to_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
   e = eq_to_iso (skeletal (nonempty.intro e)) :=
 by { have h := skeletal (nonempty.intro e), subst h, dsimp, exact iso_refl_of_iso e, }
 
-/-- Two strong epi mono factorisations are equal. -/
-@[simps]
-def uniqueness_strong_epi_mono_factorisation
-  {x y : simplex_category.{u}} {f : x ⟶ y} : unique (strong_epi_mono_factorisation f) :=
-{ default := canonical_strong_epi_mono_factorisation f,
-  uniq := begin
-    intro a,
-    let b' := canonical_strong_epi_mono_factorisation f,
-    have : a=b', swap, assumption,
-    generalize : b' = b, clear b',
-    let ima := strong_epi_mono_factorisation.to_mono_is_image a,
-    let imb := strong_epi_mono_factorisation.to_mono_is_image b,
-    have eqI := eq_to_iso_of_iso (is_image.iso_ext ima imb),
-    have eqm := is_image.iso_ext_hom_m ima imb,
-    rw [eqI, eq_to_iso.hom] at eqm,
-    ext1,
-    ext1,
-    { exact eqm.symm, },
-  end, }
-
-instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
-  has_strong_epi_mono_factorisations.mk
-  (λ _ _ f, canonical_strong_epi_mono_factorisation f)
+/- Two mono factorisations satisfying the universal property of
+the image are equal. -/
+def uniqueness_mono_factorisation {x y : simplex_category.{u}} {f : x ⟶ y}
+  (F F' : mono_factorisation f) (hF : is_image F) (hF' : is_image F') :
+  F = F' :=
+begin
+  let eqI := eq_to_iso_of_iso (is_image.iso_ext hF hF'),
+  have eqm := is_image.iso_ext_hom_m hF hF',
+  rw [eqI, eq_to_iso.hom] at eqm,
+  ext1,
+  { exact eqm.symm, },
+end
 
 def mono_factorisation_eq
   {x y z : simplex_category.{u}} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
@@ -186,9 +179,10 @@ def mono_factorisation_eq
     e := e,
     fac' := h, } :=
 begin
-  sorry,
---  (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h).to_mono_factorisation :=
--- have foo := uniqueness_strong_epi_mono_factorisation
+  apply uniqueness_mono_factorisation,
+  { exact image.is_image f, },
+  { exact strong_epi_mono_factorisation.to_mono_is_image
+    (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
 end
 
 end epi_mono
