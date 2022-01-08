@@ -4,6 +4,7 @@ import category_theory.limits.shapes.strong_epi
 import data.sigma.basic
 import data.fintype.basic
 import dold_kan2
+import simplex_category
 
 /-!
 
@@ -37,9 +38,9 @@ begin
       Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin(Δ.len+1) → fin(k+1))))),
   rintros ⟨Δ₁,α₁'⟩ ⟨Δ₂,α₂'⟩ h,
   simp only at h,
-  have eq : Δ₁ = Δ₂ := sorry,
+  have eq : Δ₁ = Δ₂ := by { ext, simpa using h.left, },
   ext; dsimp,
-  { congr', },
+  { rw eq, },
   { subst eq,
     apply heq_of_eq,
     rcases α₁' with ⟨α₁,h₁⟩,
@@ -50,8 +51,6 @@ begin
     rw h.right, }
 end
 
-instance : has_strong_epi_mono_factorisations simplex_category.{v} := sorry
-
 instance {Δ : simplex_category} : fintype (Γ_index_set Δ) := fintype_Γ_index_set Δ
 
 def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category.{v}) 
@@ -60,10 +59,20 @@ def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category.{v})
 def Γ_termwise (K : chain_complex C ℕ) (Δ : simplex_category.{v}) : C :=
   ∐ (λ (A : Γ_index_set Δ), K.X A.1.len)
 
+
+def is_d0 {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] : Prop :=
+  (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 = 1)
+
 def Γ_on_mono (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
   K.X Δ.len ⟶ K.X Δ'.len :=
 begin
-  sorry,
+  by_cases  Δ = Δ',
+  { apply eq_to_hom,
+    congr,
+    assumption, },
+  { by_cases (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 = 1),
+    { exact K.d Δ.len Δ'.len, },
+    { exact 0, }, },
 end
 
 noncomputable def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (θ : Δ' ⟶ Δ) :
