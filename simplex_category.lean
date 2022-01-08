@@ -9,9 +9,9 @@ namespace simplex_category
 
 section epi_mono
 
-def strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  (hf : epi f) :
+instance strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  [epi f] :
   strong_epi f :=
-{ epi := hf,
+{ epi := by apply_instance,
   has_lift := λ A B u v w hw comm,
   begin
     have comm' := λ (x : fin (X.len+1)), congr_arg (λ F, hom.to_order_hom F x) comm,
@@ -20,7 +20,8 @@ def strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  (hf : epi f) :
     let p : fin (Y.len+1) → set (fin (X.len+1)) := λ y x, f.to_order_hom x = y,
     have exists_lift : ∀ (y : fin (Y.len+1)),
       ∃ (x : fin (X.len+1)), f.to_order_hom x = y := λ y,
-    by { cases epi_iff_surjective.mp hf y with a ha, use a, exact ha, },
+    by { cases epi_iff_surjective.mp (show epi f, by apply_instance) y with a ha,
+      use a, exact ha, },
     let lift : fin (Y.len+1) → fin (X.len+1) := λ y, classical.some (exists_lift y),
     have hlift : ∀ (y : fin (Y.len+1)), f.to_order_hom (lift y) = y :=
       λ y, classical.some_spec (exists_lift y),
@@ -58,6 +59,16 @@ def strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  (hf : epi f) :
       end, },
   end }
 
+@[simps]
+def strong_epi_mono_factorisation_of_epi_mono_factorisation
+  {x y z : simplex_category.{u}} (f : x ⟶ z) (e : x ⟶ y) (i : y ⟶ z)
+  [epi e] [mono i] (h : e ≫ i = f) : strong_epi_mono_factorisation f :=
+{ I := y,
+  m := i,
+  e := e,
+  m_mono := by apply_instance,
+  fac' := h, }
+
 def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
   strong_epi_mono_factorisation f :=
 begin
@@ -78,16 +89,15 @@ begin
     by { rintros ⟨i₁,_⟩ ⟨i₂,_⟩ h, simpa only using h, }⟩,
   let e : x ⟶ simplex_category.mk n := simplex_category.hom.mk (order_hom.comp
       (order_embedding.to_order_hom (order_iso.to_order_embedding φ.symm)) ψ), 
-  haveI : strong_epi e := strong_epi_of_epi (begin 
-    apply epi_iff_surjective.mpr,
+  haveI : epi e,
+  { apply epi_iff_surjective.mpr,
     intro k,
     cases ((order_iso.to_order_embedding φ) k).2 with i hi,
     use i,
     simp only [e, ψ, hi, hom.to_order_hom_mk, order_iso.coe_to_order_embedding,
       order_embedding.to_order_hom_coe, function.comp_app,
       order_hom.comp_coe, order_hom.coe_fun_mk,
-      order_iso.symm_apply_apply, subtype.coe_eta, subtype.val_eq_coe],
-  end),
+      order_iso.symm_apply_apply, subtype.coe_eta, subtype.val_eq_coe], },
   exact
   { I := simplex_category.mk n,
     m := simplex_category.hom.mk (order_hom.comp
@@ -107,6 +117,50 @@ begin
         order_iso.coe_to_order_embedding, order_embedding.to_order_hom_coe,
         function.comp_app, order_hom.comp_coe, order_hom.coe_fun_mk], }, },
 end
+
+lemma t (a b c : ℤ) (hac : a=c) (hbc: b=c) : a=b := (rfl.congr (eq.symm hbc)).mp hac
+
+lemma iso_refl_of_iso {x : simplex_category.{u}} (e : x ≅ x) :
+  e = iso.refl x :=
+begin
+  ext,
+  let k := x.len + 1,
+  let f₁ : fin(k) ↪o fin(k) := sorry,
+  let f₂ : fin(k) ↪o fin(k) := sorry,
+  let fink : finset (fin(k)) := finset.univ,
+  let fink_card : fink.card = k := finset.card_fin k,
+  have eq₁ := finset.order_emb_of_fin_unique'
+    fink_card (λ x, finset.mem_univ (f₁ x)),
+  have eq₂ := finset.order_emb_of_fin_unique'
+    fink_card (λ x, finset.mem_univ (f₂ x)),
+  rw ← eq₂ at eq₁,
+
+  sorry,
+end
+
+lemma eq_to_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
+  e = eq_to_iso (skeletal (nonempty.intro e)) :=
+by { have h := skeletal (nonempty.intro e), subst h, dsimp, exact iso_refl_of_iso e, }
+
+/-- Two strong epi mono factorisations are equal. -/
+@[simps]
+def uniqueness_strong_epi_mono_factorisation
+  {x y : simplex_category.{u}} {f : x ⟶ y} : unique (strong_epi_mono_factorisation f) :=
+{ default := canonical_strong_epi_mono_factorisation f,
+  uniq := begin
+    intro a,
+    let b' := canonical_strong_epi_mono_factorisation f,
+    have : a=b', swap, assumption,
+    generalize : b' = b, clear b',
+    let ima := strong_epi_mono_factorisation.to_mono_is_image a,
+    let imb := strong_epi_mono_factorisation.to_mono_is_image b,
+    have eqI := eq_to_iso_of_iso (is_image.iso_ext ima imb),
+    have eqm := is_image.iso_ext_hom_m ima imb,
+    rw [eqI, eq_to_iso.hom] at eqm,
+    ext1,
+    ext1,
+    { exact eqm.symm, },
+  end, }
 
 instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
   has_strong_epi_mono_factorisations.mk
