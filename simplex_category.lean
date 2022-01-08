@@ -181,10 +181,30 @@ begin
     (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
 end
 
-lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
+noncomputable lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
   (hf : function.bijective (f.to_order_hom.to_fun)) : x ≅ y :=
 { hom := f,
-  inv := sorry, }
+  inv := hom.mk
+    { to_fun := function.inv_fun f.to_order_hom.to_fun,
+      monotone' := λ y₁ y₂ h, begin
+        by_cases h' : y₁ < y₂,
+        { by_contradiction h'',
+          have ineq := f.to_order_hom.monotone' (le_of_not_ge h''),
+          have eq := λ i, function.inv_fun_eq (function.bijective.surjective hf i),
+          simp only at eq,
+          simp only [eq] at ineq,
+          exact not_le.mpr h' ineq, },
+        { rw eq_of_le_of_not_lt h h', }
+      end, },
+  hom_inv_id' := begin
+    ext1, ext1, ext1 i,
+    apply function.left_inverse_inv_fun (function.bijective.injective hf),
+  end,
+  inv_hom_id' := begin
+    ext1, ext1, ext1 i,
+    apply function.right_inverse_inv_fun (function.bijective.surjective hf),
+  end,
+}
 
 end epi_mono
 
