@@ -177,6 +177,20 @@ instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
   has_strong_epi_mono_factorisations.mk
   (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
+def mono_factorisation_eq
+  {x y z : simplex_category.{u}} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
+  [epi e] [mono i] (h : e ≫ i = f) :
+  image.mono_factorisation f = {
+    I := y,
+    m := i,
+    e := e,
+    fac' := h, } :=
+begin
+  sorry,
+--  (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h).to_mono_factorisation :=
+-- have foo := uniqueness_strong_epi_mono_factorisation
+end
+
 end epi_mono
 
 end simplex_category
