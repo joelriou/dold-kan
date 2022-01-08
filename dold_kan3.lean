@@ -74,7 +74,6 @@ begin
     { exact 0, }, },
 end
 
-
 lemma Γ_on_mono_on_id (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i]
   (hi : Δ = Δ') : Γ_on_mono K i = eq_to_hom (by { congr, assumption, }) :=
 by { unfold Γ_on_mono, split_ifs, refl, }
@@ -95,6 +94,13 @@ lemma Γ_on_mono_eq_zero (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v
   (h1 : ¬ Δ = Δ') (h2 : ¬is_d0 i) : Γ_on_mono K i = 0 :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
+def Γ_on_mono_comp (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category.{v}}
+   (i' : Δ'' ⟶ Δ') (i : Δ' ⟶ Δ) [mono i] [mono i'] :
+   Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
+begin
+  sorry
+end
+
 def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (θ : Δ' ⟶ Δ) :
   Γ_termwise K Δ ⟶ Γ_termwise K Δ' :=
 begin
@@ -114,10 +120,8 @@ def Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_ca
   (h : e ≫ i = θ ≫ A.2.1) :
   (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
   Γ_on_mono K i ≫ (sigma.ι (Γ_summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩) :=
-begin
-  simp only [Γ_simplicial, cofan.mk_ι_app, colimit.ι_desc],
-  congr'; rw simplex_category.mono_factorisation_eq e i h,
-end
+by { simp only [Γ_simplicial, cofan.mk_ι_app, colimit.ι_desc],
+  congr'; rw simplex_category.mono_factorisation_eq e i h, }
 
 def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
 { obj := λ Δ, Γ_termwise K (unop Δ),
