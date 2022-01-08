@@ -173,17 +173,18 @@ end
 def mono_factorisation_eq
   {x y z : simplex_category.{u}} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
   [epi e] [mono i] (h : e ≫ i = f) :
-  image.mono_factorisation f = {
-    I := y,
-    m := i,
-    e := e,
-    fac' := h, } :=
+  image.mono_factorisation f = { I := y, m := i, e := e, fac' := h, } :=
 begin
   apply uniqueness_mono_factorisation,
   { exact image.is_image f, },
   { exact strong_epi_mono_factorisation.to_mono_is_image
     (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
 end
+
+lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
+  (hf : function.bijective (f.to_order_hom.to_fun)) : x ≅ y :=
+{ hom := f,
+  inv := sorry, }
 
 end epi_mono
 

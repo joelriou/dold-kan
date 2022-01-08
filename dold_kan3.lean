@@ -98,7 +98,12 @@ def Γ_on_mono_comp (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category.{v
    (i' : Δ'' ⟶ Δ') (i : Δ' ⟶ Δ) [mono i] [mono i'] :
    Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
 begin
-  sorry
+  by_cases h1 : Δ = Δ',
+  { rw Γ_on_mono_on_id K i h1,
+    
+      sorry,
+  },
+  { sorry, }
 end
 
 def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (θ : Δ' ⟶ Δ) :
