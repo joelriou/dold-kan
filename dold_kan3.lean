@@ -1,9 +1,9 @@
 import category_theory.additive.basic
 import category_theory.limits.shapes.images
-import category_theory.limits.shapes.strong_epi
 import data.sigma.basic
 import data.fintype.basic
-import dold_kan2
+import algebra.homology.homological_complex
+import algebraic_topology.simplicial_object
 import simplex_category
 
 /-!
@@ -169,13 +169,9 @@ def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (θ 
 begin
   apply sigma.desc,
   intro A,
-  let decomp := image.mono_factorisation (θ ≫ A.2.1),
-  have strong_decomp : has_strong_epi_mono_factorisations simplex_category.{v} := by apply_instance,
-  have has_fac := strong_decomp.has_fac,
-  let A' : Γ_index_set Δ' := ⟨decomp.I, ⟨decomp.e,
-    (strong_epi_of_strong_epi_mono_factorisation 
-    ((classical.choice (has_fac _))) (image.is_image _)).epi⟩⟩,
-  exact Γ_on_mono K decomp.m ≫ (sigma.ι (Γ_summand K Δ') A'),
+  let em := image.mono_factorisation (θ ≫ A.2.1),
+  let A' : Γ_index_set Δ' := ⟨em.I, ⟨em.e, simplex_category.epi_of_mono_factorisation _⟩⟩,
+  exact Γ_on_mono K em.m ≫ (sigma.ι (Γ_summand K Δ') A'),
 end
 
 lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category.{v}}
@@ -214,7 +210,6 @@ def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
     congr',
     rw Γ_on_mono_comp,
   end }
-
 
 @[simps]
 def Γ_map {K K' : chain_complex C ℕ} (f : K ⟶ K') : Γ_obj K ⟶ Γ_obj K' :=

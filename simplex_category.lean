@@ -10,7 +10,7 @@ namespace simplex_category
 
 section epi_mono
 
-instance strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  [epi f] :
+def strong_epi_of_epi {X Y : simplex_category.{u}} (f : X ⟶ Y) [epi f] :
   strong_epi f :=
 { epi := by apply_instance,
   has_lift := λ A B u v w hw comm,
@@ -60,15 +60,18 @@ instance strong_epi_of_epi {X Y : simplex_category.{u}} {f : X ⟶ Y}  [epi f] :
       end, },
   end }
 
-@[simps]
 def strong_epi_mono_factorisation_of_epi_mono_factorisation
   {x y z : simplex_category.{u}} (f : x ⟶ z) (e : x ⟶ y) (i : y ⟶ z)
   [epi e] [mono i] (h : e ≫ i = f) : strong_epi_mono_factorisation f :=
+begin
+  haveI : strong_epi e := strong_epi_of_epi e,
+  exact 
 { I := y,
   m := i,
   e := e,
   m_mono := by apply_instance,
-  fac' := h, }
+  fac' := h, },
+end
 
 def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
   strong_epi_mono_factorisation f :=
@@ -99,6 +102,7 @@ begin
       order_embedding.to_order_hom_coe, function.comp_app,
       order_hom.comp_coe, order_hom.coe_fun_mk,
       order_iso.symm_apply_apply, subtype.coe_eta, subtype.val_eq_coe], },
+  haveI : strong_epi e := strong_epi_of_epi e,
   exact
   { I := simplex_category.mk n,
     m := simplex_category.hom.mk (order_hom.comp
@@ -126,14 +130,13 @@ instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
 @[simp]
 def order_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
   fin(x.len+1) ≃o fin(y.len+1) := equiv.to_order_iso
-  {
-    to_fun    := e.hom.to_order_hom,
+  { to_fun    := e.hom.to_order_hom,
     inv_fun   := e.inv.to_order_hom,
     left_inv  := λ i, begin
       have h := congr_arg (λ φ, (hom.to_order_hom φ) i) e.hom_inv_id',
       simpa using h,
     end,
-    right_inv  := λ i, begin
+    right_inv := λ i, begin
       have h := congr_arg (λ φ, (hom.to_order_hom φ) i) e.inv_hom_id',
       simpa using h,
     end, }
@@ -226,12 +229,6 @@ begin
   { exact simplex_category.mono_iff_injective.mp (by apply_instance), },
   { congr', },
 end
-
-@[simp]
-noncomputable
-def is_iso_of_mono_and_eq { x y : simplex_category.{u}} (i : x ⟶ y) [mono i]
-  (hxy : x = y) : x ≅ y :=
-is_iso_of_bijective (bijective_of_mono_and_eq i hxy)
 
 end epi_mono
 
