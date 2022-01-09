@@ -181,6 +181,7 @@ begin
     (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
 end
 
+@[simps]
 noncomputable lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
   (hf : function.bijective (f.to_order_hom.to_fun)) : x ≅ y :=
 { hom := f,
@@ -203,8 +204,22 @@ noncomputable lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ 
   inv_hom_id' := begin
     ext1, ext1, ext1 i,
     apply function.right_inverse_inv_fun (function.bijective.surjective hf),
-  end,
-}
+  end, }
+
+def bijective_of_mono_and_eq { x y : simplex_category.{u}} (i : x ⟶ y) [mono i]
+  (hxy : x = y) : function.bijective i.to_order_hom :=
+begin
+  apply (fintype.bijective_iff_injective_and_card i.to_order_hom).mpr,
+  split,
+  { exact simplex_category.mono_iff_injective.mp (by apply_instance), },
+  { congr', },
+end
+
+@[simp]
+noncomputable
+def is_iso_of_mono_and_eq { x y : simplex_category.{u}} (i : x ⟶ y) [mono i]
+  (hxy : x = y) : x ≅ y :=
+is_iso_of_bijective (bijective_of_mono_and_eq i hxy)
 
 end epi_mono
 
