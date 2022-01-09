@@ -97,6 +97,11 @@ variables {C}
 
 def hom (P Q : karoubi C) := { f : P.X ⟶ Q.X // f = P.p ≫ f ≫ Q.p }
 
+@[ext]
+lemma hom_ext {P Q : karoubi C} (f' g' : hom P Q) : f'.1 = g'.1 → f' = g' :=
+by { intro h, cases f', cases g', simpa only [subtype.mk_eq_mk] using h, }
+
+@[simp]
 def id (P : karoubi C) : hom P P := ⟨P.p, by repeat { rw P.idempotence, }⟩
 
 lemma comp_p {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
@@ -105,11 +110,36 @@ by { rw [f.2, ← assoc, P.idempotence], }
 lemma p_comp {P Q : karoubi C} (f : hom P Q) : f.1 ≫ Q.p = f.1 :=
 by { rw [f.2, assoc, assoc, Q.idempotence], }
 
-def comp (P Q R : karoubi C) (f' : hom Q R) (g' : hom P Q) : hom P R :=
-  ⟨g'.1 ≫ f'.1, by rw [assoc, p_comp, ← assoc, comp_p], ⟩
-  
+@[simp]
+def comp {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) : hom P R :=
+  ⟨f'.1 ≫ g'.1, by rw [assoc, p_comp, ← assoc, comp_p], ⟩
+
 end karoubi
 
+instance : category (karoubi C) :=
+{ hom      := karoubi.hom,
+  id       := karoubi.id,
+  comp     := λ P Q R f' g', karoubi.comp g' f',
+  id_comp' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.comp_p], },
+  comp_id' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.p_comp], },
+  assoc'   := λ P Q R S f' g' h', by { ext, simp only [category.assoc, karoubi.comp], }, }
+
+instance karoubi_coe : has_coe C (karoubi C) := ⟨λ X, ⟨X, 𝟙 X, by rw comp_id⟩⟩
+
+@[simp]
+lemma karoubi_coe_X (X : C) : (X : karoubi C).X = X := by refl
+
+@[simp]
+lemma karoubi_coe_p (X : C) : (X : karoubi C).p = 𝟙 X := by refl
+
+def to_karoubi : C ⥤ karoubi C := {
+  obj := λ X, ⟨X, 𝟙 X, by rw comp_id⟩,
+  map := λ X Y f, ⟨f, by simp only [comp_id, id_comp]⟩ }
+
+--instance : preadditive (karoubi C) := ⟨ λ P Q, begin sorry end ⟩
+-- additive_category si C l'est
+-- pseudoab
+-- to_karoubi est une equiv sssi C est pseudoab
 
 end pseudoabelian
 
