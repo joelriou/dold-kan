@@ -189,7 +189,21 @@ def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
     congr,
     ext; simp only [subtype.coe_eta, subtype.val_eq_coe],
   end,
-  map_comp' := sorry, }
+  map_comp' := λ Δ'' Δ' Δ θ' θ, begin
+    ext A'',
+    let em' := image.mono_factorisation (θ'.unop ≫ A''.2.1),
+    haveI : epi em'.e := simplex_category.epi_of_mono_factorisation _,
+    slice_rhs 1 2 { rw Γ_simplicial_on_summand K A'' em'.fac, },
+    let em  := image.mono_factorisation (θ.unop ≫ em'.e),
+    haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+    rw [assoc, Γ_simplicial_on_summand K ⟨em'.I, ⟨em'.e, by apply_instance⟩⟩ em.fac],
+    have fac : em.e ≫ (em.m ≫ em'.m) = (θ' ≫ θ).unop ≫ A''.2.1,
+    { rw [← assoc, em.fac, assoc, em'.fac, ← assoc, unop_comp], },
+    rw [Γ_simplicial_on_summand K A'' fac, ← assoc],
+    congr',
+    rw Γ_on_mono_comp,
+  end }
+
 
 end dold_kan
 
