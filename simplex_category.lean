@@ -1,5 +1,6 @@
 import algebraic_topology.simplex_category
 import category_theory.limits.shapes.images
+import category_theory.limits.shapes.strong_epi
 universes u v
 
 open category_theory
@@ -179,6 +180,17 @@ begin
   { exact image.is_image f, },
   { exact strong_epi_mono_factorisation.to_mono_is_image
     (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
+end
+
+lemma epi_of_mono_factorisation
+  {x y : simplex_category.{u}} (f : x ⟶ y) :
+  epi (image.mono_factorisation f).e :=
+begin
+  rw uniqueness_mono_factorisation (image.mono_factorisation f)
+    (canonical_strong_epi_mono_factorisation f).to_mono_factorisation
+    (image.is_image f) (strong_epi_mono_factorisation.to_mono_is_image _),
+  haveI := (canonical_strong_epi_mono_factorisation f).e_strong_epi,
+  apply_instance,
 end
 
 @[simps]
