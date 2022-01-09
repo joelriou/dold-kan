@@ -22,7 +22,9 @@ homological convention that the degree is decreased by the differentials).
 More generally, this results holds for pseudo-abelian categories. Taking this
 into consideration, the strategy of proof that is used here is to state and
 prove most of the technical results without referring to notions of kernel,
-images, etc.
+images, etc. The core of the arguments shall be constructing morphisms and 
+check equalities between morphisms. The applications to abelian categories
+are handled at the very end of the proof.
 
 The overall plan is as follows:
 
@@ -30,8 +32,8 @@ The overall plan is as follows:
 the alternating face map complex, see `P_infty`
 and `homotopy_equiv_inclusion_of_Moore_complex`
 * show that a morphism of simplicial objects is an isomorphisms if and only if it
-induces an isomorphism on normalized Moore complexes (TODO)
-* construct the inverse functor from chain complexes to simplicial objects (TODO)
+induces an isomorphism on normalized Moore complexes
+* construct the inverse functor from chain complexes to simplicial objects 
 * check that this gives the expected equivalence of categories (TODO)
 
 ## References
@@ -83,7 +85,7 @@ variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
 /-- As we are using chain complexes indexed by ℕ, we shall need the relation
-`c` such `c m n` if and only if $m=n+1$. -/
+`c` such `c m n` if and only if `m=n+1`. -/
 def c := complex_shape.down ℕ
 /-! Restatement of `homotopy.cs_down_succ` and `homotopy.cs_down_0_not_rel_left`,
   which avoids opening `homotopy`. -/
@@ -176,7 +178,7 @@ factors through the kernel of some of differentials, we introduce this
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
   (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
 
-/-- the map $a \longmapsto a+i$ from `fin` q to `fin n`, when $n=a+q$ -/
+/-- the map `λ a, a+i` from `fin` q to `fin n`, when $n=a+q$ -/
 @[simp]
 def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin q) : fin n :=
 ⟨a+(i:ℕ), (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))⟩
@@ -462,7 +464,7 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_succ, fin.coe_mk], }, },
   end }
 
-/-- This lemma expresses that the vanishing of
+/-- This lemma expresses the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
 lemma higher_faces_vanish_P : Π (q : ℕ),
   Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
