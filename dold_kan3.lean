@@ -95,7 +95,17 @@ lemma Γ_on_mono_eq_zero (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v
   (h1 : ¬ Δ = Δ') (h2 : ¬is_d0 i) : Γ_on_mono K i = 0 :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
-lemma test (a' a : ℕ) (h : a'≤ a) : ∃ (k : ℕ), a=a'+k := le_iff_exists_add.mp h
+lemma Γ_on_mono_naturality {K K' : chain_complex C ℕ} (f : K ⟶ K')
+  {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
+  Γ_on_mono K i ≫ f.f Δ'.len = f.f Δ.len ≫ Γ_on_mono K' i :=
+begin
+  unfold Γ_on_mono,
+  split_ifs,
+  { unfreezingI { subst h, },
+    simp only [id_comp, eq_to_hom_refl, comp_id], },
+  { rw [homological_complex.hom.comm], },
+  { rw [zero_comp, comp_zero], }
+end
 
 lemma simplex_non_epi_mono {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] (hi : ¬Δ=Δ'):
   ∃ (k : ℕ), Δ.len = Δ'.len + (k + 1) :=
@@ -176,6 +186,7 @@ lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_
 by { simp only [Γ_simplicial, cofan.mk_ι_app, colimit.ι_desc],
   congr'; rw simplex_category.mono_factorisation_eq e i h, }
 
+@[simps]
 def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
 { obj := λ Δ, Γ_termwise K (unop Δ),
   map := λ Δ Δ' θ, Γ_simplicial K θ.unop,
@@ -190,20 +201,47 @@ def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
     ext; simp only [subtype.coe_eta, subtype.val_eq_coe],
   end,
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
-    ext A'',
-    let em' := image.mono_factorisation (θ'.unop ≫ A''.2.1),
+    ext A,
+    let em' := image.mono_factorisation (θ'.unop ≫ A.2.1),
     haveI : epi em'.e := simplex_category.epi_of_mono_factorisation _,
-    slice_rhs 1 2 { rw Γ_simplicial_on_summand K A'' em'.fac, },
+    slice_rhs 1 2 { rw Γ_simplicial_on_summand K A em'.fac, },
     let em  := image.mono_factorisation (θ.unop ≫ em'.e),
     haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
     rw [assoc, Γ_simplicial_on_summand K ⟨em'.I, ⟨em'.e, by apply_instance⟩⟩ em.fac],
-    have fac : em.e ≫ (em.m ≫ em'.m) = (θ' ≫ θ).unop ≫ A''.2.1,
+    have fac : em.e ≫ (em.m ≫ em'.m) = (θ' ≫ θ).unop ≫ A.2.1,
     { rw [← assoc, em.fac, assoc, em'.fac, ← assoc, unop_comp], },
-    rw [Γ_simplicial_on_summand K A'' fac, ← assoc],
+    rw [Γ_simplicial_on_summand K A fac, ← assoc],
     congr',
     rw Γ_on_mono_comp,
   end }
 
+
+@[simps]
+def Γ_map {K K' : chain_complex C ℕ} (f : K ⟶ K') : Γ_obj K ⟶ Γ_obj K' :=
+{ app := λ Δ, limits.sigma.map (λ (A : Γ_index_set Δ.unop), (f.f A.1.len)),
+  naturality' := λ Δ' Δ θ, begin
+    ext A,
+    simp only [Γ_obj_map, Γ_simplicial, ι_colim_map_assoc,
+      discrete.nat_trans_app, cofan.mk_ι_app, image.as_ι, colimit.ι_desc_assoc,
+      ι_colim_map, colimit.ι_desc, assoc],
+    slice_rhs 1 2 { erw ← Γ_on_mono_naturality, },
+    rw [assoc],
+  end, }
+
+def Γ : chain_complex C ℕ ⥤ simplicial_object C :=
+{ obj := Γ_obj,
+  map := λ _ _, Γ_map,
+  map_id' := λ K, begin
+    ext Δ A,
+    simp only [Γ_map_app, discrete.nat_trans_app, ι_colim_map, nat_trans.id_app,
+      homological_complex.id_f],
+    erw [id_comp, comp_id],
+  end,
+  map_comp' := λ K K' K'' f f', begin
+    ext Δ A,
+    simp only [Γ_map_app, homological_complex.comp_f, discrete.nat_trans_app,
+      ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
+  end, }
 
 end dold_kan
 
