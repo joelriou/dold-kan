@@ -12,14 +12,14 @@ import category_theory.limits.shapes.biproducts
 
 -/
 
-open category_theory
-open category_theory.category
-open category_theory.limits
-
 noncomputable theory
 
 open category_theory
+open category_theory.category
 open category_theory.preadditive
+open category_theory.limits
+open_locale big_operators
+
 
 namespace category_theory
 
@@ -28,9 +28,7 @@ namespace pseudoabelian
 variables {C : Type*} [category C] [preadditive C]
 variable {X : C}
 
-class projector (p : X ⟶ X) : Prop := (idempotence : p ≫ p = p)
-
-@[simp]
+/-@[simp]
 def binary_bicone_of_projector {X : C} (p : X ⟶ X)
   [h : projector p] [has_kernel p] [has_kernel (𝟙 X - p)] :
   binary_bicone (kernel (𝟙 X - p)) (kernel p) :=
@@ -83,14 +81,14 @@ def binary_biproduct_data_of_projector {X : C} (p : X ⟶ X)
     end,
     inr_snd' := by { ext, rw [assoc, kernel.lift_ι, equalizer_as_kernel, id_comp, comp_sub,
         kernel.condition, sub_zero, comp_id], }, }
-  (by { dsimp [binary_bicone_of_projector], simp only [kernel.lift_ι, add_sub_cancel'_right], })
-
-class is_pseudoabelian : Prop :=
-(projectors_have_kernels : Π (X : C) (p : X ⟶ X), projector p → has_kernel p)
+  (by { dsimp [binary_bicone_of_projector], simp only [kernel.lift_ι, add_sub_cancel'_right], })-/
 
 variables (C)
 
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
+
+class is_pseudoabelian : Prop :=
+(idempotents_have_kernels : Π (P : karoubi C), has_kernel P.p)
 
 namespace karoubi
 
@@ -159,6 +157,8 @@ instance : full (to_karoubi C) := {
 
 instance : faithful (to_karoubi C) := { }
 
+variables {C}
+
 instance {P Q : karoubi C} : add_comm_group (P ⟶ Q) := {
   add := λ f' g', ⟨f'.1+g'.1, begin
     rw [add_comp, comp_add],
@@ -183,6 +183,16 @@ lemma add_hom {P Q : karoubi C} (f' g' : P ⟶ Q) : f' + g' = ⟨f'.1+g'.1,
 @[simp]
 lemma zero_def {P Q : karoubi C} : (0 : P ⟶ Q) = ⟨0, by simp only [comp_zero, zero_comp]⟩ := by refl
 
+@[simps]
+def inclusion_hom (P Q : karoubi C) : add_monoid_hom (P ⟶ Q) (P.X ⟶ Q.X) :=
+{ to_fun   := λ f', f'.1,
+  map_zero' := rfl,
+  map_add'  := λ f' g', rfl }
+
+def sum_hom {P Q : karoubi C} {α : Type*} (s : finset α) (f : α → (P ⟶ Q)) :
+  (∑ x in s, f x).1 = ∑ x in s, (f x).1  := 
+add_monoid_hom.map_sum (inclusion_hom P Q) f s
+
 end karoubi
 
 instance : preadditive (karoubi C) :=
@@ -190,59 +200,95 @@ instance : preadditive (karoubi C) :=
   add_comp' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp_def, add_comp], },
   comp_add' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp_def, comp_add], }, }
 
+namespace karoubi
+
+namespace biproducts
+
+variables {C}
+variables {J : Type*} [decidable_eq J] [fintype J] (F : J → karoubi C)
+variables [has_finite_biproducts C]
+
+abbreviation biconeX := biproduct.bicone (λ j, (F j).X)
+
+abbreviation biconeX_p := biproduct.map (λ j, (F j).p)
+
+lemma biconeX_p_idempotence : biconeX_p F ≫ biconeX_p F = biconeX_p F :=
+begin
+  ext j,
+  simp only [limits.biproduct.ι_map_assoc, limits.biproduct.ι_map],
+  slice_lhs 1 2 { rw (F j).idempotence, },
+end
+
+@[simps]
+def bicone : limits.bicone F :=
+{ X :=
+  { X := (biconeX F).X,
+    p := (biconeX_p F),
+      idempotence := biconeX_p_idempotence F, },
+  π := λ j, ⟨biconeX_p F ≫ (biconeX F).π j,
+    by { simp only [limits.biproduct.map_π_assoc, category.assoc,
+      limits.biproduct.map_π, (F j).idempotence], }⟩,
+  ι := λ j, ⟨(biconeX F).ι j ≫ biconeX_p F,
+    by { simp only [limits.biproduct.ι_map, category.assoc],
+      slice_rhs 1 3 { rw [(F j).idempotence, (F j).idempotence], }, }⟩,
+  ι_π := λ j j', begin
+    split_ifs,
+    { subst h,
+      simp only [limits.biproduct.bicone_ι, limits.biproduct.ι_map,
+        limits.biproduct.bicone_π, limits.biproduct.ι_π_self_assoc,
+        karoubi.comp_def, category.assoc, eq_to_hom_refl,
+      limits.biproduct.map_π, karoubi.id_def, (F j).idempotence], },
+    { simp only [karoubi.comp_def],
+      conv { to_lhs, congr, rw assoc, congr, skip, rw ← assoc, congr,rw biconeX_p_idempotence, },
+      simp only [limits.biproduct.bicone_ι, limits.biproduct.bicone_π, limits.biproduct.map_π],
+      conv { to_lhs, congr, rw ← assoc, congr, rw (biconeX F).ι_π, },
+      split_ifs,
+      simp only [zero_comp, karoubi.zero_def], },
+  end, }
+
+end biproducts
+
 instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
 { has_biproducts_of_shape := λ J hJ1 hJ2,
-  { has_biproduct := λ F,
-    { exists_biproduct := begin
-        apply nonempty.intro,
-        letI := hJ1,
-        let biconeX := biproduct.bicone (λ j, (F j).X),
-        let biconeX_p := biproduct.map (λ j, (F j).p), 
-        have biconeX_p_idempotence : biconeX_p ≫ biconeX_p = biconeX_p,
-        { ext j,
-          simp only [limits.biproduct.ι_map_assoc, limits.biproduct.ι_map],
-         slice_lhs 1 2 { rw (F j).idempotence, }, },
-        exact {
-          bicone := {
-            X :=
-            { X := biconeX.X,
-              p := biconeX_p,
-              idempotence := biconeX_p_idempotence, },
-            π := λ j, ⟨biconeX_p ≫ biconeX.π j,
-              by { simp only [limits.biproduct.map_π_assoc, category.assoc,
-                limits.biproduct.map_π, (F j).idempotence], }⟩,
-            ι := λ j, ⟨biconeX.ι j ≫ biconeX_p,
-              by { simp only [limits.biproduct.ι_map, category.assoc],
-                slice_rhs 1 3 { rw [(F j).idempotence, (F j).idempotence], }, }⟩,
-            ι_π := λ j j', begin
-              split_ifs,
-              { subst h,
-                simp only [limits.biproduct.bicone_ι, limits.biproduct.ι_map,
-                  limits.biproduct.bicone_π, limits.biproduct.ι_π_self_assoc,
-                  karoubi.comp_def, category.assoc, eq_to_hom_refl,
-                  limits.biproduct.map_π, karoubi.id_def, (F j).idempotence], },
-              { simp only [karoubi.comp_def],
-                conv { to_lhs, congr, rw assoc, congr, skip, rw ← assoc, congr,rw biconeX_p_idempotence, },
-                simp only [limits.biproduct.bicone_ι, limits.biproduct.bicone_π, limits.biproduct.map_π],
-                conv { to_lhs, congr, rw ← assoc, congr, rw biconeX.ι_π, },
-                split_ifs,
-                simp only [zero_comp, karoubi.zero_def], }
-            end,
-          },
-          is_limit := sorry,
-          is_colimit := sorry, },
-      end, }, }, }
+  { has_biproduct := λ F, begin
+      letI := hJ2,
+      apply has_biproduct_of_total (biproducts.bicone F),
+      ext1, ext1,
+      simp only [karoubi.id_def, comp_id, biproducts.bicone_X_p,
+        limits.biproduct.ι_map],
+      rw [sum_hom, comp_sum],
+      rw finset.sum_eq_single j, rotate,
+      { intros j' h1 h2,
+        simp only [subtype.val_eq_coe, biproducts.bicone_π_coe, comp_def,
+          biproduct.ι_map, assoc, biproducts.bicone_ι_coe, biproduct.map_π],
+        slice_lhs 1 2 { rw biproduct.ι_π, },
+        split_ifs,
+        { exfalso, exact h2 h.symm, },
+        { simp only [zero_comp], } },
+      { intro h1,
+        exfalso,
+        simpa only [finset.mem_univ, not_true] using h1, },
+      simp only [subtype.val_eq_coe, biproducts.bicone_π_coe, comp_def,
+        biproduct.ι_map, assoc, biproducts.bicone_ι_coe, biproduct.map_π],
+      slice_lhs 1 2 { rw biproduct.ι_π, },
+      split_ifs, swap, { exfalso, exact h rfl, },
+      simp only [eq_to_hom_refl, id_comp, (F j).idempotence],
+    end, } }
 
+end karoubi
 
---instance [additive_category C] : additive_category (karoubi C) := { }
-
+theorem pseudoabelian_karoubi : is_pseudoabelian (karoubi C) :=
+{ idempotents_have_kernels := λ P, begin
+    let Q : karoubi C := ⟨P.X.X, P.p.1,
+      by simpa [subtype.ext_iff_val, karoubi.comp_def] using P.idempotence⟩,
+    sorry,
+    end, }
 
 end pseudoabelian
 
 end category_theory
 
 /-!
- additive_category si C l'est
  pseudoab
  to_karoubi est une equiv sssi C est pseudoab -/
 
