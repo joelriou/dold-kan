@@ -281,9 +281,10 @@ theorem pseudoabelian_karoubi : is_pseudoabelian (karoubi C) :=
 { idempotents_have_kernels := λ P, begin
     let Q : karoubi C := ⟨P.X.X, P.p.1,
       by simpa [subtype.ext_iff_val, karoubi.comp_def] using P.idempotence⟩,
-    sorry,
-    end, }
-
+    exact { exists_limit :=
+      ⟨{ cone := sorry, is_limit := sorry, }⟩ },
+  end }
+    
 end pseudoabelian
 
 end category_theory
