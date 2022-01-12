@@ -6,6 +6,7 @@ Authors: Joël Riou
 import category_theory.preadditive
 import category_theory.additive.basic
 import category_theory.limits.shapes.biproducts
+import tactic.abel
 
 /-!
 # Pseudoabelian categories
@@ -87,6 +88,12 @@ variables (C)
 
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
 
+def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
+{ X := P.X,
+  p := 𝟙 _ - P.p,
+  idempotence := by simp only [comp_sub, sub_comp, id_comp, comp_id, P.idempotence,
+    sub_self, sub_zero], }
+
 class is_pseudoabelian : Prop :=
 (idempotents_have_kernels : Π (P : karoubi C), has_kernel P.p)
 
@@ -103,15 +110,15 @@ by { intro h, cases f', cases g', simpa only [subtype.mk_eq_mk] using h, }
 @[simp]
 def id (P : karoubi C) : hom P P := ⟨P.p, by repeat { rw P.idempotence, }⟩
 
-lemma comp_p {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
+lemma p_comp {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
 by { rw [f.2, ← assoc, P.idempotence], }
 
-lemma p_comp {P Q : karoubi C} (f : hom P Q) : f.1 ≫ Q.p = f.1 :=
+lemma comp_p {P Q : karoubi C} (f : hom P Q) : f.1 ≫ Q.p = f.1 :=
 by { rw [f.2, assoc, assoc, Q.idempotence], }
 
 def comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
   f'.1 ≫ g'.1 = P.p ≫ (f'.1 ≫ g'.1) ≫ R.p :=
-by rw [assoc, p_comp, ← assoc, comp_p]
+by rw [assoc, comp_p, ← assoc, p_comp]
 
 @[simp]
 def comp {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) : hom P R :=
@@ -123,8 +130,8 @@ instance : category (karoubi C) :=
 { hom      := karoubi.hom,
   id       := karoubi.id,
   comp     := λ P Q R f' g', karoubi.comp g' f',
-  id_comp' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.comp_p], },
-  comp_id' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.p_comp], },
+  id_comp' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.p_comp], },
+  comp_id' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.comp_p], },
   assoc'   := λ P Q R S f' g' h', by { ext, simp only [category.assoc, karoubi.comp], }, }
 
 namespace karoubi
@@ -277,19 +284,40 @@ instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
 
 end karoubi
 
-theorem pseudoabelian_karoubi : is_pseudoabelian (karoubi C) :=
+theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
 { idempotents_have_kernels := λ P, begin
-    let Q : karoubi C := ⟨P.X.X, P.p.1,
-      by simpa [subtype.ext_iff_val, karoubi.comp_def] using P.idempotence⟩,
-    exact { exists_limit :=
-      ⟨{ cone := sorry, is_limit := sorry, }⟩ },
+    have h := P.idempotence,
+    simp only [subtype.ext_iff_val, karoubi.comp_def] at h,
+    let Q : karoubi C := ⟨P.X.X, P.X.p - P.p.1,
+      by simp only [comp_sub, sub_comp, P.X.idempotence,
+      karoubi.p_comp, karoubi.comp_p, sub_zero, sub_self, h]⟩,
+    let ι : Q ⟶ P.X := ⟨P.X.p - P.p.1,
+      by simp only [sub_comp, comp_sub, id_comp, karoubi.p_comp, karoubi.comp_p,
+        P.X.idempotence, h, sub_zero, sub_self],⟩,
+    refine { exists_limit :=
+      ⟨{ cone := limits.kernel_fork.of_ι ι _, is_limit := _ }⟩ },
+    { simp only [karoubi.zero_def, karoubi.comp_def, sub_comp,
+          subtype.ext_iff_val, karoubi.p_comp, h, sub_self], },
+    { refine is_limit.of_ι _ _ _ _ _,
+      { intros W g hg,
+        refine ⟨g.1, _⟩,
+        simp only [subtype.ext_iff_val, karoubi.comp_def, karoubi.zero_def] at hg,
+        simp only [Q, comp_sub, hg, comp_zero, sub_zero],
+        exact g.2, },
+      { intros W g hg,
+        simp only [subtype.ext_iff_val, karoubi.comp_def, karoubi.zero_def,
+          comp_sub] at hg ⊢,
+        simp only [hg, sub_zero, karoubi.comp_p], },
+      { intros W g hg g' hg',
+        simpa only [subtype.ext_iff_val, karoubi.comp_def, karoubi.zero_def,
+          comp_sub, karoubi.comp_p] using hg', }, }      
   end }
     
 end pseudoabelian
 
 end category_theory
 
+
 /-!
- pseudoab
  to_karoubi est une equiv sssi C est pseudoab -/
 
