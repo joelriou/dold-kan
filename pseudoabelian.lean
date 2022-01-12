@@ -6,7 +6,7 @@ Authors: Joël Riou
 import category_theory.preadditive
 import category_theory.additive.basic
 import category_theory.limits.shapes.biproducts
-import tactic.abel
+import category_theory.equivalence
 
 /-!
 # Pseudoabelian categories
@@ -29,70 +29,9 @@ namespace pseudoabelian
 variables {C : Type*} [category C] [preadditive C]
 variable {X : C}
 
-/-@[simp]
-def binary_bicone_of_projector {X : C} (p : X ⟶ X)
-  [h : projector p] [has_kernel p] [has_kernel (𝟙 X - p)] :
-  binary_bicone (kernel (𝟙 X - p)) (kernel p) :=
-{ X := X,
-  inl := kernel.ι (𝟙 X - p),
-  inr := kernel.ι p,
-  fst := kernel.lift (𝟙 X - p) p 
-    (by { rw [comp_sub, category.comp_id, sub_eq_zero], exact h.idempotence.symm, }),
-  snd := kernel.lift p (𝟙 X - p)
-    (by { rw [sub_comp, category.id_comp, sub_eq_zero], exact h.idempotence.symm, }),
-  inl_snd' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
-    assoc, kernel.lift_ι], },
-  inr_fst' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
-    assoc, kernel.lift_ι], },
-  inl_fst' :=
-  begin
-    ext,
-    rw [assoc, limits.kernel.lift_ι, limits.equalizer_as_kernel, id_comp],
-    symmetry,
-    conv { to_lhs, rw ← comp_id (kernel.ι _), },
-    apply sub_eq_zero.mp,
-    rw [← comp_sub, kernel.condition],
-  end,
-  inr_snd' := by { ext, rw [assoc, kernel.lift_ι, equalizer_as_kernel, id_comp, comp_sub,
-      kernel.condition, sub_zero, comp_id], }, }
-
-def binary_biproduct_data_of_projector {X : C} (p : X ⟶ X)
-  [h : projector p] [has_kernel p] [has_kernel (𝟙 X - p)] :
-  binary_biproduct_data (kernel (𝟙 X - p)) (kernel p) :=
-  binary_biproduct_data_of_total
-  { X := X,
-    inl := kernel.ι (𝟙 X - p),
-    inr := kernel.ι p,
-    fst := kernel.lift (𝟙 X - p) p 
-      (by { rw [comp_sub, category.comp_id, sub_eq_zero], exact h.idempotence.symm, }),
-    snd := kernel.lift p (𝟙 X - p)
-      (by { rw [sub_comp, category.id_comp, sub_eq_zero], exact h.idempotence.symm, }),
-    inl_snd' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
-      assoc, kernel.lift_ι], },
-    inr_fst' := by { dsimp, ext, simp only [zero_comp, kernel.condition,
-      assoc, kernel.lift_ι], },
-    inl_fst' :=
-    begin
-      ext,
-      rw [assoc, limits.kernel.lift_ι, limits.equalizer_as_kernel, id_comp],
-      symmetry,
-      conv { to_lhs, rw ← comp_id (kernel.ι _), },
-      apply sub_eq_zero.mp,
-      rw [← comp_sub, kernel.condition],
-    end,
-    inr_snd' := by { ext, rw [assoc, kernel.lift_ι, equalizer_as_kernel, id_comp, comp_sub,
-        kernel.condition, sub_zero, comp_id], }, }
-  (by { dsimp [binary_bicone_of_projector], simp only [kernel.lift_ι, add_sub_cancel'_right], })-/
-
 variables (C)
 
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
-
-def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
-{ X := P.X,
-  p := 𝟙 _ - P.p,
-  idempotence := by simp only [comp_sub, sub_comp, id_comp, comp_id, P.idempotence,
-    sub_self, sub_zero], }
 
 class is_pseudoabelian : Prop :=
 (idempotents_have_kernels : Π (P : karoubi C), has_kernel P.p)
@@ -100,6 +39,13 @@ class is_pseudoabelian : Prop :=
 namespace karoubi
 
 variables {C}
+
+@[simps]
+def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
+{ X := P.X,
+  p := 𝟙 _ - P.p,
+  idempotence := by simp only [comp_sub, sub_comp, id_comp, comp_id, P.idempotence,
+    sub_self, sub_zero], }
 
 def hom (P Q : karoubi C) := { f : P.X ⟶ Q.X // f = P.p ≫ f ≫ Q.p }
 
@@ -246,8 +192,10 @@ def bicone : limits.bicone F :=
         karoubi.comp_def, category.assoc, eq_to_hom_refl,
       limits.biproduct.map_π, karoubi.id_def, (F j).idempotence], },
     { simp only [karoubi.comp_def],
-      conv { to_lhs, congr, rw assoc, congr, skip, rw ← assoc, congr,rw biconeX_p_idempotence, },
-      simp only [limits.biproduct.bicone_ι, limits.biproduct.bicone_π, limits.biproduct.map_π],
+      conv { to_lhs, congr, rw assoc, congr, skip, rw ← assoc, congr,
+        rw biconeX_p_idempotence, },
+      simp only [limits.biproduct.bicone_ι, limits.biproduct.bicone_π,
+        limits.biproduct.map_π],
       conv { to_lhs, congr, rw ← assoc, congr, rw (biconeX F).ι_π, },
       split_ifs,
       simp only [zero_comp, karoubi.zero_def], },
@@ -312,12 +260,42 @@ theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
         simpa only [subtype.ext_iff_val, karoubi.comp_def, karoubi.zero_def,
           comp_sub, karoubi.comp_p] using hg', }, }      
   end }
-    
+
+instance [is_pseudoabelian C] : ess_surj (to_karoubi C) := ⟨λ P,
+begin
+  let Q := karoubi.idempotent_of_id_sub_idempotent P,
+  let kernels := (show is_pseudoabelian C, by apply_instance).idempotents_have_kernels,
+  haveI : has_kernel Q.p := kernels Q,
+  have h := kernel.condition Q.p,
+  simp only [karoubi.idempotent_of_id_sub_idempotent_p, comp_sub, sub_eq_zero] at h,
+  erw comp_id at h,  
+  use kernel Q.p,
+  apply nonempty.intro,
+  refine
+    { hom := ⟨kernel.ι Q.p, _⟩,
+      inv := ⟨kernel.lift Q.p P.p _, _⟩,
+      inv_hom_id' := _,
+      hom_inv_id' := _, },
+  /- hom is well defined -/
+  { erw [← h, to_karoubi_obj_p, id_comp], },
+  /- inv is well defined -/
+  { simp only [comp_sub, karoubi.idempotent_of_id_sub_idempotent_p, sub_eq_zero,
+        P.idempotence], erw comp_id, },
+  { slice_rhs 2 3 { erw [comp_id], },
+    ext,
+    simp only [assoc, kernel.lift_ι, P.idempotence], },
+  /- inv_hom_id' -/
+  { ext,
+    simp only [equalizer_as_kernel, assoc, kernel.lift_ι,
+      to_karoubi_obj_p, karoubi.comp_def, assoc, karoubi.id_def],
+    erw [← h, id_comp], },
+  /- hom_inv_id' -/
+  { simp only [karoubi.comp_def, karoubi.id_def, kernel.lift_ι], },
+end⟩
+
+instance karoubi_is_equivalence [is_pseudoabelian C] : is_equivalence (to_karoubi C) :=
+  equivalence.of_fully_faithfully_ess_surj (to_karoubi C)
+
 end pseudoabelian
 
 end category_theory
-
-
-/-!
- to_karoubi est une equiv sssi C est pseudoab -/
-
