@@ -293,8 +293,28 @@ begin
   { simp only [karoubi.comp_def, karoubi.id_def, kernel.lift_ι], },
 end⟩
 
-instance karoubi_is_equivalence [is_pseudoabelian C] : is_equivalence (to_karoubi C) :=
+variables (C)
+
+def karoubi_is_equivalence [is_pseudoabelian C] : is_equivalence (to_karoubi C) :=
   equivalence.of_fully_faithfully_ess_surj (to_karoubi C)
+
+namespace karoubi
+
+variables {C}
+
+@[simps]
+def functor_extension {D: Type*} [category D] [preadditive D]
+  (F : C ⥤ D) : karoubi C ⥤ karoubi D :=
+{ obj := λ P, ⟨F.obj P.X, F.map P.p, 
+    by { rw ← F.map_comp, congr, exact P.idempotence, }⟩,
+  map := λ P Q f, ⟨F.map f.1,
+    by { simp only [subtype.ext_iff_val, ← F.map_comp], congr, exact f.2, }⟩, }
+
+def functor_extension' {D: Type*} [category D] [preadditive D] [is_pseudoabelian D]
+  (F : C ⥤ D) : karoubi C ⥤ D :=
+  functor_extension F ⋙ (karoubi_is_equivalence D).inverse
+
+end karoubi
 
 end pseudoabelian
 
