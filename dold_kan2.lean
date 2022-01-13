@@ -9,6 +9,7 @@ import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
+import category_theory.pseudoabelian
 
 import dold_kan1
 
@@ -27,6 +28,7 @@ open category_theory.subobject
 open category_theory.preadditive
 open category_theory.simplicial_object
 open category_theory.category
+open category_theory.pseudoabelian
 open homology
 open opposite
 
@@ -100,6 +102,7 @@ lemma P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y
 congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
   ((alternating_face_map_complex C).obj Y)) → (_ ⟶ _ ))
   ((nat_trans_P q).naturality f)
+
 
 
 /-- Q q is the complement projector associated to P q -/
@@ -224,7 +227,7 @@ begin
     refl, }
 end
 
-theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
+lemma N'_reflects_iso' {X Y : simplicial_object C}
   (f : X ⟶ Y) (g : alternating_face_map_complex.obj Y ⟶ alternating_face_map_complex.obj X)
   (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
   (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
@@ -278,6 +281,65 @@ theorem normalized_Moore_complex_reflects_iso {X Y : simplicial_object C}
           erw f.naturality,
           simpa only [is_iso.inv_hom_id_assoc], }, }, },
   end
+
+namespace N'
+
+abbreviation obj' (X : simplicial_object C) : karoubi (chain_complex C ℕ) :=
+  ⟨(alternating_face_map_complex C).obj X, P_infty, P_infty_is_a_projector⟩
+
+abbreviation map' {X Y : simplicial_object C} (f : X ⟶ Y) : obj' X ⟶ obj' Y :=
+  ⟨P_infty ≫ (alternating_face_map_complex C).map f,
+begin
+  ext n,
+  dsimp [P_infty],
+  conv { to_lhs, congr, rw [← P_is_a_projector, homological_complex.comp_f], },
+  slice_lhs 2 3 { rw ← P_termwise_naturality, },
+  slice_rhs 1 2 { rw [← homological_complex.comp_f,
+    P_is_a_projector], },
+  rw assoc,
+end⟩
+
+end N'
+
+@[simps]
+def N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
+{ obj := N'.obj',
+  map := λ X Y f, N'.map' f,
+  map_id' := λ X, begin
+    ext n,
+    simp only [homological_complex.comp_f, chain_complex.of_hom_f,
+      nat_trans.id_app, alternating_face_map_complex_map,
+      alternating_face_map_complex.map, subtype.val_eq_coe, karoubi.id_def],
+    erw comp_id,
+  end,
+  map_comp' := λ X Y Z f g, begin
+    ext n,
+    simp only [homological_complex.comp_f, karoubi.comp_def,
+      alternating_face_map_complex.map, alternating_face_map_complex_map,
+      chain_complex.of_hom_f, nat_trans.comp_app, P_infty],
+      slice_rhs 2 3 { erw P_termwise_naturality, },
+      slice_rhs 1 2 { rw [← homological_complex.comp_f,
+        P_is_a_projector], },
+      rw assoc,
+  end }
+
+theorem N'_reflects_iso : reflects_isomorphisms
+  (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
+begin
+  refine ⟨_⟩,
+  intros X Y f,
+  introI,
+  let iso := as_iso (N'.map f),
+  apply N'_reflects_iso' f iso.inv.1,
+  { have h := iso.hom_inv_id,
+    simpa only [subtype.ext_iff_val, karoubi.comp_def, as_iso_hom,
+      N'_map, assoc] using h, },
+  { have h := iso.inv_hom_id,
+    simp only [subtype.ext_iff_val, karoubi.comp_def, as_iso_hom,
+      N'_map] at h,
+    conv at h { to_lhs, rw ← assoc, congr, erw karoubi.comp_p iso.inv, },
+    erw [h, P_infty_is_a_projector], }
+end
 
 end dold_kan
 
