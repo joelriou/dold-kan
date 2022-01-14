@@ -7,9 +7,9 @@ Author: Joël Riou
 import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
-import algebraic_topology.simplicial_object
 import algebraic_topology.alternating_face_map_complex
-import category_theory.pseudoabelian
+import category_theory.pseudoabelian.basic
+import category_theory.pseudoabelian.simplicial_object
 
 import dold_kan1
 
@@ -340,19 +340,6 @@ begin
     conv at h { to_lhs, rw ← assoc, congr, erw karoubi.comp_p iso.inv, },
     erw [h, P_infty_is_a_projector], }
 end
-
-@[simps]
-instance {X Y : simplicial_object C} : add_comm_group (X ⟶ Y) :=
-{ add  := λ f g, { app := f.app + g.app, },
-  zero := { app := 0, },
-  neg  := λ f, { app := -f.app, },
-  add_assoc := λ f g h, by { ext Δ, apply_rules [add_assoc], },
-  add_comm    := λ f g, by { ext Δ, apply_rules [add_comm], },
-  zero_add      := λ f, by { ext Δ, apply_rules [zero_add], },
-  add_zero      := λ f, by { ext Δ, apply_rules [add_zero], },
-  add_left_neg  := λ f, by { ext Δ, apply_rules [add_left_neg], }, }
-
-instance : preadditive (simplicial_object C) := { }
 
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
