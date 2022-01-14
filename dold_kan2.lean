@@ -309,12 +309,12 @@ def N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
     ext n,
     simp only [homological_complex.comp_f, chain_complex.of_hom_f,
       nat_trans.id_app, alternating_face_map_complex_map,
-      alternating_face_map_complex.map, subtype.val_eq_coe, karoubi.id_eq],
+      alternating_face_map_complex.map, karoubi.id_eq],
     erw comp_id,
   end,
   map_comp' := λ X Y Z f g, begin
     ext n,
-    simp only [homological_complex.comp_f, karoubi.comp_eq,
+    simp only [homological_complex.comp_f, karoubi.comp,
       alternating_face_map_complex.map, alternating_face_map_complex_map,
       chain_complex.of_hom_f, nat_trans.comp_app, P_infty],
       slice_rhs 2 3 { erw P_termwise_naturality, },
@@ -332,13 +332,38 @@ begin
   let iso := as_iso (N'.map f),
   apply N'_reflects_iso' f iso.inv.1,
   { have h := iso.hom_inv_id,
-    simpa only [subtype.ext_iff_val, karoubi.comp_eq, as_iso_hom,
+    simpa only [karoubi.hom_ext, karoubi.comp, as_iso_hom,
       N'_map, assoc] using h, },
   { have h := iso.inv_hom_id,
-    simp only [subtype.ext_iff_val, karoubi.comp_eq, as_iso_hom,
+    simp only [karoubi.hom_ext, karoubi.comp, as_iso_hom,
       N'_map] at h,
     conv at h { to_lhs, rw ← assoc, congr, erw karoubi.comp_p iso.inv, },
     erw [h, P_infty_is_a_projector], }
+end
+
+@[simps]
+instance {X Y : simplicial_object C} : add_comm_group (X ⟶ Y) :=
+{ add  := λ f g, { app := f.app + g.app, },
+  zero := { app := 0, },
+  neg  := λ f, { app := -f.app, },
+  add_assoc := λ f g h, by { ext Δ, apply_rules [add_assoc], },
+  add_comm    := λ f g, by { ext Δ, apply_rules [add_comm], },
+  zero_add      := λ f, by { ext Δ, apply_rules [zero_add], },
+  add_zero      := λ f, by { ext Δ, apply_rules [add_zero], },
+  add_left_neg  := λ f, by { ext Δ, apply_rules [add_left_neg], }, }
+
+instance : preadditive (simplicial_object C) := { }
+
+def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
+  karoubi.functor_extension' N'
+
+theorem N_reflects_iso : reflects_isomorphisms
+  (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
+begin
+  refine ⟨_⟩,
+  intros X Y f hf,
+  
+  sorry
 end
 
 end dold_kan
