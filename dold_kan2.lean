@@ -334,16 +334,55 @@ begin
     erw [h, P_infty_is_a_projector], }
 end
 
+@[simp]
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
 theorem N_reflects_iso : reflects_isomorphisms
   (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
 begin
+  /- restating the result in a way that allows induction on the degree n -/
   refine ⟨_⟩,
   intros X Y f hf,
-  
-  sorry
+  haveI : is_iso ((karoubi_simplicial_object C).map f), swap,
+  { exact is_iso_of_reflects_iso f (karoubi_simplicial_object C), },
+  haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (((karoubi_simplicial_object C).map f).app Δ), swap,
+  { apply nat_iso.is_iso_of_is_iso_app, },
+  intro s,
+  let m := simplex_category.len (unop s),
+  rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
+  simp only [karoubi_simplicial_object_functor.map, karoubi_simplicial_object_map],
+  generalize : m = n,
+  /- restating the assumptions in a more practical form -/
+  have p_comp_f := congr_app (karoubi.p_comp f),
+  have comp_p_f := congr_app (karoubi.comp_p f),
+  rcases f with ⟨f', comm_f⟩,
+  rcases hf with ⟨⟨g, ⟨hgf, hfg⟩⟩⟩,
+  have hgf' := homological_complex.congr_hom (karoubi.hom_ext.mp hgf),
+  have hfg' := homological_complex.congr_hom (karoubi.hom_ext.mp hfg),
+  have hg   := homological_complex.congr_hom g.comm,
+  simp only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp] at hgf' hfg' hg,
+  dsimp at hgf' hfg' p_comp_f comp_p_f hg ⊢,
+  clear hgf hfg m s,
+  --have hg := g.idempotence,
+  /- we have to construct an inverse to f in degree n, by induction on n -/
+  induction n with n hn,
+  /- degree 0 -/
+  { use g.f.f 0; dsimp,
+    { have eq := hg 0,
+      simp only [P_infty_termwise, P_deg0_eq] at eq,
+      erw [id_comp, id_comp] at eq,
+      exact eq, },
+    { split; ext; simp only [karoubi.id_eq, karoubi.comp,
+        karoubi_simplicial_object_functor.obj_obj_p],
+      have eq := hgf' 0, swap,
+      have eq := hfg' 0,
+      all_goals
+      { simp only [P_infty_termwise, P_deg0_eq] at eq,
+        erw [id_comp, id_comp] at eq,
+        exact eq, }, }, },
+  /- isomorphism in degree n+1 of an isomorphism in degree n -/
+  { sorry, }
 end
 
 end dold_kan
