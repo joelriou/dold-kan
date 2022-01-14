@@ -51,9 +51,6 @@ structure hom (P Q : karoubi C) := (f : P.X ⟶ Q.X) (comm : f = P.p ≫ f ≫ Q
 lemma hom_ext {P Q : karoubi C} {f' g' : hom P Q} : f' = g' ↔ f'.f = g'.f :=
 by { split; intro h, { congr, assumption, }, { ext, assumption, }, }
 
-@[simp]
-def id (P : karoubi C) : hom P P := ⟨P.p, by repeat { rw P.idempotence, }⟩
-
 lemma p_comp {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
 by { rw [f.2, ← assoc, P.idempotence], }
 
@@ -64,24 +61,20 @@ def comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
   f'.1 ≫ g'.1 = P.p ≫ (f'.1 ≫ g'.1) ≫ R.p :=
 by rw [assoc, comp_p, ← assoc, p_comp]
 
-@[simp]
-def comp {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) : hom P R :=
-  ⟨f'.1 ≫ g'.1, comp_proof g' f'⟩
-
 end karoubi
 
 instance : category (karoubi C) :=
 { hom      := karoubi.hom,
-  id       := karoubi.id,
-  comp     := λ P Q R f' g', karoubi.comp g' f',
-  id_comp' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.p_comp], },
-  comp_id' := λ P Q f', by { ext, simp only [karoubi.id, karoubi.comp, karoubi.comp_p], },
-  assoc'   := λ P Q R S f' g' h', by { ext, simp only [category.assoc, karoubi.comp], }, }
+  id       := λ P, ⟨P.p, by { repeat { rw P.idempotence, }, }⟩,
+  comp     := λ P Q R f' g', ⟨f'.1 ≫ g'.1, karoubi.comp_proof g' f'⟩,
+  id_comp' := λ P Q f', by { ext, simp only [karoubi.p_comp], },
+  comp_id' := λ P Q f', by { ext, simp only [karoubi.comp_p], },
+  assoc'   := λ P Q R S f' g' h', by { ext, simp only [category.assoc], }, }
 
 namespace karoubi
 
 @[simp]
-lemma comp_eq {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
+lemma comp {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
   f' ≫ g' = ⟨f'.1 ≫ g'.1, comp_proof g' f'⟩ := by refl
 
 @[simp]
@@ -110,6 +103,7 @@ instance : faithful (to_karoubi C) := { }
 
 variables {C}
 
+@[simps]
 instance {P Q : karoubi C} : add_comm_group (P ⟶ Q) :=
 { add := λ f' g', ⟨f'.1+g'.1, begin
     rw [add_comp, comp_add],
@@ -131,16 +125,7 @@ namespace karoubi
 lemma add_hom {P Q : karoubi C} (f' g' : P ⟶ Q) : f' + g' = ⟨f'.1+g'.1,
   by { rw [add_comp, comp_add], congr', exact f'.2, exact g'.2, }⟩ := by refl
 
-@[simp]
-lemma zero_eq {P Q : karoubi C} : (0 : P ⟶ Q) = ⟨0, by simp only [comp_zero, zero_comp]⟩ := by refl
-
-lemma hom_eq_zero_iff {P Q : karoubi C} {f' : hom P Q} : f' = 0 ↔ f'.f = 0 :=
-begin
-  split; intro h,
-  { rw [h, zero_eq], },
-  { ext,
-    rw [h, zero_eq], }
-end
+lemma hom_eq_zero_iff {P Q : karoubi C} {f' : hom P Q} : f' = 0 ↔ f'.f = 0 := by tidy
 
 @[simps]
 def inclusion_hom (P Q : karoubi C) : add_monoid_hom (P ⟶ Q) (P.X ⟶ Q.X) :=
@@ -156,8 +141,8 @@ end karoubi
 
 instance : preadditive (karoubi C) :=
 { hom_group := λ P Q, by apply_instance,
-  add_comp' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp_eq, add_comp], },
-  comp_add' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp_eq, comp_add], }, }
+  add_comp' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp, add_comp], },
+  comp_add' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp, comp_add], }, }
 
 namespace karoubi
 
@@ -195,16 +180,16 @@ def bicone : limits.bicone F :=
     { subst h,
       simp only [limits.biproduct.bicone_ι, limits.biproduct.ι_map,
         limits.biproduct.bicone_π, limits.biproduct.ι_π_self_assoc,
-        karoubi.comp_eq, category.assoc, eq_to_hom_refl,
-      limits.biproduct.map_π, karoubi.id_eq, (F j).idempotence], },
-    { simp only [karoubi.comp_eq],
+        comp, category.assoc, eq_to_hom_refl,
+      limits.biproduct.map_π, id_eq, (F j).idempotence], },
+    { simp only [comp],
       conv { to_lhs, congr, rw assoc, congr, skip, rw ← assoc, congr,
         rw biconeX_p_idempotence, },
       simp only [limits.biproduct.bicone_ι, limits.biproduct.bicone_π,
         limits.biproduct.map_π],
       conv { to_lhs, congr, rw ← assoc, congr, rw (biconeX F).ι_π, },
       split_ifs,
-      simp only [zero_comp, karoubi.zero_eq], },
+      simp only [hom_eq_zero_iff, zero_comp], },
   end, }
 
 end biproducts
@@ -215,12 +200,12 @@ instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
       letI := hJ2,
       apply has_biproduct_of_total (biproducts.bicone F),
       ext1, ext1,
-      simp only [karoubi.id_eq, comp_id, biproducts.bicone_X_p,
+      simp only [id_eq, comp_id, biproducts.bicone_X_p,
         limits.biproduct.ι_map],
       rw [sum_hom, comp_sum],
       rw finset.sum_eq_single j, rotate,
       { intros j' h1 h2,
-        simp only [biproduct.ι_map, biproducts.bicone_ι_f, biproducts.bicone_π_f, assoc, comp_eq, biproduct.map_π],
+        simp only [biproduct.ι_map, biproducts.bicone_ι_f, biproducts.bicone_π_f, assoc, comp, biproduct.map_π],
         slice_lhs 1 2 { rw biproduct.ι_π, },
         split_ifs,
         { exfalso, exact h2 h.symm, },
@@ -228,7 +213,7 @@ instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
       { intro h1,
         exfalso,
         simpa only [finset.mem_univ, not_true] using h1, },
-      simp only [biproducts.bicone_π_f, comp_eq,
+      simp only [biproducts.bicone_π_f, comp,
         biproduct.ι_map, assoc, biproducts.bicone_ι_f, biproduct.map_π],
       slice_lhs 1 2 { rw biproduct.ι_π, },
       split_ifs, swap, { exfalso, exact h rfl, },
@@ -237,43 +222,42 @@ instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
 
 end karoubi
 
+open karoubi
+
 theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
 { idempotents_have_kernels := λ P, begin
     have h := P.idempotence,
-    simp only [karoubi.hom_ext, karoubi.comp_eq] at h,
+    simp only [hom_ext, comp] at h,
     let Q : karoubi C := ⟨P.X.X, P.X.p - P.p.1,
-      by { simp only [comp_sub, sub_comp, P.X.idempotence, karoubi.p_comp,
-        karoubi.comp_p],
+      by { simp only [comp_sub, sub_comp, P.X.idempotence, p_comp, comp_p],
       simp only [comp_sub, sub_comp, P.X.idempotence,
-      karoubi.p_comp, karoubi.comp_p, sub_zero, sub_self, h], }⟩,
+        p_comp, comp_p, sub_zero, sub_self, h], }⟩,
     let ι : Q ⟶ P.X := ⟨P.X.p - P.p.1,
-      by simp only [sub_comp, comp_sub, id_comp, karoubi.p_comp, karoubi.comp_p,
+      by simp only [sub_comp, comp_sub, id_comp, p_comp, comp_p,
         P.X.idempotence, h, sub_zero, sub_self],⟩,
     refine { exists_limit :=
       ⟨{ cone := limits.kernel_fork.of_ι ι _, is_limit := _ }⟩ },
-    { simp only [karoubi.zero_eq, karoubi.comp_eq, sub_comp,
-          karoubi.p_comp, h, sub_self], },
+    { simp only [hom_eq_zero_iff, comp, sub_comp, p_comp, h, sub_self], },
     { refine is_limit.of_ι _ _ _ _ _,
       { intros W g hg,
         refine ⟨g.1, _⟩,
-        simp only [karoubi.hom_eq_zero_iff, karoubi.comp_eq] at hg,
-        simp only [Q, comp_sub, karoubi.comp_eq, hg, comp_zero, sub_zero],
+        simp only [hom_eq_zero_iff, comp] at hg,
+        simp only [Q, comp_sub, comp, hg, comp_zero, sub_zero],
         exact g.2, },
       { intros W g hg,
-        simp only [karoubi.hom_ext, karoubi.comp_eq, karoubi.zero_eq, comp_sub] at hg ⊢,
-        simp only [hg, sub_zero, karoubi.comp_p], },
+        simp only [hom_eq_zero_iff, comp] at hg,
+        simp only [comp, comp_sub, hom_ext, hg, sub_zero, comp_p], },
       { intros W g hg g' hg',
-        simpa only [karoubi.hom_ext, karoubi.comp_eq, karoubi.zero_eq,
-          comp_sub, karoubi.comp_p] using hg', }, }      
+        simpa only [hom_eq_zero_iff, hom_ext, comp, comp_sub, comp_p] using hg', }, }
   end }
 
 instance [is_pseudoabelian C] : ess_surj (to_karoubi C) := ⟨λ P,
 begin
-  let Q := karoubi.idempotent_of_id_sub_idempotent P,
+  let Q := idempotent_of_id_sub_idempotent P,
   let kernels := (show is_pseudoabelian C, by apply_instance).idempotents_have_kernels,
   haveI : has_kernel Q.p := kernels Q,
   have h := kernel.condition Q.p,
-  simp only [karoubi.idempotent_of_id_sub_idempotent_p, comp_sub, sub_eq_zero] at h,
+  simp only [idempotent_of_id_sub_idempotent_p, comp_sub, sub_eq_zero] at h,
   erw comp_id at h,  
   use kernel Q.p,
   apply nonempty.intro,
@@ -285,7 +269,7 @@ begin
   /- hom is well defined -/
   { erw [← h, to_karoubi_obj_p, id_comp], },
   /- inv is well defined -/
-  { simp only [comp_sub, karoubi.idempotent_of_id_sub_idempotent_p, sub_eq_zero,
+  { simp only [comp_sub, idempotent_of_id_sub_idempotent_p, sub_eq_zero,
         P.idempotence], erw comp_id, },
   { slice_rhs 2 3 { erw [comp_id], },
     ext,
@@ -293,10 +277,10 @@ begin
   /- inv_hom_id' -/
   { ext,
     simp only [equalizer_as_kernel, assoc, kernel.lift_ι,
-      to_karoubi_obj_p, karoubi.comp_eq, assoc, karoubi.id_eq],
+      to_karoubi_obj_p, comp, assoc, id_eq],
     erw [← h, id_comp], },
   /- hom_inv_id' -/
-  { simp only [karoubi.comp_eq, karoubi.id_eq, kernel.lift_ι], },
+  { simp only [comp, id_eq, kernel.lift_ι], },
 end⟩
 
 variables (C)
@@ -321,11 +305,11 @@ def functor_extension' {D: Type*} [category D] [preadditive D]
   (F : C ⥤ karoubi D) : karoubi C ⥤ karoubi D :=
 { obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).1, begin
     have h := congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idempotence,
-    simpa only [F.map_comp, karoubi.hom_ext, karoubi.comp_eq] using h,
+    simpa only [F.map_comp, hom_ext] using h,
   end⟩,
   map := λ P Q f, ⟨(F.map f.1).1, begin
     have h := congr_arg (λ (f : P.X ⟶ Q.X), F.map f) f.2,
-    simpa only [F.map_comp, karoubi.hom_ext, karoubi.comp_eq] using h,
+    simpa only [F.map_comp, hom_ext] using h,
   end⟩, }
 
 @[simp]
@@ -339,83 +323,81 @@ namespace karoubi_karoubi
 
 def inverse : karoubi (karoubi C) ⥤ karoubi C :=
   { obj := λ P, ⟨P.X.X, P.p.1,
-      by simpa only [karoubi.hom_ext, karoubi.comp_eq] using P.idempotence⟩,
+      by simpa only [hom_ext] using P.idempotence⟩,
     map := λ P Q f, ⟨f.1.1,
-      by simpa only [karoubi.hom_ext, karoubi.comp_eq] using f.2⟩, }
+      by simpa only [hom_ext] using f.2⟩, }
 
-def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ karoubi_karoubi.inverse C :=
+def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
 { hom :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
     naturality' := λ P Q f,
-      by { cases P, cases Q, cases f, dsimp [karoubi_karoubi.inverse],
-        simp only [comp_id, id_comp, karoubi.hom_ext], }, },
+      by { cases P, cases Q, cases f, dsimp [inverse],
+        simp only [comp_id, id_comp, hom_ext], }, },
   inv :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
     naturality' := λ P Q f, begin
       cases P,
       cases Q,
-      dsimp [karoubi_karoubi.inverse],
-      simp only [karoubi.comp_eq, comp_id, id_comp, karoubi.hom_ext],
+      dsimp [inverse],
+      simp only [comp_id, id_comp, hom_ext],
     end },
   hom_inv_id' := begin
     ext P,
     cases P,
     dsimp,
-    simp only [karoubi.comp_eq, karoubi.id_eq, karoubi.hom_ext],
-    simpa using P_idempotence,
+    simpa only [id_eq, hom_ext] using P_idempotence,
   end,
   inv_hom_id' := begin
     ext P,
     cases P,
     dsimp,
-    simp only [karoubi.comp_eq, karoubi.id_eq, karoubi.hom_ext],
-    simpa using P_idempotence,
+    simpa only [id_eq, hom_ext] using P_idempotence,
   end, }
 
-def counit_iso : karoubi_karoubi.inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi C)) :=
+def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi C)) :=
 { hom := 
   { app := λ P, ⟨⟨P.p.1, begin
     have h := P.idempotence,
-    simp only [karoubi.hom_ext, karoubi.comp_eq] at h,
-    erw [← assoc, h, karoubi.comp_p],
+    simp only [hom_ext, comp] at h,
+    erw [← assoc, h, comp_p],
     end⟩,
     begin
       have h := P.idempotence,
-      simp only [karoubi.hom_ext, karoubi.comp_eq] at h ⊢,
+      simp only [hom_ext, comp] at h ⊢,
       erw [h, h],
     end⟩,
     naturality' := λ P Q f, begin
-      have h := karoubi.comp_p f,
-      have h' := karoubi.p_comp f,
-      simp only [karoubi.hom_ext, karoubi.comp_eq] at h h' ⊢,
+      have h := comp_p f,
+      have h' := p_comp f,
+      simp only [hom_ext] at h h' ⊢,
       erw [h, h'],
     end, },
   inv :=
   { app := λ P, ⟨⟨P.p.1, begin
       have h := P.idempotence,
-      simp only [karoubi.hom_ext, karoubi.comp_eq] at h,
-      erw [h, karoubi.p_comp],
+      simp only [hom_ext, comp] at h,
+      erw [h, p_comp],
     end⟩,
     begin
       have h := P.idempotence,
-      simp only [karoubi.hom_ext, karoubi.comp_eq] at h ⊢,
+      simp only [hom_ext, comp] at h ⊢,
       erw [h, h],
     end⟩,
     naturality' := λ P Q f, begin
-      have h := karoubi.comp_p f,
-      have h' := karoubi.p_comp f,
-      simp only [karoubi.hom_ext, karoubi.comp_eq] at h h' ⊢,
+      have h := comp_p f,
+      have h' := p_comp f,
+      simp only [hom_ext] at h h' ⊢,
       erw [h, h'],
     end, },
   hom_inv_id' := begin
     ext P,
     dsimp,
-    simpa only [karoubi.hom_ext, karoubi.comp_eq, karoubi.id_eq] using P.idempotence,
+    simpa only [hom_ext, id_eq] using P.idempotence,
   end,
   inv_hom_id' := begin
     ext P,
     dsimp,
-    simpa only [karoubi.hom_ext, karoubi.comp_eq, karoubi.id_eq] using P.idempotence,
+    simpa only [hom_ext, id_eq] using P.idempotence,
   end, }
 
 end karoubi_karoubi
@@ -428,7 +410,7 @@ def karoubi_karoubi : karoubi C ≌ karoubi (karoubi C) :=
   functor_unit_iso_comp' := λ P, begin
     cases P,
     dsimp [karoubi_karoubi.unit_iso, karoubi_karoubi.counit_iso, to_karoubi],
-    simp only [karoubi.comp_eq, karoubi.id_eq, subtype.coe_mk, P_idempotence],
+    simp only [comp, id_eq, subtype.coe_mk, P_idempotence],
   end, }
 end pseudoabelian
 
