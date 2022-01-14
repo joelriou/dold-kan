@@ -99,11 +99,7 @@ def nat_trans_P (q : ℕ) : ((alternating_face_map_complex C) ⟶
 
 lemma P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
    f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
-congr_arg ((λ g, g.f n) : (((alternating_face_map_complex C).obj X) ⟶
-  ((alternating_face_map_complex C).obj Y)) → (_ ⟶ _ ))
-  ((nat_trans_P q).naturality f)
-
-
+homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 
 /-- Q q is the complement projector associated to P q -/
 def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
@@ -232,9 +228,6 @@ lemma N'_reflects_iso' {X Y : simplicial_object C}
   (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
   (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
   begin
-    /- from the assumptions hgf & hfg, we can get degreewise identities of morphisms in C
-      using congr_arg (proj n _ _) -/
-    let proj : Π (n : ℕ) (A B : chain_complex C ℕ) (f : A ⟶ B), A.X n ⟶ B.X n := λ n A B f, f.f n,
     /- restating the result in a way that allows induction on the degree n -/
     haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
     { exact nat_iso.is_iso_of_is_iso_app f, },
@@ -247,10 +240,10 @@ lemma N'_reflects_iso' {X Y : simplicial_object C}
     /- degree 0 -/
     { use g.f 0,
       split,
-      have eq := congr_arg (proj 0 _ _) hgf, swap,
-      have eq := congr_arg (proj 0 _ _) hfg,
+      have eq := homological_complex.congr_hom hgf 0, swap,
+      have eq := homological_complex.congr_hom hfg 0,
       all_goals {
-        simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+        simpa only [homological_complex.comp_f, chain_complex.of_hom_f,
           alternating_face_map_complex.map, P_infty_termwise,
           P_deg0_eq, id_comp] using eq, }, },
     /- isomorphism in degree n+1 of an isomorphism in degree n -/
@@ -264,8 +257,8 @@ lemma N'_reflects_iso' {X Y : simplicial_object C}
         congr,
         dsimp [comp_morph_components, morph_components_id],
         ext,
-        { have eq := congr_arg (proj (n+1) _ _) hgf,
-          simp only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+        { have eq := homological_complex.congr_hom hgf (n+1),
+          simp only [homological_complex.comp_f, chain_complex.of_hom_f,
           alternating_face_map_complex.map, P_infty_termwise] at eq ⊢,
           rw [← assoc] at eq ⊢,
           simpa only [← P_termwise_naturality] using eq, },
@@ -274,8 +267,8 @@ lemma N'_reflects_iso' {X Y : simplicial_object C}
         congr,
         dsimp [morph_components_comp, morph_components_id],
         ext,
-        { have eq := congr_arg (proj (n+1) _ _) hfg,
-          simpa only [proj, homological_complex.comp_f, chain_complex.of_hom_f,
+        { have eq := homological_complex.congr_hom hfg (n+1),
+          simpa only [homological_complex.comp_f, chain_complex.of_hom_f,
           alternating_face_map_complex.map, P_infty_termwise, assoc] using eq, },
         { simp only [assoc],
           erw f.naturality,
