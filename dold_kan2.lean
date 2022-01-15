@@ -101,6 +101,10 @@ lemma P_termwise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y
    f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
 homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 
+lemma P_infty_termwise_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+   f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
+by { dsimp [P_infty], rw P_termwise_naturality, }
+
 /-- Q q is the complement projector associated to P q -/
 def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X) := 𝟙 _ - P q
@@ -167,6 +171,7 @@ def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
 
 /-- the canonical `morph_components` whose associated morphism is the identity
 (see `F_id`) thanks to `decomposition_Q n (n+1)` -/
+@[simps]
 def morph_components_id (X : simplicial_object C) (n : ℕ) :
   morph_components X n (X _[n+1]) :=
 { a := P_infty.f (n+1),
@@ -188,6 +193,7 @@ begin
 end
 
 /-- A `morph_components` can be postcomposed with a map `Z ⟶ Z'`. -/
+@[simps]
 def morph_components_comp {X : simplicial_object C} {n : ℕ} {Z Z' : C}
   (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
 { a := f.a ≫ g,
@@ -201,6 +207,7 @@ begin
 end
 
 /-- A `morph_components` can be precomposed with a map `X' ⟶ X`. -/
+@[simps]
 def comp_morph_components {X' X : simplicial_object C} {n : ℕ} {Z : C}
   (g : X' ⟶ X) (f : morph_components X n Z) : morph_components X' n Z :=
 { a := g.app (op [n+1]) ≫ f.a,
@@ -351,20 +358,28 @@ begin
   intro s,
   let m := simplex_category.len (unop s),
   rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
-  simp only [karoubi_simplicial_object_functor.map, karoubi_simplicial_object_map],
+--  simp only [karoubi_simplicial_object_functor.map, karoubi_simplicial_object_map],
   generalize : m = n,
   /- restating the assumptions in a more practical form -/
-  have p_comp_f := congr_app (karoubi.p_comp f),
-  have comp_p_f := congr_app (karoubi.comp_p f),
   rcases f with ⟨f', comm_f⟩,
   rcases hf with ⟨⟨g, ⟨hgf, hfg⟩⟩⟩,
   have hgf' := homological_complex.congr_hom (karoubi.hom_ext.mp hgf),
   have hfg' := homological_complex.congr_hom (karoubi.hom_ext.mp hfg),
   have hg   := homological_complex.congr_hom g.comm,
   simp only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp] at hgf' hfg' hg,
-  dsimp at hgf' hfg' p_comp_f comp_p_f hg ⊢,
+  dsimp at hgf' hfg' hg ⊢,
+  simp only [assoc] at hg,
   clear hgf hfg m s,
-  --have hg := g.idempotence,
+  have hg'  : ∀ (i : ℕ), P_infty.f i ≫ g.f.f i = g.f.f i,
+  { intro i,
+    rw hg i,
+    slice_lhs 1 2 { erw P_infty_termwise_is_a_projector, },
+    simp only [assoc], },
+  have hg'' : ∀ (i : ℕ), g.f.f i ≫ P_infty.f i = g.f.f i,
+  { intro i,
+    rw hg i,
+    slice_lhs 5 6 { erw P_infty_termwise_naturality, },
+    slice_lhs 4 5 { erw P_infty_termwise_is_a_projector, }, },
   /- we have to construct an inverse to f in degree n, by induction on n -/
   induction n with n hn,
   /- degree 0 -/
@@ -382,7 +397,68 @@ begin
         erw [id_comp, id_comp] at eq,
         exact eq, }, }, },
   /- isomorphism in degree n+1 of an isomorphism in degree n -/
-  { sorry, }
+  { let φ := ((karoubi_simplicial_object C).map ⟨f', comm_f⟩).app (op [n]),
+    haveI : is_iso φ := hn,
+    let γ : morph_components Y.X n (X.X _[n+1]) :=
+    { a := g.f.f (n+1),
+      b := λ i, (inv φ).f ≫ X.X.σ i },
+    use F γ,
+    { erw [← F_comp, ← comp_F],
+      congr',
+      ext1,
+      { simp only [comp_morph_components_a, morph_components_comp_a, karoubi_simplicial_object_functor.obj_obj_p],
+        conv { to_rhs, congr, skip, congr, rw [← hg', ← hg''], },
+        slice_rhs 1 2 { rw P_infty_termwise_naturality, },
+        simp only [assoc],
+        exact hg (n+1), },
+      { ext i,
+        simp only [morph_components_comp_b, assoc, comp_morph_components_b, karoubi_simplicial_object_functor.obj_obj_p],
+        erw (inv φ).comm,
+        dsimp,
+        erw X.p.naturality,
+        have hY := congr_app Y.idempotence (op [n]),
+        simp only [nat_trans.comp_app] at hY,
+        have hX := congr_app X.idempotence (op [n]),
+        simp only [nat_trans.comp_app] at hX,
+        slice_rhs 1 2 { erw hY, },
+        slice_rhs 3 4 { erw hX },
+        simpa only [assoc], }, },
+    { split,
+      { ext,
+        simp only [karoubi.comp, karoubi.id_eq, karoubi_simplicial_object_functor.obj_obj_p],
+        conv { to_rhs, erw ← comp_id (X.p.app (op [n.succ])),
+          congr, skip, erw ← F_id, },
+        erw [← comp_F, ← comp_F],
+        congr' 1,
+        ext,
+        { simp only [morph_components_id_a, comp_morph_components_a],
+          have eq := hgf' (n+1),
+          conv at eq { to_rhs, rw ← P_infty_termwise_naturality, },
+          conv at eq { to_lhs, congr, rw ← P_infty_termwise_naturality, },
+          rw [assoc, hg'] at eq,
+          exact eq, },
+        { simp only [morph_components_id_b, comp_morph_components_b],
+          rw ← assoc,
+          congr,
+          simpa only [karoubi.id_eq, karoubi.comp] using karoubi.hom_ext.mp (is_iso.hom_inv_id φ), }, }, 
+      { ext,
+        simp only [karoubi.comp, karoubi.id_eq, karoubi_simplicial_object_functor.obj_obj_p],
+        conv { to_rhs, erw ← id_comp (Y.p.app (op [n.succ])),
+          congr, erw ← F_id, },
+        erw [← F_comp, ← F_comp],
+        congr' 1,
+        ext,
+        { simp only [morph_components_id_a, morph_components_comp_a,
+            karoubi_simplicial_object_functor.map_app_f],
+          have eq := hfg' (n+1),
+          conv at eq { to_lhs, rw ← assoc, rw hg'', },
+          exact eq, },
+        { simp only [morph_components_id_b, morph_components_comp_b,
+            karoubi_simplicial_object_functor.map_app_f],
+          erw [Y.p.naturality, assoc, f'.naturality, ← assoc],
+          congr,
+          simpa only [karoubi.id_eq, karoubi.comp] using karoubi.hom_ext.mp (is_iso.inv_hom_id φ), },
+           }, }, },
 end
 
 end dold_kan

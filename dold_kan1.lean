@@ -568,12 +568,15 @@ end
 lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = 
   (P n).f n := by refl
 
-lemma P_infty_is_a_projector : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
+lemma P_infty_termwise_is_a_projector (n : ℕ) :
+  (P_infty.f n : X _[n] ⟶ X _[n]) ≫ (P_infty.f n) = P_infty.f n :=
 begin
-  ext n,
   simp only [homological_complex.comp_f, P_infty_termwise],
   rw [← homological_complex.comp_f, P_is_a_projector n],
 end
+
+lemma P_infty_is_a_projector : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
+by { ext n, rw [homological_complex.comp_f, P_infty_termwise_is_a_projector], }
 
 /-- Construction of the homotopy from `P_infty` to the identity using eventually 
 (termwise) constant homotopies from `P q` to the identity for all q -/
