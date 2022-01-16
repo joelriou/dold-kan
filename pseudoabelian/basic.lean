@@ -37,6 +37,18 @@ namespace karoubi
 
 variables {C}
 
+@[ext]
+lemma ext {P Q : karoubi C} (h_X : P.X = Q.X)
+  (h_p : P.p ≫ eq_to_hom h_X = eq_to_hom h_X ≫ Q.p) : P = Q :=
+begin
+  cases P,
+  cases Q,
+  dsimp at h_X h_p,
+  subst h_X,
+  simpa only [true_and, eq_self_iff_true, id_comp, eq_to_hom_refl,
+    heq_iff_eq, comp_id] using h_p,
+end
+
 @[simps]
 def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
 { X := P.X,
@@ -52,10 +64,13 @@ lemma hom_ext {P Q : karoubi C} {f' g' : hom P Q} : f' = g' ↔ f'.f = g'.f :=
 by { split; intro h, { congr, assumption, }, { ext, assumption, }, }
 
 lemma p_comp {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
-by { rw [f.2, ← assoc, P.idempotence], }
+by rw [f.2, ← assoc, P.idempotence]
 
 lemma comp_p {P Q : karoubi C} (f : hom P Q) : f.1 ≫ Q.p = f.1 :=
-by { rw [f.2, assoc, assoc, Q.idempotence], }
+by rw [f.2, assoc, assoc, Q.idempotence]
+
+lemma p_comm {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 ≫ Q.p :=
+by rw [p_comp, comp_p]
 
 def comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
   f'.1 ≫ g'.1 = P.p ≫ (f'.1 ≫ g'.1) ≫ R.p :=
@@ -87,6 +102,11 @@ lemma coe_X (X : C) : (X : karoubi C).X = X := by refl
 
 @[simp]
 lemma coe_p (X : C) : (X : karoubi C).p = 𝟙 X := by refl
+
+@[simp]
+def eq_to_hom_f {P Q : karoubi C} (h : P = Q) :
+  karoubi.hom.f (eq_to_hom h) = P.p ≫ eq_to_hom (congr_arg karoubi.X h) :=
+by { subst h, simp only [eq_to_hom_refl, karoubi.id_eq, comp_id], }
 
 end karoubi
 

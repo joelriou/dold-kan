@@ -32,7 +32,7 @@ namespace category_theory
 
 namespace pseudoabelian
 
-namespace karoubi_simplicial_object_functor
+namespace karoubi_simplicial_object
 
 @[simps]
 def obj (P : karoubi (simplicial_object C)) : simplicial_object (karoubi C) :=
@@ -71,20 +71,20 @@ def map {P Q : karoubi (simplicial_object C)} (f : P ⟶ Q) : obj P ⟶ obj Q :=
     rw f.f.naturality,
   end }
 
-end karoubi_simplicial_object_functor
+end karoubi_simplicial_object
 
 variables (C)
 
 @[simps]
-def karoubi_simplicial_object : karoubi (simplicial_object C) ⥤ simplicial_object (karoubi C) :=
-{ obj := karoubi_simplicial_object_functor.obj,
-  map := λ P Q f, karoubi_simplicial_object_functor.map f,
+def karoubi_simplicial_object_functor : karoubi (simplicial_object C) ⥤ simplicial_object (karoubi C) :=
+{ obj := karoubi_simplicial_object.obj,
+  map := λ P Q f, karoubi_simplicial_object.map f,
   map_id' := λ P,
-    by { ext Δ, simp only [nat_trans.id_app, karoubi.id_eq], dsimp, refl, },
+    by { ext Δ, simpa only [nat_trans.id_app, karoubi.id_eq], },
   map_comp' := λ P Q R f f',
-    by { ext Δ, simp only [karoubi.comp, nat_trans.comp_app], dsimp, refl, }, }
+    by { ext Δ, simpa only [karoubi.comp, nat_trans.comp_app], }, }
 
-instance : full (karoubi_simplicial_object C) :=
+instance : full (karoubi_simplicial_object_functor C) :=
 { preimage := λ P Q f,
   { f :=
     { app := λ Δ, (f.app Δ).f,
@@ -98,13 +98,13 @@ instance : full (karoubi_simplicial_object C) :=
     comm := by { ext Δ, exact (f.app Δ).comm, } },
   witness' := λ P Q f, by { ext Δ, dsimp, refl, }, }
 
-instance : faithful (karoubi_simplicial_object C) :=
+instance : faithful (karoubi_simplicial_object_functor C) :=
 { map_injective' := λ P Q f f' h, begin
     ext Δ,
-    simp only [karoubi_simplicial_object_functor.map, nat_trans.ext_iff,
-      karoubi_simplicial_object_map] at h,
+    simp only [karoubi_simplicial_object_functor_map, nat_trans.ext_iff,
+      karoubi_simplicial_object.map] at h,
     simpa only using congr_fun h Δ,
-  end, }
+  end, }    
 
 end pseudoabelian
 

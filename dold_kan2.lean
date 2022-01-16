@@ -230,58 +230,6 @@ begin
     refl, }
 end
 
-lemma N'_reflects_iso' {X Y : simplicial_object C}
-  (f : X ⟶ Y) (g : alternating_face_map_complex.obj Y ⟶ alternating_face_map_complex.obj X)
-  (hgf : P_infty ≫ alternating_face_map_complex.map f ≫ g = P_infty)
-  (hfg : P_infty ≫ g ≫ alternating_face_map_complex.map f = P_infty) : is_iso f :=
-  begin
-    /- restating the result in a way that allows induction on the degree n -/
-    haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
-    { exact nat_iso.is_iso_of_is_iso_app f, },
-    intro s,
-    let m := simplex_category.len (unop s),
-    rw [show s = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
-    generalize : m = n,
-    /- we have to construct an inverse to f in degree n, by induction on n -/
-    induction n with n hn,
-    /- degree 0 -/
-    { use g.f 0,
-      split,
-      have eq := homological_complex.congr_hom hgf 0, swap,
-      have eq := homological_complex.congr_hom hfg 0,
-      all_goals {
-        simpa only [homological_complex.comp_f, chain_complex.of_hom_f,
-          alternating_face_map_complex.map, P_infty_termwise,
-          P_deg0_eq, id_comp] using eq, }, },
-    /- isomorphism in degree n+1 of an isomorphism in degree n -/
-    { resetI,
-      let γ : morph_components Y n (X _[n+1]) :=
-      { a := P_infty.f (n+1) ≫ g.f (n+1),
-        b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
-      use F γ,
-      split,
-      { rw [← comp_F, ← F_id],
-        congr,
-        dsimp [comp_morph_components, morph_components_id],
-        ext,
-        { have eq := homological_complex.congr_hom hgf (n+1),
-          simp only [homological_complex.comp_f, chain_complex.of_hom_f,
-          alternating_face_map_complex.map, P_infty_termwise] at eq ⊢,
-          rw [← assoc] at eq ⊢,
-          simpa only [← P_termwise_naturality] using eq, },
-        { simp only [is_iso.hom_inv_id_assoc], }, },
-      { rw [← F_comp, ← F_id],
-        congr,
-        dsimp [morph_components_comp, morph_components_id],
-        ext,
-        { have eq := homological_complex.congr_hom hfg (n+1),
-          simpa only [homological_complex.comp_f, chain_complex.of_hom_f,
-          alternating_face_map_complex.map, P_infty_termwise, assoc] using eq, },
-        { simp only [assoc],
-          erw f.naturality,
-          simpa only [is_iso.inv_hom_id_assoc], }, }, },
-  end
-
 namespace N'_functor
 
 @[simps]
@@ -393,6 +341,22 @@ def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
 variables (C)
+
+theorem N_reflects_iso : reflects_isomorphisms
+  (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
+begin
+  /- restating the result in a way that allows induction on the degree n -/
+  refine ⟨_⟩,
+  intros X Y f hf,
+  haveI : is_iso ((karoubi_simplicial_object_functor C).map f), swap,
+  { exact is_iso_of_reflects_iso f (karoubi_simplicial_object_functor C), },
+  haveI : is_iso (N'.map ((karoubi_simplicial_object_functor C).map f)), swap,
+  { haveI := N'_reflects_iso (karoubi C),
+    exact is_iso_of_reflects_iso ((karoubi_simplicial_object_functor C).map f) N', },
+  sorry,
+end
+
+#exit
 
 theorem N_reflects_iso : reflects_isomorphisms
   (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
