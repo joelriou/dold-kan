@@ -20,8 +20,6 @@ namespace category_theory
 
 namespace pseudoabelian
 
-namespace homological_complex
-
 namespace karoubi_homological_complex
 
 namespace functor
@@ -159,21 +157,92 @@ begin
       { refl, }, }, },
 end
 
+@[simps]
+def unit_iso : 𝟭 (karoubi (homological_complex C c)) ≅ functor ⋙ inverse :=
+{ hom :=
+  { app := λ P,
+    { f :=
+      { f := λ n, P.p.f n,
+        comm' := λ i j hij, begin
+          dsimp,
+          have h := homological_complex.congr_hom P.idempotence i,
+          simp only [homological_complex.comp_f] at h,
+          slice_lhs 1 2 { erw h, },
+          exact P.p.comm' i j hij,
+        end },
+      comm := begin
+        ext n,
+        have h := homological_complex.congr_hom P.idempotence n,
+        simp only [homological_complex.comp_f] at h,
+        dsimp,
+        rw [h, h],
+      end },
+    naturality' := λ X Y f, begin
+      ext n,
+      have h := homological_complex.congr_hom ((karoubi.p_comm f).symm) n,
+      simpa only [functor.map_f_f, homological_complex.comp_f,
+        inverse.map_f_f, karoubi.comp] using h,
+    end },
+  inv := 
+  { app := λ P,
+    { f :=
+      { f := λ n, P.p.f n,
+        comm' := λ i j hij, begin
+          dsimp,
+          slice_rhs 2 3 { rw ← P.p.comm' i j hij, },
+          rw ← assoc,
+          have h := homological_complex.congr_hom P.idempotence i,
+          simp only [homological_complex.comp_f] at h,
+          rw h,
+        end },
+      comm := begin
+        ext n,
+        have h := homological_complex.congr_hom P.idempotence n,
+        simp only [homological_complex.comp_f] at h,
+        dsimp,
+        rw [h, h],
+      end },
+    naturality' := λ P Q f, begin
+      ext n,
+      have h := homological_complex.congr_hom (karoubi.p_comm f).symm n,
+      simpa only [functor_map, functor.map_f_f, functor.id_map, functor.comp_map,
+        homological_complex.comp_f, inverse.map_f_f, inverse_map, karoubi.comp]
+        using h,
+    end },
+  hom_inv_id' := begin
+    ext P n,
+    dsimp,
+    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp]
+      using homological_complex.congr_hom P.idempotence n,
+  end,
+  inv_hom_id' := begin
+    ext P n,
+    dsimp [inverse.obj, functor.obj],
+    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp]
+      using homological_complex.congr_hom P.idempotence n,
+  end, }
+
 end karoubi_homological_complex
+
+variables (C)
 
 def karoubi_homological_complex_equivalence :
   karoubi (homological_complex C c) ≌ homological_complex (karoubi C) c :=
-{ functor := karoubi_homological_complex.functor,
-  inverse := karoubi_homological_complex.inverse,
-  unit_iso :=
-  { hom := sorry,
-    inv := sorry,
-    hom_inv_id' := sorry,
-    inv_hom_id' := sorry },
+{ functor   := karoubi_homological_complex.functor,
+  inverse    := karoubi_homological_complex.inverse,
+  unit_iso   := karoubi_homological_complex.unit_iso,
   counit_iso := eq_to_iso karoubi_homological_complex.counit_eq,
-  functor_unit_iso_comp' := sorry }
-
-end homological_complex
+  functor_unit_iso_comp' := λ P, begin
+    ext n,
+    dsimp,
+    have h := homological_complex.congr_hom P.idempotence n,
+    simpa only [karoubi_homological_complex.unit_iso_hom_app_f_f,
+      karoubi_homological_complex.homological_complex.eq_to_hom_f,
+      eq_to_hom_app, karoubi_homological_complex.functor.obj_X_p,
+      karoubi_homological_complex.inverse.obj_p_f, eq_to_hom_refl,
+      karoubi.id_eq, karoubi_homological_complex.functor.map_f_f,
+      karoubi.comp] using h,
+  end }
 
 end pseudoabelian
 
