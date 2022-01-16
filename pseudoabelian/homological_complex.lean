@@ -13,8 +13,8 @@ open category_theory
 open category_theory.category
 open category_theory.preadditive
 
-variables {ι : Type*} {c : complex_shape ι}
 variables {C : Type*} [category C] [preadditive C]
+variables {ι : Type*} {c : complex_shape ι}
 
 namespace category_theory
 
@@ -224,8 +224,9 @@ def unit_iso : 𝟭 (karoubi (homological_complex C c)) ≅ functor ⋙ inverse 
 
 end karoubi_homological_complex
 
-variables (C)
+variables (C) (c)
 
+@[simps]
 def karoubi_homological_complex_equivalence :
   karoubi (homological_complex C c) ≌ homological_complex (karoubi C) c :=
 { functor   := karoubi_homological_complex.functor,
@@ -243,6 +244,18 @@ def karoubi_homological_complex_equivalence :
       karoubi.id_eq, karoubi_homological_complex.functor.map_f_f,
       karoubi.comp] using h,
   end }
+
+@[simps]
+def karoubi_chain_complex_equivalence (α : Type*) [add_right_cancel_semigroup α] [has_one α] :
+  karoubi (chain_complex C α) ≌
+    chain_complex (karoubi C) α :=
+  karoubi_homological_complex_equivalence C (complex_shape.down α)
+
+@[simps]
+def karoubi_cochain_complex_equivalence (α : Type*) [add_right_cancel_semigroup α] [has_one α] :
+  karoubi (cochain_complex C α) ≌
+    cochain_complex (karoubi C) α :=
+  karoubi_homological_complex_equivalence C (complex_shape.up α)
 
 end pseudoabelian
 

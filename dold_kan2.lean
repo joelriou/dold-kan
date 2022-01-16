@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2021 Joël Riou. All rights reserved.
+Copyright (c) 2022 Joël Riou. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
@@ -8,8 +8,8 @@ import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.alternating_face_map_complex
-import category_theory.pseudoabelian.basic
 import category_theory.pseudoabelian.simplicial_object
+import category_theory.pseudoabelian.homological_complex
 
 import dold_kan1
 
@@ -340,20 +340,94 @@ variables {C}
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
+lemma karoubi_Hσ_f {X : karoubi (simplicial_object C)} (q n : ℕ) :
+(((Hσ q) : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _).f n).f =
+X.p.app (op [n]) ≫ (((Hσ q) : alternating_face_map_complex.obj X.X ⟶ _).f n) :=
+begin
+  unfold Hσ,
+  sorry,
+end
+
+lemma karoubi_P_f {X : karoubi (simplicial_object C)} (q n : ℕ) :
+(((P q) : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _).f n).f =
+X.p.app (op [n]) ≫ (((P q) : alternating_face_map_complex.obj X.X ⟶ _).f n) :=
+begin
+  induction q with q hq,
+  { unfold P,
+    simp only [homological_complex.id_f],
+    erw comp_id,
+    refl, },
+  { unfold P,
+    simp only [comp_add, comp_id, homological_complex.comp_f,
+      homological_complex.add_f_apply, karoubi.add_hom, karoubi.comp],
+    congr' 1,
+    rw [hq, karoubi_Hσ_f],
+    slice_lhs 2 3 { rw ← P_termwise_naturality, },
+    have h := congr_app X.idempotence (op [n]),
+    simp only [nat_trans.comp_app] at h,
+    slice_lhs 1 2 { rw h, },
+    rw assoc, }
+end
+
+lemma karoubi_P_infty_f {X : karoubi (simplicial_object C)} (n : ℕ) :
+((P_infty : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _).f n).f =
+X.p.app (op [n]) ≫ ((P_infty : alternating_face_map_complex.obj X.X ⟶ _).f n) :=
+by { rw [P_infty_termwise], apply karoubi_P_f, }
+
 variables (C)
 
 theorem N_reflects_iso : reflects_isomorphisms
   (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
 begin
-  /- restating the result in a way that allows induction on the degree n -/
   refine ⟨_⟩,
-  intros X Y f hf,
-  haveI : is_iso ((karoubi_simplicial_object_functor C).map f), swap,
-  { exact is_iso_of_reflects_iso f (karoubi_simplicial_object_functor C), },
-  haveI : is_iso (N'.map ((karoubi_simplicial_object_functor C).map f)), swap,
-  { haveI := N'_reflects_iso (karoubi C),
-    exact is_iso_of_reflects_iso ((karoubi_simplicial_object_functor C).map f) N', },
-  sorry,
+  intros X Y f,
+  introI,
+  let F1 := karoubi_simplicial_object_functor C,
+  let F2 : simplicial_object (karoubi C) ⥤ _ := N',
+  let F3 := (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor,
+  haveI : (karoubi_karoubi_equivalence C).inverse.additive := sorry,
+  let F4 := functor.map_homological_complex (karoubi_karoubi_equivalence C).inverse (complex_shape.down ℕ),
+  haveI : reflects_isomorphisms F2 := N'_reflects_iso _,
+  haveI : reflects_isomorphisms F4 := sorry,
+  haveI : is_iso ((F1 ⋙ F2 ⋙ F3 ⋙ F4).map f), swap,
+  { exact is_iso_of_reflects_iso f (F1 ⋙ F2 ⋙ F3 ⋙ F4), },
+  let F5 := (karoubi_chain_complex_equivalence C ℕ).functor,
+  have hf' := functor.map_is_iso F5 (N.map f),
+  have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5 := begin
+    apply karoubi_homological_complex.functor_ext,
+    { intros P Q f,
+      ext n,
+      dsimp [F3, F5],
+      simp [karoubi_P_infty_f],
+      slice_lhs 3 4 { rw [← nat_trans.comp_app, congr_app (karoubi.comp_p f) (op [n])] },
+      rw P_infty_termwise_naturality, },
+    { intro P,
+      ext1,
+      { ext,
+        dsimp [F3, F5],
+        simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl,
+          karoubi_karoubi.inverse_map_f, karoubi_karoubi.inverse_obj_p,
+          karoubi_chain_complex_equivalence_functor_obj_d_f,
+          karoubi_chain_complex_equivalence_functor_obj_X_p, comp_id, assoc],
+        have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N'_functor.obj
+          (karoubi_simplicial_object.obj P)).idempotence j),
+        simp only [homological_complex.comp_f, karoubi.comp] at h,
+        conv { to_lhs, congr, skip, rw h, },
+        dsimp only [N'_functor.obj_X, N'_functor.obj_p],
+        simp only [N_obj_p_f],
+        sorry, },
+      { ext n,
+        { dsimp,
+          simp only [comp_id, id_comp],
+          -- comparaison P_infty vis a vis de l'"oubli" karoubi C -> C
+          sorry,},
+        { sorry, }
+
+        } }
+  end,
+  rw eq,
+  simp only [functor.comp_map],
+  exact functor.map_is_iso F5 (N.map f),
 end
 
 #exit

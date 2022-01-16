@@ -93,6 +93,10 @@ lemma comp {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
   f' ≫ g' = ⟨f'.1 ≫ g'.1, comp_proof g' f'⟩ := by refl
 
 @[simp]
+lemma comp_f {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
+  (f' ≫ g').1 = f'.1 ≫ g'.1 := by refl
+
+@[simp]
 lemma id_eq {P : karoubi C} : 𝟙 P = ⟨P.p, by repeat { rw P.idempotence, }⟩ := by refl
 
 instance coe : has_coe C (karoubi C) := ⟨λ X, ⟨X, 𝟙 X, by rw comp_id⟩⟩
@@ -341,12 +345,14 @@ end karoubi
 
 namespace karoubi_karoubi
 
+@[simps]
 def inverse : karoubi (karoubi C) ⥤ karoubi C :=
   { obj := λ P, ⟨P.X.X, P.p.1,
       by simpa only [hom_ext] using P.idempotence⟩,
     map := λ P Q f, ⟨f.1.1,
       by simpa only [hom_ext] using f.2⟩, }
 
+@[simps]
 def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
 { hom :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
@@ -374,6 +380,7 @@ def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
     simpa only [id_eq, hom_ext] using P_idempotence,
   end, }
 
+@[simps]
 def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi C)) :=
 { hom := 
   { app := λ P, ⟨⟨P.p.1, begin
@@ -422,7 +429,8 @@ def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi
 
 end karoubi_karoubi
 
-def karoubi_karoubi : karoubi C ≌ karoubi (karoubi C) :=
+@[simps]
+def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
 { functor := to_karoubi (karoubi C),
   inverse := karoubi_karoubi.inverse C,
   unit_iso := karoubi_karoubi.unit_iso C,
