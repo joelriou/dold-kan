@@ -3,7 +3,7 @@ Copyright (c) 2022 Joël Riou. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
-import category_theory.preadditive
+import category_theory.preadditive.additive_functor
 import category_theory.additive.basic
 import category_theory.limits.shapes.biproducts
 import category_theory.equivalence
@@ -28,6 +28,7 @@ namespace pseudoabelian
 
 variables (C : Type*) [category C] [preadditive C]
 
+@[nolint has_inhabited_instance]
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
 
 class is_pseudoabelian : Prop :=
@@ -58,6 +59,8 @@ def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
 
 @[ext]
 structure hom (P Q : karoubi C) := (f : P.X ⟶ Q.X) (comm : f = P.p ≫ f ≫ Q.p)
+
+instance (P Q : karoubi C) : inhabited (hom P Q) := ⟨⟨0, by rw [zero_comp, comp_zero]⟩⟩
 
 @[ext]
 lemma hom_ext {P Q : karoubi C} {f' g' : hom P Q} : f' = g' ↔ f'.f = g'.f :=
@@ -93,13 +96,9 @@ lemma comp {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
   f' ≫ g' = ⟨f'.1 ≫ g'.1, comp_proof g' f'⟩ := by refl
 
 @[simp]
-lemma comp_f {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
-  (f' ≫ g').1 = f'.1 ≫ g'.1 := by refl
-
-@[simp]
 lemma id_eq {P : karoubi C} : 𝟙 P = ⟨P.p, by repeat { rw P.idempotence, }⟩ := by refl
 
-instance coe : has_coe C (karoubi C) := ⟨λ X, ⟨X, 𝟙 X, by rw comp_id⟩⟩
+instance coe : has_coe_t C (karoubi C) := ⟨λ X, ⟨X, 𝟙 X, by rw comp_id⟩⟩
 
 @[simp]
 lemma coe_X (X : C) : (X : karoubi C).X = X := by refl
@@ -145,10 +144,6 @@ instance {P Q : karoubi C} : add_comm_group (P ⟶ Q) :=
 
 namespace karoubi
 
-@[simp]
-lemma add_hom {P Q : karoubi C} (f' g' : P ⟶ Q) : f' + g' = ⟨f'.1+g'.1,
-  by { rw [add_comp, comp_add], congr', exact f'.2, exact g'.2, }⟩ := by refl
-
 lemma hom_eq_zero_iff {P Q : karoubi C} {f' : hom P Q} : f' = 0 ↔ f'.f = 0 := by tidy
 
 @[simps]
@@ -165,8 +160,12 @@ end karoubi
 
 instance : preadditive (karoubi C) :=
 { hom_group := λ P Q, by apply_instance,
-  add_comp' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp, add_comp], },
-  comp_add' := λ P Q R f' g' h', by { simp only [karoubi.add_hom, karoubi.comp, comp_add], }, }
+  add_comp' := λ P Q R f' g' h',
+    by { ext, simp only [add_comp, quiver.hom.add_comm_group_add_f, karoubi.comp], },
+  comp_add' := λ P Q R f' g' h',
+    by { ext, simp only [comp_add, quiver.hom.add_comm_group_add_f, karoubi.comp], }, }
+
+instance : functor.additive (to_karoubi C) := { }
 
 namespace karoubi
 
@@ -443,3 +442,4 @@ def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
 end pseudoabelian
 
 end category_theory
+

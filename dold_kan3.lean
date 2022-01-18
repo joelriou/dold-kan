@@ -60,6 +60,7 @@ def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category.{v})
 def Γ_termwise (K : chain_complex C ℕ) (Δ : simplex_category.{v}) : C :=
   ∐ (λ (A : Γ_index_set Δ), Γ_summand K Δ A)
 
+@[nolint unused_arguments]
 def is_d0 {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] : Prop :=
   (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
