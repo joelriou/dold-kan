@@ -493,7 +493,6 @@ begin
   let F3 := (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor,
   let F4 := functor.map_homological_complex (karoubi_karoubi_equivalence C).inverse (complex_shape.down ℕ),
   haveI : reflects_isomorphisms F2 := N'_reflects_iso _,
-  haveI : reflects_isomorphisms F4 := sorry,
   haveI : is_iso ((F1 ⋙ F2 ⋙ F3 ⋙ F4).map f), swap,
   { exact is_iso_of_reflects_iso f (F1 ⋙ F2 ⋙ F3 ⋙ F4), },
   let F5 := (karoubi_chain_complex_equivalence C ℕ).functor,

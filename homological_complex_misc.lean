@@ -54,7 +54,44 @@ begin
   { refl, }
 end
 
-
-
-
 end chain_complex
+
+instance {D : Type*} [category D] [preadditive D]
+  {F : C ⥤ D} [F.additive] [full F] [faithful F] : reflects_isomorphisms (functor.map_homological_complex F c) :=
+begin
+  refine ⟨_⟩,
+  intros A B f,
+  introI,
+  let φ := (F.map_homological_complex c).map f,
+  let g : B ⟶ A :=
+  { f := λ i, (equiv_of_fully_faithful F).inv_fun ((inv φ).f i),
+    comm' := λ i j hij, begin
+      apply (equiv_of_fully_faithful F).injective,
+      dsimp,
+      simp only [functor.image_preimage, functor.map_comp],
+      haveI : (split_epi (φ.f i)) :=
+      { section_ := (inv φ).f i,
+        id' := by simpa only [homological_complex.comp_f]
+          using homological_complex.congr_hom (is_iso.inv_hom_id φ) i, },
+      haveI : (split_mono (φ.f j)) :=
+      { retraction := (inv φ).f j,
+        id' := by simpa only [homological_complex.comp_f]
+          using homological_complex.congr_hom (is_iso.hom_inv_id φ) j, },
+      apply (cancel_epi (φ.f i)).mp,
+      apply (cancel_mono (φ.f j)).mp,
+      conv { to_lhs, congr, rw ← assoc, congr, rw [← homological_complex.comp_f, is_iso.hom_inv_id], },
+      conv { to_rhs, rw assoc, congr, skip, rw assoc, congr, skip, rw [← homological_complex.comp_f, is_iso.inv_hom_id], },
+      simp only [functor.map_homological_complex_map_f, homological_complex.id_f, id_comp],
+      erw comp_id,
+      exact (((functor.map_homological_complex F c).map f).comm' i j hij).symm,
+    end },
+  refine ⟨_⟩,
+  use g,
+  split; ext n; apply (equiv_of_fully_faithful F).injective; dsimp,
+  { simp only [functor.image_preimage, functor.map_comp,
+      ← functor.map_homological_complex_map_f, ← homological_complex.comp_f,
+      is_iso.hom_inv_id, homological_complex.id_f, F.map_id], },
+  { simpa only [functor.image_preimage, functor.map_comp,
+      ← functor.map_homological_complex_map_f, ← homological_complex.comp_f,
+      is_iso.inv_hom_id, homological_complex.id_f, F.map_id], }
+end
