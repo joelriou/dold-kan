@@ -336,9 +336,24 @@ def functor_extension' {D: Type*} [category D] [preadditive D]
   end⟩, }
 
 @[simp]
-def functor_extension'' {D: Type*} [category D] [preadditive D] [is_pseudoabelian D]
+def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabelian D]
   (F : C ⥤ D) : karoubi C ⥤ D :=
   functor_extension F ⋙ (karoubi_is_equivalence D).inverse
+
+lemma decomp_id (P : karoubi C) :
+  𝟙 P = (⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩ : P ⟶ P.X) ≫
+  (⟨P.p, by erw [coe_p, id_comp, P.idempotence]⟩ : (P.X : karoubi C) ⟶ P) :=
+by { ext, simp only [comp, id_eq, P.idempotence], }
+
+def nat_trans_eq {D : Type*} [category D] {F G : karoubi C ⥤ D} (φ : F ⟶ G) (P : karoubi C) :
+  φ.app P = F.map (⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩ : P ⟶ P.X) ≫ φ.app P.X
+    ≫ G.map (⟨P.p, by erw [coe_p, id_comp, P.idempotence]⟩) :=
+begin
+  rw [← φ.naturality, ← assoc, ← F.map_comp],
+  conv { to_lhs, rw [← id_comp (φ.app P), ← F.map_id], },
+  congr,
+  apply decomp_id,
+end
 
 end karoubi
 

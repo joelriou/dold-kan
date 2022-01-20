@@ -107,6 +107,115 @@ lemma P_infty_termwise_naturality (n : ℕ) {X Y : simplicial_object C} (f : X �
    f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
 by { dsimp [P_infty], rw P_termwise_naturality, }
 
+variables (C)
+
+@[simps]
+def nat_trans_P_infty : ((alternating_face_map_complex C) ⟶
+  (alternating_face_map_complex C)) :=
+{ app := λ _, P_infty,
+  naturality' := λ X Y f, begin
+    ext n,
+    simp only [homological_complex.comp_f, chain_complex.of_hom_f,
+      alternating_face_map_complex_map, alternating_face_map_complex.map,
+      P_infty_termwise_naturality],
+  end }
+
+@[simps]
+def nat_trans_termwise_P_infty (n : ℕ) :
+  alternating_face_map_complex C ⋙ homological_complex.eval _ _ n ⟶
+  alternating_face_map_complex C ⋙ homological_complex.eval _ _ n :=
+nat_trans_P_infty C ◫ 𝟙 _
+
+
+lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
+  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
+  : ((Hσ q : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
+    G.map ((Hσ q : alternating_face_map_complex.obj X ⟶ _).f n) :=
+sorry
+
+lemma map_P {D : Type*} [category.{v} D] [preadditive D]
+  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
+  : ((P q : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
+    G.map ((P q : alternating_face_map_complex.obj X ⟶ _).f n) :=
+begin
+  induction q with q hq,
+  { unfold P,
+    simp only [homological_complex.id_f],
+    erw [G.map_id],
+    refl, },
+  { unfold P,
+    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply, comp_id,
+      functor.map_add, functor.map_comp, hq],
+    congr' 2,
+    rw map_Hσ, }
+end
+
+variables {C}
+
+@[simp]
+lemma map_P_infty_termwise {D : Type*} [category.{v} D] [preadditive D]
+  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (n : ℕ)
+  : ((P_infty : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
+    G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=
+by { simp only [P_infty_termwise, map_P], }
+
+lemma karoubi_P_infty_f {X : karoubi (simplicial_object C)} (n : ℕ) :
+((P_infty : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _).f n).f =
+X.p.app (op [n]) ≫ ((P_infty : alternating_face_map_complex.obj X.X ⟶ _).f n) :=
+begin
+  let P₁ : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _ := P_infty,
+  let P₂ : alternating_face_map_complex.obj X.X ⟶ _ := P_infty,
+  let P₃ : alternating_face_map_complex.obj (((whiskering _ _).obj (to_karoubi C)).obj X.X) ⟶ _ := P_infty,
+  let P₄ : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X.X) ⟶ _ := P_infty,
+  have eq : (karoubi_simplicial_object_functor C).obj X.X = ((whiskering _ _).obj (to_karoubi C)).obj X.X :=
+  begin
+    apply category_theory.pseudoabelian.karoubi_homological_complex.functor_ext,
+    { intros Δ Δ' f,
+      ext,
+      dsimp,
+      simp only [comp_id, id_comp],
+      dsimp,
+      simp only [karoubi.coe_p],
+      erw [nat_trans.id_app, id_comp],
+      refl, },
+    { intro Δ,
+      refl, }
+  end,
+  let Y₄ := (karoubi_simplicial_object_functor C).obj X.X,
+  have h₃₄ : P₃.f n = P₄.f n := begin
+    let Y₃ :=  ((whiskering _ _).obj (to_karoubi C)).obj X.X,
+    have h₃ : (P₃.f n) = ((nat_trans_termwise_P_infty (karoubi C) n).app Y₃) :=
+      by simp only [nat_trans_termwise_P_infty_app, P₃],
+    have h₄ : (P₄.f n) = ((nat_trans_termwise_P_infty (karoubi C) n).app Y₄) :=
+      by simp only [nat_trans_termwise_P_infty_app],
+    rw [h₃, h₄],
+    congr,
+    exact eq.symm,
+  end,
+  have h₂₃ : (P₃.f n).f = P₂.f n := karoubi.hom_ext.mp (map_P_infty_termwise (to_karoubi C) X.X n),
+  have h₁₄ := (karoubi.nat_trans_eq
+    ((𝟙 (karoubi_simplicial_object_functor C)) ◫ nat_trans_termwise_P_infty (karoubi C) n) X),
+  dsimp at h₁₄,
+  simp only [nat_trans_termwise_P_infty_app] at h₁₄,
+  erw comp_id at h₁₄,
+  conv at h₁₄ { to_rhs, congr, skip, erw comp_id, },
+  let h₁₄' : P₁.f n = _ ≫ P₄.f n ≫ _ := h₁₄,
+  erw [h₁₄', ← h₂₃, h₃₄],
+  simp only [karoubi_simplicial_object.map_app_f, karoubi.comp],
+  have eq := karoubi.hom_ext.mp (P_infty_termwise_naturality n 
+    (((karoubi_simplicial_object_functor C).map ⟨X.p, by erw [karoubi.coe_p, comp_id, id_comp]⟩) : Y₄ ⟶ Y₄)),
+  simp only [karoubi.comp, karoubi_simplicial_object_functor_map,
+    karoubi_simplicial_object.map_app_f] at eq,
+  erw [← eq, ← assoc],
+  congr,
+  simpa only [nat_trans.comp_app] using congr_app X.idempotence (op [n]),
+end
+
+#exit
+
+
+
+
 /-- Q q is the complement projector associated to P q -/
 def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
 (alternating_face_map_complex C).obj X) := 𝟙 _ - P q
@@ -343,47 +452,6 @@ variables {C}
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
-lemma Hσ_comm {D : Type*} [category.{v} D] [preadditive D]
-  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
-  : ((Hσ q : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
-    G.map ((Hσ q : alternating_face_map_complex.obj X ⟶ _).f n) :=
-sorry
-
-lemma P_comm {D : Type*} [category.{v} D] [preadditive D]
-  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
-  : ((P q : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
-    G.map ((P q : alternating_face_map_complex.obj X ⟶ _).f n) :=
-begin
-  induction q with q hq,
-  { unfold P,
-    simp only [homological_complex.id_f],
-    erw [G.map_id],
-    refl, },
-  { unfold P,
-    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply, comp_id,
-      functor.map_add, functor.map_comp, hq],
-    congr' 2,
-    rw Hσ_comm, }
-end
-
-lemma P_infty_comm {D : Type*} [category.{v} D] [preadditive D]
-  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (n : ℕ)
-  : ((P_infty : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
-    G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=
-by { simp only [P_infty_termwise, P_comm], }
-
-lemma karoubi_P_infty_f {X : karoubi (simplicial_object C)} (n : ℕ) :
-((P_infty : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X) ⟶ _).f n).f =
-X.p.app (op [n]) ≫ ((P_infty : alternating_face_map_complex.obj X.X ⟶ _).f n) :=
-begin
-  let π : X ⟶ X.X := ⟨X.p, by erw [karoubi.coe_p, comp_id, X.idempotence]⟩,
-  let π' := (karoubi_simplicial_object_functor C).map π,
-  have eq' := P_infty_termwise_naturality n π',
-  have eq := P_infty_comm (to_karoubi C) X.X n,
-  sorry
-end
-
-#exit
 
 variables (C)
 
