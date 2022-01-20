@@ -470,8 +470,6 @@ variables {C}
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
-
-
 lemma karoubi_alternating_face_map_complex_d (X : karoubi (simplicial_object C)) (n : ℕ) :
   ((((alternating_face_map_complex (karoubi C)).obj
     ((karoubi_simplicial_object_functor C).obj X)).d (n+1) n).f : X.X _[n+1] ⟶ X.X _[n])
@@ -496,9 +494,11 @@ begin
   haveI : is_iso ((F1 ⋙ F2 ⋙ F3 ⋙ F4).map f), swap,
   { exact is_iso_of_reflects_iso f (F1 ⋙ F2 ⋙ F3 ⋙ F4), },
   let F5 := (karoubi_chain_complex_equivalence C ℕ).functor,
-  have hf' := functor.map_is_iso F5 (N.map f),
-  have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5 := begin
-    apply functor_ext,
+  have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5, swap,
+  { rw eq,
+    simp only [functor.comp_map],
+    exact functor.map_is_iso F5 (N.map f), },
+  { apply functor_ext,
     { intros P Q f,
       ext n,
       dsimp [F3, F5],
@@ -506,9 +506,8 @@ begin
       slice_lhs 3 4 { rw [← nat_trans.comp_app, congr_app (karoubi.comp_p f) (op [n])] },
       rw P_infty_termwise_naturality, },
     { intro P,
-      ext1 i j hij,
-      { ext,
-        dsimp [F3, F5],
+      ext i j hij,
+      { dsimp [F3, F5],
         simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl,
           karoubi_karoubi.inverse_map_f, karoubi_karoubi.inverse_obj_p,
           karoubi_chain_complex_equivalence_functor_obj_d_f,
@@ -522,17 +521,14 @@ begin
         have h : j+1=i := hij,
         subst h,
         erw karoubi_alternating_face_map_complex_d P j,
-        simp,
+        have foo : ((alternating_face_map_complex C).obj P.X).d (j + 1) j = (N.obj P).X.d (j + 1) j := by refl,
+
         sorry, },
       { ext n,
         { dsimp,
           simp only [comp_id, id_comp],
           rw [karoubi_P_infty_f, P_infty_termwise_naturality], },
-        { refl, }, }, }
-  end,
-  rw eq,
-  simp only [functor.comp_map],
-  exact functor.map_is_iso F5 (N.map f),
+        { refl, }, }, }, },
 end
 
 #exit
