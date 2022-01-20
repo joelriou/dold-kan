@@ -239,6 +239,30 @@ begin
     comp_prehomotopy, comp_f],
 end
 
+/-- additive functors sends null homotopic map to null homotopic maps -/
+@[simp]
+def map_prehomotopy {V' : Type*} [category V'] [preadditive V']
+  (F : V ⥤ V') [F.additive] (hom : prehomotopy C D) :
+  prehomotopy ((F.map_homological_complex c).obj C) ((F.map_homological_complex c).obj D) :=
+λ ij, F.map (hom ij)
+
+@[simp]
+lemma map_null_homotopic_map {V' : Type*} [category V'] [preadditive V']
+  (F : V ⥤ V') [F.additive] (hom : prehomotopy C D) :
+  (F.map_homological_complex c).map (null_homotopic_map hom) = 
+  null_homotopic_map (map_prehomotopy F hom) :=
+begin
+  ext i,
+  simp only [functor.map_homological_complex_map_f, map_prehomotopy, null_homotopic_map, functor.map_add],
+  congr',
+  { rcases h : c.next i with _|⟨i',w⟩,
+    { dsimp [d_next], erw [h, functor.map_zero], refl, },
+    { simp only [d_next_eq _ w, functor.map_comp], refl, }, },
+  { rcases h : c.prev i with _|⟨i',w⟩,
+    { dsimp [prev_d], erw [h, functor.map_zero], refl, },
+    { simp only [prev_d_eq _ w, functor.map_comp], refl, }, },
+end
+
 /-! This lemma and the following ones can be used in order to compute
 the degreewise morphisms induced by the null homotopic maps constructed
 with `null_homotopic_map` -/

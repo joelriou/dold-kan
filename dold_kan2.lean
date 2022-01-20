@@ -126,12 +126,36 @@ def nat_trans_termwise_P_infty (n : ℕ) :
   alternating_face_map_complex C ⋙ homological_complex.eval _ _ n :=
 nat_trans_P_infty C ◫ 𝟙 _
 
+lemma map_hσ' {D : Type*} [category.{v} D] [preadditive D]
+  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q : ℕ) :
+  (hσ' q : prehomotopy ((alternating_face_map_complex D).obj (((whiskering C D).obj G).obj X)) _) =
+  homotopy.map_prehomotopy G (hσ' q : prehomotopy ((alternating_face_map_complex C).obj X) _) :=
+begin
+  ext ij,
+  simp only [homotopy.map_prehomotopy],
+  unfold hσ' hσ,
+  split_ifs,
+  { simp only [functor.map_zero, zero_comp], },
+  { simp only [eq_to_hom_map, functor.map_comp, functor.map_zsmul],
+    refl, },
+end
 
 lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
   : ((Hσ q : alternating_face_map_complex.obj (((whiskering C D).obj G).obj X) ⟶ _).f n) =
     G.map ((Hσ q : alternating_face_map_complex.obj X ⟶ _).f n) :=
-sorry
+begin
+  unfold Hσ,
+  have eq := (homological_complex.congr_hom
+    (homotopy.map_null_homotopic_map G (hσ' q : prehomotopy ((alternating_face_map_complex C).obj X) _)) n).symm,
+  rw ← map_hσ' at eq,
+  dsimp at eq,
+  rw ← eq,
+  congr,
+  sorry
+end
+
+#exit
 
 lemma map_P {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
@@ -212,9 +236,6 @@ begin
 end
 
 #exit
-
-
-
 
 /-- Q q is the complement projector associated to P q -/
 def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
