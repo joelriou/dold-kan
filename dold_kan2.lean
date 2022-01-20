@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
+import category_theory.functor_ext
+
 import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
@@ -151,11 +153,9 @@ begin
   rw ← map_hσ' at eq,
   dsimp at eq,
   rw ← eq,
-  congr,
-  sorry
+  let h := (congr_obj (map_alternating_face_map_complex G) X).symm,
+  congr',
 end
-
-#exit
 
 lemma map_P {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
@@ -193,7 +193,7 @@ begin
   let P₄ : alternating_face_map_complex.obj ((karoubi_simplicial_object_functor C).obj X.X) ⟶ _ := P_infty,
   have eq : (karoubi_simplicial_object_functor C).obj X.X = ((whiskering _ _).obj (to_karoubi C)).obj X.X :=
   begin
-    apply category_theory.pseudoabelian.karoubi_homological_complex.functor_ext,
+    apply functor_ext,
     { intros Δ Δ' f,
       ext,
       dsimp,
@@ -234,8 +234,6 @@ begin
   congr,
   simpa only [nat_trans.comp_app] using congr_app X.idempotence (op [n]),
 end
-
-#exit
 
 /-- Q q is the complement projector associated to P q -/
 def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
@@ -407,7 +405,6 @@ def N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
 
 variable (C)
 
-
 theorem N'_reflects_iso : reflects_isomorphisms
   (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
 begin
@@ -474,6 +471,15 @@ def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
   karoubi.functor_extension' N'
 
 
+
+lemma karoubi_alternating_face_map_complex_d (X : karoubi (simplicial_object C)) (n : ℕ) :
+  ((((alternating_face_map_complex (karoubi C)).obj
+    ((karoubi_simplicial_object_functor C).obj X)).d (n+1) n).f : X.X _[n+1] ⟶ X.X _[n])
+  = X.p.app (op [n+1]) ≫ (((alternating_face_map_complex C).obj X.X).d (n+1) n) :=
+begin
+  sorry
+end
+
 variables (C)
 
 theorem N_reflects_iso : reflects_isomorphisms
@@ -485,7 +491,6 @@ begin
   let F1 := karoubi_simplicial_object_functor C,
   let F2 : simplicial_object (karoubi C) ⥤ _ := N',
   let F3 := (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor,
-  haveI : (karoubi_karoubi_equivalence C).inverse.additive := sorry,
   let F4 := functor.map_homological_complex (karoubi_karoubi_equivalence C).inverse (complex_shape.down ℕ),
   haveI : reflects_isomorphisms F2 := N'_reflects_iso _,
   haveI : reflects_isomorphisms F4 := sorry,
@@ -494,7 +499,7 @@ begin
   let F5 := (karoubi_chain_complex_equivalence C ℕ).functor,
   have hf' := functor.map_is_iso F5 (N.map f),
   have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5 := begin
-    apply karoubi_homological_complex.functor_ext,
+    apply functor_ext,
     { intros P Q f,
       ext n,
       dsimp [F3, F5],
@@ -502,7 +507,7 @@ begin
       slice_lhs 3 4 { rw [← nat_trans.comp_app, congr_app (karoubi.comp_p f) (op [n])] },
       rw P_infty_termwise_naturality, },
     { intro P,
-      ext1,
+      ext1 i j hij,
       { ext,
         dsimp [F3, F5],
         simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl,
@@ -515,15 +520,16 @@ begin
         conv { to_lhs, congr, skip, rw h, },
         dsimp only [N'_functor.obj_X, N'_functor.obj_p],
         simp only [N_obj_p_f],
+        have h : j+1=i := hij,
+        subst h,
+        erw karoubi_alternating_face_map_complex_d P j,
+        simp,
         sorry, },
       { ext n,
         { dsimp,
           simp only [comp_id, id_comp],
-          -- comparaison P_infty vis a vis de l'"oubli" karoubi C -> C
-          sorry,},
-        { sorry, }
-
-        } }
+          rw [karoubi_P_infty_f, P_infty_termwise_naturality], },
+        { refl, }, }, }
   end,
   rw eq,
   simp only [functor.comp_map],

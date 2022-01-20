@@ -366,6 +366,8 @@ def inverse : karoubi (karoubi C) ⥤ karoubi C :=
     map := λ P Q f, ⟨f.1.1,
       by simpa only [hom_ext] using f.2⟩, }
 
+instance : functor.additive (inverse C) := { }
+
 @[simps]
 def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
 { hom :=
@@ -454,6 +456,13 @@ def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
     dsimp [karoubi_karoubi.unit_iso, karoubi_karoubi.counit_iso, to_karoubi],
     simp only [comp, id_eq, subtype.coe_mk, P_idempotence],
   end, }
+
+instance : functor.additive (karoubi_karoubi_equivalence C).functor :=
+  by { dsimp, apply_instance, }
+
+instance : functor.additive (karoubi_karoubi_equivalence C).inverse :=
+  by { dsimp, apply_instance, }
+
 end pseudoabelian
 
 end category_theory

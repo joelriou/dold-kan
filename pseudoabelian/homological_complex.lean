@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 import category_theory.pseudoabelian.basic
+import category_theory.functor_ext
+import algebra.homology.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
 
@@ -101,42 +103,6 @@ def inverse :
   map := λ K L f, inverse.map f,
   map_comp' := λ K L M f g, by { ext n,
     simp only [karoubi.comp, homological_complex.comp_f, inverse.map_f_f], }, }
-
-
-lemma functor_ext {D D' : Type*} [category D] [category D'] {F G : D ⥤ D'}
-  (h_obj : (∀ (X : D ), F.obj X = G.obj X))
-  (h_map : (∀ (X Y : D) (f : X ⟶ Y), F.map f ≫ eq_to_hom (h_obj Y) = eq_to_hom (h_obj X) ≫ G.map f)) :
-  F = G :=
-begin
-  cases F,
-  cases G,
-  have eq : F_obj = G_obj,
-  { ext X, exact h_obj X, },
-  subst eq,
-  simp only [true_and, eq_self_iff_true, heq_iff_eq],
-  ext X Y f,
-  simpa using h_map X Y f,
-end
-
-@[simp]
-def homological_complex.eq_to_hom_f {K L : homological_complex C c} (h : K = L) (n : ι) :
-  homological_complex.hom.f (eq_to_hom h) n =
-  eq_to_hom (congr_fun (congr_arg homological_complex.X h) n) :=
-by { subst h, simp only [homological_complex.id_f, eq_to_hom_refl], }
-
-@[ext]
-def homological_complex.ext {K L : homological_complex C c} (h_X : K.X = L.X)
-  (h_d : ∀ (i j : ι), K.d i j ≫ eq_to_hom (congr_fun h_X j) =
-    eq_to_hom (congr_fun h_X i) ≫ L.d i j) : K = L :=
-begin
-  cases K,
-  cases L,
-  dsimp at h_X,
-  subst h_X,
-  simp only [true_and, eq_self_iff_true, heq_iff_eq],
-  ext i j,
-  simpa only [id_comp, eq_to_hom_refl, comp_id] using h_d i j,
-end
 
 def counit_eq : inverse ⋙ functor = 𝟭 (homological_complex (karoubi C) c) :=
 begin
@@ -238,7 +204,7 @@ def karoubi_homological_complex_equivalence :
     dsimp,
     have h := homological_complex.congr_hom P.idempotence n,
     simpa only [karoubi_homological_complex.unit_iso_hom_app_f_f,
-      karoubi_homological_complex.homological_complex.eq_to_hom_f,
+      homological_complex.eq_to_hom_f,
       eq_to_hom_app, karoubi_homological_complex.functor.obj_X_p,
       karoubi_homological_complex.inverse.obj_p_f, eq_to_hom_refl,
       karoubi.id_eq, karoubi_homological_complex.functor.map_f_f,

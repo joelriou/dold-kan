@@ -12,14 +12,14 @@ variables {ι : Type*} {c : complex_shape ι}
 namespace homological_complex
 
 @[simp]
-def homological_complex.eq_to_hom_f {K L : homological_complex C c} (h : K = L) (n : ι) :
+def eq_to_hom_f {K L : homological_complex C c} (h : K = L) (n : ι) :
   homological_complex.hom.f (eq_to_hom h) n =
   eq_to_hom (congr_fun (congr_arg homological_complex.X h) n) :=
 by { subst h, simp only [homological_complex.id_f, eq_to_hom_refl], }
 
 @[ext]
-def homological_complex.ext {K L : homological_complex C c} (h_X : K.X = L.X)
-  (h_d : ∀ (i j : ι), K.d i j ≫ eq_to_hom (congr_fun h_X j) =
+def ext {K L : homological_complex C c} (h_X : K.X = L.X)
+  (h_d : ∀ (i j : ι), c.rel i j → K.d i j ≫ eq_to_hom (congr_fun h_X j) =
     eq_to_hom (congr_fun h_X i) ≫ L.d i j) : K = L :=
 begin
   cases K,
@@ -28,7 +28,33 @@ begin
   subst h_X,
   simp only [true_and, eq_self_iff_true, heq_iff_eq],
   ext i j,
-  simpa only [id_comp, eq_to_hom_refl, comp_id] using h_d i j,
+  by_cases hij : c.rel i j,
+  { simpa only [id_comp, eq_to_hom_refl, comp_id] using h_d i j hij, },
+  { rw [K_shape' i j hij, L_shape' i j hij], }
 end
 
 end homological_complex
+
+namespace chain_complex
+
+variables {D : Type*} [category D] [preadditive D]
+variables {α : Type*} [add_right_cancel_semigroup α] [has_one α] [decidable_eq α]
+
+lemma map_of (F : C ⥤ D) [F.additive] (X : α → C) (d : Π n, X (n+1) ⟶ X n)
+  (sq : ∀ n, d (n+1) ≫ d n = 0) :
+  (F.map_homological_complex _).obj (chain_complex.of X d sq) =
+  chain_complex.of (λ n, F.obj (X n))
+    (λ n, F.map (d n)) (λ n, by rw [ ← F.map_comp, sq n, functor.map_zero]) :=
+begin
+  ext i j hij,
+  { have h : j+1=i := hij,
+    subst h,
+    simp only [of_d, functor.map_homological_complex_obj_d, id_comp,
+      eq_to_hom_refl, comp_id], },
+  { refl, }
+end
+
+
+
+
+end chain_complex
