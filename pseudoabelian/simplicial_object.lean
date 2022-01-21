@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 import category_theory.pseudoabelian.basic
 import algebraic_topology.simplicial_object
+import category_theory.functor_ext
 
 noncomputable theory
 
@@ -105,6 +106,30 @@ instance : faithful (karoubi_simplicial_object_functor C) :=
       karoubi_simplicial_object.map] at h,
     simpa only using congr_fun h Δ,
   end, }    
+
+lemma to_karoubi_comp_karoubi_simplifical_object_functor :
+  (to_karoubi _) ⋙ karoubi_simplicial_object_functor C =
+  ((simplicial_object.whiskering _ _).obj (to_karoubi C)) :=
+begin
+  apply functor_ext,
+  { intros X Y f,
+    ext Δ,
+    dsimp,
+    simp only [karoubi_simplicial_object.obj_obj_p, karoubi_simplicial_object.map_app_f,
+      to_karoubi_obj_p, eq_to_hom_app, eq_to_hom_refl, karoubi.id_eq, karoubi.comp,
+      to_karoubi_map_f],
+    repeat { erw nat_trans.id_app, },
+    erw [id_comp, comp_id], },
+  { intro X,
+    apply functor_ext,
+    { intros Δ Δ' θ,
+      ext,
+      simp only [simplicial_object.whiskering_obj_obj_map, eq_to_hom_refl, karoubi.id_eq, karoubi.comp, to_karoubi_map_f],
+      dsimp,
+      simp only [comp_id], }, 
+    { intro Δ,
+      refl, }, }
+end
 
 end pseudoabelian
 

@@ -33,6 +33,15 @@ begin
   { rw [K_shape' i j hij, L_shape' i j hij], }
 end
 
+def congr_X {K L : homological_complex C c} (h : K = L) :
+  ∀ (n : ι), K.X n = L.X n :=
+by { intro n, subst h, }
+
+def congr_d {K L : homological_complex C c} (h : K = L) :
+  ∀ (i j : ι), c.rel i j → K.d i j ≫ eq_to_hom (congr_X h j) =
+  eq_to_hom (congr_X h i) ≫ L.d i j:=
+by { intros i j hij, subst h, simp only [id_comp, eq_to_hom_refl, comp_id], }
+
 end homological_complex
 
 namespace chain_complex

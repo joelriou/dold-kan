@@ -340,9 +340,11 @@ def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabeli
   (F : C ⥤ D) : karoubi C ⥤ D :=
   functor_extension F ⋙ (karoubi_is_equivalence D).inverse
 
+abbreviation decomp_id_i (P : karoubi C) : P ⟶ P.X := ⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩
+abbreviation decomp_id_p (P : karoubi C) : (P.X : karoubi C) ⟶ P := ⟨P.p, by erw [coe_p, id_comp, P.idempotence]⟩
+
 lemma decomp_id (P : karoubi C) :
-  𝟙 P = (⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩ : P ⟶ P.X) ≫
-  (⟨P.p, by erw [coe_p, id_comp, P.idempotence]⟩ : (P.X : karoubi C) ⟶ P) :=
+  𝟙 P = (decomp_id_i P) ≫ (decomp_id_p P) :=
 by { ext, simp only [comp, id_eq, P.idempotence], }
 
 def nat_trans_eq {D : Type*} [category D] {F G : karoubi C ⥤ D} (φ : F ⟶ G) (P : karoubi C) :
