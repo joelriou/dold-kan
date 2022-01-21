@@ -209,8 +209,7 @@ begin
   simp only [nat_trans_termwise_P_infty_app] at h₁₄,
   erw comp_id at h₁₄,
   conv at h₁₄ { to_rhs, congr, skip, erw comp_id, },
-  let h₁₄' : P₁.f n = _ ≫ P₄.f n ≫ _ := h₁₄,
-  erw [h₁₄', ← h₂₃, h₃₄],
+  erw [h₁₄, ← h₂₃, h₃₄],
   simp only [karoubi_simplicial_object.map_app_f, karoubi.comp],
   have eq := karoubi.hom_ext.mp (P_infty_termwise_naturality n 
     (((karoubi_simplicial_object_functor C).map ⟨X.p, by erw [karoubi.coe_p, comp_id, id_comp]⟩) : Y₄ ⟶ Y₄)),
