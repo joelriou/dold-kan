@@ -224,6 +224,7 @@ def Γ_map {K K' : chain_complex C ℕ} (f : K ⟶ K') : Γ_obj K ⟶ Γ_obj K' 
     rw [assoc],
   end, }
 
+@[simps]
 def Γ : chain_complex C ℕ ⥤ simplicial_object C :=
 { obj := Γ_obj,
   map := λ _ _, Γ_map,
