@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou, Adam Topaz, Johan Commelin
 -/
 
-import category_theory.functor_ext
 import algebra.homology.homological_complex_misc
 
 import algebra.homology.homological_complex
@@ -167,7 +166,7 @@ def map_alternating_face_map_complex {D : Type*} [category.{v} D] [preadditive D
   alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =
   (simplicial_object.whiskering C D).obj F ⋙ alternating_face_map_complex D :=
 begin
-  apply functor_ext,
+  apply category_theory.functor.ext,
   { intros X Y f,
     ext n,
     dsimp,

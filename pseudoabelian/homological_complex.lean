@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 import category_theory.pseudoabelian.basic
-import category_theory.functor_ext
 import algebra.homology.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
@@ -106,13 +105,13 @@ def inverse :
 
 def counit_eq : inverse ⋙ functor = 𝟭 (homological_complex (karoubi C) c) :=
 begin
-  apply functor_ext,
+  apply functor.ext,
   { intros K L f,
     ext n,
     dsimp [functor.map, inverse.map],
-    simp only [karoubi.comp, homological_complex.eq_to_hom_f, comp_id,
-      karoubi.eq_to_hom_f, functor.obj_X_p, eq_to_hom_refl, inverse.obj_p_f,
-      karoubi.p_comm], },
+    simp only [karoubi.eq_to_hom_f, functor.obj_X_p, homological_complex.eq_to_hom_f,
+      eq_to_hom_refl, comp_id, karoubi.comp, inverse.obj_p_f],
+    rw [← karoubi.hom.comm], },
   { intro P,
     ext i j,
     { simp [homological_complex.eq_to_hom_f],
