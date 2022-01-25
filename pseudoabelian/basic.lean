@@ -316,7 +316,7 @@ namespace karoubi
 variables {C}
 
 @[simps]
-def functor_extension {D: Type*} [category D] [preadditive D]
+def functor_extension {D : Type*} [category D] [preadditive D]
   (F : C ⥤ D) : karoubi C ⥤ karoubi D :=
 { obj := λ P, ⟨F.obj P.X, F.map P.p, 
     by { rw ← F.map_comp, congr, exact P.idempotence, }⟩,
@@ -324,7 +324,7 @@ def functor_extension {D: Type*} [category D] [preadditive D]
     by { simp only [← F.map_comp], congr, exact f.2, }⟩, }
 
 @[simps]
-def functor_extension' {D: Type*} [category D] [preadditive D]
+def functor_extension' {D : Type*} [category D] [preadditive D]
   (F : C ⥤ karoubi D) : karoubi C ⥤ karoubi D :=
 { obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).1, begin
     have h := congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idempotence,
@@ -356,6 +356,90 @@ begin
   congr,
   apply decomp_id,
 end
+
+@[simps]
+def functor_extension_hom_equiv {D : Type*} [category D] [preadditive D]
+  (F G : C ⥤ D) : (F ⟶ G) ≃ (functor_extension F ⟶ functor_extension G) :=
+{ to_fun := λ φ,
+  { app := λ P,
+    { f := F.map P.p ≫ φ.app P.X ≫ G.map P.p,
+      comm := begin
+        simp only [functor_extension_obj_p],
+        slice_rhs 1 2 { rw [← F.map_comp, P.idempotence], },
+        slice_rhs 3 4 { rw [← G.map_comp, P.idempotence], },
+      end },
+    naturality' := λ P Q f, begin
+      ext,
+      simp only [functor_extension_map_f, comp, assoc, nat_trans.naturality_assoc],
+      simp only [← G.map_comp, karoubi.p_comp, ← assoc, karoubi.comp_p],
+    end },
+  inv_fun := λ ψ,
+  { app := λ X, (ψ.app ((to_karoubi C).obj X)).f,
+    naturality' := λ X Y f, hom_ext.mp (ψ.naturality ((to_karoubi C).map f)), },
+  left_inv := λ φ, begin
+    ext X,
+    dsimp,
+    simp only [functor.map_id, id_comp, comp_id],
+  end,
+  right_inv := λ ψ, begin
+    ext1,
+    ext1 P,
+    exact (nat_trans_eq ψ P).symm,
+  end } 
+
+lemma functor_extension_hom_to_fun_comp {D : Type*} [category D] [preadditive D]
+  {F G H : C ⥤ D} (φ : F ⟶ G) (ψ : G ⟶ H) :
+  (functor_extension_hom_equiv F H).to_fun (φ ≫ ψ) =
+  (functor_extension_hom_equiv F G).to_fun φ ≫ (functor_extension_hom_equiv G H).to_fun ψ :=
+begin
+  ext P,
+  simp only [equiv.to_fun_as_coe, functor_extension_hom_equiv_apply_app_f, comp,
+    assoc, nat_trans.naturality_assoc, nat_trans.comp_app, ← H.map_comp, P.idempotence],
+end
+
+lemma functor_extension_hom_to_fun_id {D : Type*} [category D] [preadditive D]
+  {F : C ⥤ D} :
+  (functor_extension_hom_equiv F F).to_fun (𝟙 F) = 𝟙 _ :=
+begin
+  ext P,
+  simp only [equiv.to_fun_as_coe, functor_extension_hom_equiv_apply_app_f, id_eq,
+    nat_trans.id_app, functor_extension_obj_p, id_comp, ← F.map_comp, P.idempotence],
+end
+
+lemma functor_extension_hom_inv_fun_comp {D : Type*} [category D] [preadditive D]
+  {F G H : C ⥤ D} (φ : functor_extension F ⟶ functor_extension G) (ψ : functor_extension G ⟶ functor_extension H) :
+  (functor_extension_hom_equiv F H).inv_fun (φ ≫ ψ) =
+  (functor_extension_hom_equiv F G).inv_fun φ ≫ (functor_extension_hom_equiv G H).inv_fun ψ :=
+begin
+  ext X,
+  simp only [comp, nat_trans.comp_app, equiv.inv_fun_as_coe,
+    functor_extension_hom_equiv_symm_apply_app],
+end
+
+lemma functor_extension_hom_inv_fun_id {D : Type*} [category D] [preadditive D]
+  {F : C ⥤ D} :
+  (functor_extension_hom_equiv F F).inv_fun (𝟙 (functor_extension F)) = 𝟙 _ :=
+begin
+  ext X,
+  simp only [to_karoubi_obj_p, id_eq, nat_trans.id_app, functor_extension_obj_p,
+    equiv.inv_fun_as_coe, functor_extension_hom_equiv_symm_apply_app, F.map_id X],
+end
+
+@[simps]
+def functor_extension_iso_equiv {D : Type*} [category D] [preadditive D]
+  (F : C ⥤ D) (G : C ⥤ D) : (F ≅ G) ≃ (functor_extension F ≅ functor_extension G) :=
+{ to_fun := λ φ,
+  { hom := (functor_extension_hom_equiv F G).to_fun φ.hom,
+    inv := (functor_extension_hom_equiv G F).to_fun φ.inv,
+    hom_inv_id' := by rw [← functor_extension_hom_to_fun_comp, φ.hom_inv_id, functor_extension_hom_to_fun_id],
+    inv_hom_id' := by rw [← functor_extension_hom_to_fun_comp, φ.inv_hom_id, functor_extension_hom_to_fun_id], },
+  inv_fun := λ ψ,
+  { hom := (functor_extension_hom_equiv F G).inv_fun ψ.hom,
+    inv := (functor_extension_hom_equiv G F).inv_fun ψ.inv,
+    hom_inv_id' := by rw [← functor_extension_hom_inv_fun_comp, ψ.hom_inv_id, functor_extension_hom_inv_fun_id],
+    inv_hom_id' := by rw [← functor_extension_hom_inv_fun_comp, ψ.inv_hom_id, functor_extension_hom_inv_fun_id], },
+  left_inv := λ φ, by { ext1, exact (functor_extension_hom_equiv F G).left_inv φ.hom, },
+  right_inv := λ ψ, by { ext1, exact (functor_extension_hom_equiv F G).right_inv ψ.hom, }, }
 
 end karoubi
 
