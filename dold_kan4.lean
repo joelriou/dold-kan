@@ -35,51 +35,6 @@ variables {C : Type*} [category C] [additive_category C]
 
 --lemma eq_of_eq_to_iso
 
---@[simps]
-theorem NΓ'' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ to_karoubi _ ⋙ N
-  ≅ to_karoubi _ :=
-{ hom :=
-  { app := λ K,
-    { f :=
-      { f:= λ n, sigma.desc (λ A, begin
-        by_cases A.1.len = n,
-        { apply eq_to_hom,
-          simp only [to_karoubi_obj_X],
-          unfold Γ_summand,
-          rw h, },
-        { exact 0, }
-      end),
-        comm' := sorry, },
-      comm := sorry, }, },
-  inv :=
-  { app := λ K,
-    { f :=
-      { f := λ n, sigma.ι (Γ_summand K [n]) (⟨[n], ⟨𝟙 _, by apply_instance⟩⟩),
-        comm' := sorry },
-      comm := sorry}, },
-  hom_inv_id' := begin
-    ext K n A,
-    simp only [homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc_assoc,
-      nat_trans.id_app, karoubi.id_eq, karoubi.comp, nat_trans.comp_app],
-    dsimp,
-    split_ifs,
-    { have h' : A = ⟨[n],⟨𝟙 _,by apply_instance⟩⟩ := sorry,
-      subst h',
-      sorry, },
-    { erw [zero_comp, comp_id],
-      sorry, },
-  end,
-  inv_hom_id' := begin
-    ext K n,
-    dsimp,
-    simpa only [homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
-      simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc],
-  end }
-
---#check N
---#check Γ
---#check NΓ
-
 lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
   ≅ to_karoubi _ :=
 { hom :=
@@ -93,7 +48,7 @@ lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C �
           rw h, },
         { exact 0, }
       end),
-        comm' := sorry, },
+        comm' := λ i j hij, begin sorry, end, },
       comm := sorry, },
     naturality' := sorry },
   inv :=
@@ -117,11 +72,24 @@ lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C �
         erw [id_comp],
         refl, },
       { rw [← assoc, P_infty_termwise],
-        let φ : _ ⟶ (Γ.obj _) _[n+1] := ((sigma.ι (Γ_summand K [n+1]) ⟨[n+1], ⟨𝟙 _, by apply_instance,⟩⟩)),
+        let A : Γ_index_set [n+1] := ⟨[n+1], ⟨𝟙 _, by apply_instance⟩⟩,
+        let φ : _ ⟶ (Γ.obj _) _[n+1] := ((sigma.ι (Γ_summand K [n+1]) A)),
         erw P_is_identity_where_faces_vanish (_ : higher_faces_vanish (n+1) φ), swap,
         { refine ⟨_⟩,
           intros j hj,
-          sorry, },
+          let i := simplex_category.δ j.succ,
+          haveI : mono i,
+          { rw simplex_category.mono_iff_injective,
+            exact fin.succ_above_right_injective, },
+          erw Γ_simplicial_on_summand K A (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+          rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
+          { intro h,
+            apply nat.succ_ne_self n,
+            have h' := congr_arg simplex_category.len h,
+            simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
+          { rintro ⟨h₁,h₂⟩,
+            erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
+            simpa only [fin.cast_succ_zero, eq_self_iff_true, not_true, ne.def] using h₂, }, },
         { simp only [discrete.nat_trans_app, ι_colim_map],
           erw [id_comp],
           refl, }, }, },
@@ -135,13 +103,11 @@ lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C �
       simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc],
   end }
 
-#check NΓ'
-#exit
-
 @[simps]
-theorem NΓ : karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
-  ≅ 𝟭 _ :=
+theorem NΓ : karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N ≅ 𝟭 _ :=
 (karoubi.to_karoubi_iso_equiv _ _).inv_fun (NΓ'.trans (eq_to_iso (functor.comp_id _).symm))
+
+#print NΓ
 
 end dold_kan
 
