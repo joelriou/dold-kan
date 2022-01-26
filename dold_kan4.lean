@@ -32,7 +32,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
+variables {C : Type*} [category.{v} C] [additive_category C]
 
 lemma is_d0_iff {j : ℕ} {i : fin (j+2)} : is_d0 (simplex_category.δ i) ↔ i = 0 :=
 begin
@@ -88,6 +88,16 @@ begin
   erw [Γ_on_mono_on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
 end
 
+lemma P_infty_eq_zero_on_degeneracies (X : simplicial_object C)
+  {n : ℕ} {Δ' : simplex_category} (θ : [n] ⟶ Δ')
+  (hf : ¬function.injective θ.to_order_hom) :
+   X.map θ.op ≫ P_infty.f n = 0 :=
+begin
+  simp only [function.injective, exists_prop, not_forall] at hf,
+  rcases hf with ⟨x,y,⟨h₁,h₂⟩⟩,
+  sorry,
+end
+
 lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A.1.len = n) :
   inclusion_Γ_summand K A ≫ P_infty.f n = 0 :=
 begin
@@ -100,10 +110,9 @@ begin
   rw [show A = ⟨A.1,⟨A.2.1,A.2.2⟩⟩, by { ext, { simp only, }, { apply heq_of_eq, ext1, refl, } }],
   slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },  
   rw [assoc, show Γ_simplicial K A.2.1 = (Γ.obj K).map A.2.1.op, by refl],
-  sorry
+  slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
+  erw comp_zero,
 end
-
-#exit
 
 lemma A_eq {n : ℕ} {A : Γ_index_set [n]} (h : A.1.len = n) : A = Γ_index_id n :=
 begin
