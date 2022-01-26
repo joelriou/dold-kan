@@ -91,10 +91,20 @@ end
 lemma P_infty_eq_zero_on_degeneracies (X : simplicial_object C)
   {n : ℕ} {Δ' : simplex_category} (θ : [n] ⟶ Δ')
   (hf : ¬function.injective θ.to_order_hom) :
-   X.map θ.op ≫ P_infty.f n = 0 :=
+  X.map θ.op ≫ P_infty.f n = 0 :=
 begin
   simp only [function.injective, exists_prop, not_forall] at hf,
-  rcases hf with ⟨x,y,⟨h₁,h₂⟩⟩,
+  have h : ∃ (x y : fin (n+1)), (simplex_category.hom.to_order_hom θ) x =
+    (simplex_category.hom.to_order_hom θ) y ∧ x<y,
+  { rcases hf with ⟨x,y,⟨h₁,h₂⟩⟩,
+    by_cases x<y,
+    { exact ⟨x, y, ⟨h₁, h⟩⟩, },
+    { refine ⟨y, x, ⟨h₁.symm, _⟩⟩,
+      cases lt_or_eq_of_le (not_lt.mp h) with h' h',
+      { exact h', },
+      { exfalso,
+        exact h₂ h'.symm, }, }, },
+  clear hf,
   sorry,
 end
 
@@ -271,8 +281,6 @@ lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C �
 @[simps]
 theorem NΓ : karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N ≅ 𝟭 _ :=
 (karoubi.to_karoubi_iso_equiv _ _).inv_fun (NΓ'.trans (eq_to_iso (functor.comp_id _).symm))
-
-#print NΓ
 
 end dold_kan
 
