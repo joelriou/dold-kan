@@ -230,6 +230,15 @@ begin
   { congr', },
 end
 
+def bijective_of_epi_and_eq {x y : simplex_category.{u}} (e : x ⟶ y) [epi e]
+  (hxy : x = y) : function.bijective e.to_order_hom :=
+begin
+  apply (fintype.bijective_iff_surjective_and_card e.to_order_hom).mpr,
+  split,
+  { exact simplex_category.epi_iff_surjective.mp (by apply_instance), },
+  { congr', },
+end
+
 end epi_mono
 
 end simplex_category
