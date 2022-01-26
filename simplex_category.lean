@@ -239,6 +239,30 @@ begin
   { congr', },
 end
 
+instance {n : ℕ} {i : fin(n+2)} : mono (simplex_category.δ i) :=
+begin
+  rw simplex_category.mono_iff_injective,
+  exact fin.succ_above_right_injective,
+end
+
+instance {n : ℕ} {i : fin(n+1)} : epi (simplex_category.σ i) :=
+begin
+  rw simplex_category.epi_iff_surjective,
+  intro b,
+  simp [simplex_category.σ],
+  by_cases b ≤ i,
+  { use b,
+    erw fin.pred_above_below i b (by simpa only [fin.coe_eq_cast_succ] using h),
+    simp only [fin.coe_eq_cast_succ, fin.cast_pred_cast_succ], },
+  { use b.succ,
+    erw fin.pred_above_above i b.succ _, swap,
+    { rw not_le at h,
+      rw fin.lt_iff_coe_lt_coe at h ⊢,
+      simp only [fin.coe_succ, fin.coe_cast_succ],
+      exact nat.lt.step h, },
+    simp only [fin.pred_succ], }
+end
+
 end epi_mono
 
 end simplex_category

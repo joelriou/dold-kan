@@ -16,6 +16,8 @@ Goal :
 
 -/
 
+universes v u
+
 open classical
 noncomputable theory
 
@@ -30,32 +32,22 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-
 variables {C : Type*} [category C] [additive_category C]
 
-lemma d0_is_d0 {j : ℕ} (i : [j] ⟶ [j+1]) [mono i] (hi : i = simplex_category.δ (0 : fin(j+2))) : is_d0 i :=
+lemma is_d0_iff {j : ℕ} {i : fin (j+2)} : is_d0 (simplex_category.δ i) ↔ i = 0 :=
 begin
-  unfreezingI { subst hi, },
   split,
-  { refl, },
-  { erw fin.succ_above_zero,
-    simp only [fin.one_eq_zero_iff, nat.succ_ne_zero, fin.succ_zero_eq_one,
-      ne.def, not_false_iff], }
-end
-
-lemma neg_is_d0 {j : ℕ} {k : fin(j+2)} (i : [j] ⟶ [j+1]) [mono i]
-  (hi : i = simplex_category.δ k) (hk : k ≠ 0): ¬is_d0 i :=
-begin
-  unfreezingI { subst hi, },
-  rintro ⟨h₁,h₂⟩,
-  erw fin.succ_above_ne_zero_zero hk at h₂,
-  exact h₂ rfl,
-end
-
-lemma mono_δ {n : ℕ} {i : fin(n+2)} : mono (simplex_category.δ i) :=
-begin
-  rw simplex_category.mono_iff_injective,
-  exact fin.succ_above_right_injective,
+  { rintro ⟨h₁,h₂⟩,
+    by_contradiction,
+    erw fin.succ_above_ne_zero_zero h at h₂,
+    exact h₂ rfl, },
+  { intro h,
+    subst h,
+    split,
+    { refl, },
+    { erw fin.succ_above_zero,
+      simp only [fin.one_eq_zero_iff, nat.succ_ne_zero, fin.succ_zero_eq_one,
+        ne.def, not_false_iff], }, }
 end
 
 @[simp]
@@ -75,7 +67,6 @@ begin
     { refine ⟨_⟩,
       intros j hj,
       let i := simplex_category.δ j.succ,
-      haveI : mono i := mono_δ,
       erw Γ_simplicial_on_summand K (Γ_index_id (n+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
       rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
       { intro h,
@@ -87,11 +78,32 @@ begin
         simpa only [fin.cast_succ_zero, eq_self_iff_true, not_true, ne.def] using h₂, }, }, }
 end
 
+lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ) {Δ Δ' : simplex_category.{v}} (e : Δ ⟶ Δ') [epi e] :
+  sigma.ι (Γ_summand K Δ') ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩ ≫
+  Γ_simplicial K e =
+  sigma.ι (Γ_summand K Δ) ⟨Δ', ⟨e, by apply_instance⟩⟩ :=
+begin
+  erw Γ_simplicial_on_summand K ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩
+    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl),
+  erw [Γ_on_mono_on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
+end
+
 lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A.1.len = n) :
   inclusion_Γ_summand K A ≫ P_infty.f n = 0 :=
 begin
+  have h : ¬function.injective A.2.1.to_order_hom,
+  { by_contradiction,
+    apply hA,
+    simpa only [fintype.card_fin, add_left_inj] using
+      (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
+  haveI : epi A.2.1 := A.2.2,
+  rw [show A = ⟨A.1,⟨A.2.1,A.2.2⟩⟩, by { ext, { simp only, }, { apply heq_of_eq, ext1, refl, } }],
+  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },  
+  rw [assoc, show Γ_simplicial K A.2.1 = (Γ.obj K).map A.2.1.op, by refl],
   sorry
 end
+
+#exit
 
 lemma A_eq {n : ℕ} {A : Γ_index_set [n]} (h : A.1.len = n) : A = Γ_index_id n :=
 begin
@@ -188,24 +200,23 @@ abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_exten
             erw finset.sum_eq_single (0 : fin (j+2)), rotate,
             { intros k h hk,
               let i := simplex_category.δ k,
-              haveI : mono i := mono_δ,
               simp only [preadditive.comp_zsmul],
               erw Γ_simplicial_on_summand K (Γ_index_id (j+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
               rw Γ_on_mono_eq_zero, rotate,
               { intro h,
                 simpa only [simplex_category.len_mk, nat.succ_ne_self, Γ_index_id_fst]
                   using congr_arg simplex_category.len h, },
-              { exact neg_is_d0 i rfl hk, },
+              { rw is_d0_iff,
+                exact hk, },
               simp only [smul_zero', zero_comp], },
             { intro h,
               exfalso,
               simpa only [finset.mem_univ, not_true] using h, },
             simp only [fin.coe_zero, one_zsmul, pow_zero],
             let i := simplex_category.δ (0 : fin (j+2)),
-            haveI : mono i := mono_δ,
             erw Γ_simplicial_on_summand K (Γ_index_id (j+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
             congr,
-            exact Γ_on_mono_on_d0 K i (d0_is_d0 i rfl), },
+            exact Γ_on_mono_on_d0 K i (is_d0_iff.mpr rfl), },
           { exfalso,
             exact h hij.symm, },
         end },
