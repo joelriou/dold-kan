@@ -88,89 +88,6 @@ begin
   erw [Γ_on_mono_on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
 end
 
-lemma factorisation_non_injective {n : ℕ} {Δ' : simplex_category} (θ : [n+1] ⟶ Δ')
-  (hθ : ¬function.injective θ.to_order_hom) :
-  ∃ (i : fin(n+1)) (θ' : [n] ⟶ Δ'), θ = simplex_category.σ i ≫ θ' :=
-begin
-  simp only [function.injective, exists_prop, not_forall] at hθ,
-  have hθ₂ : ∃ (x y : fin (n+2)), (simplex_category.hom.to_order_hom θ) x =
-    (simplex_category.hom.to_order_hom θ) y ∧ x<y,
-  { rcases hθ with ⟨x,y,⟨h₁,h₂⟩⟩,
-    by_cases x<y,
-    { exact ⟨x, y, ⟨h₁, h⟩⟩, },
-    { refine ⟨y, x, ⟨h₁.symm, _⟩⟩,
-      cases lt_or_eq_of_le (not_lt.mp h) with h' h',
-      { exact h', },
-      { exfalso,
-        exact h₂ h'.symm, }, }, },
-  rcases hθ₂ with ⟨x,y,⟨h₁,h₂⟩⟩,
-  have hx : (x : ℕ) < n+1 := lt_of_lt_of_le (fin.lt_iff_coe_lt_coe.mp h₂) (nat.lt_succ_iff.mp (fin.is_lt y)),
-  let x' : fin(n+1) := ⟨x.val, hx⟩,
-  use x',
-  let f' : fin(n+1) → fin(Δ'.len+1) := λ j, if (j : ℕ) ≤ x.val
-    then θ.to_order_hom j.cast_succ
-    else θ.to_order_hom j.succ,
-  let F : fin([n].len+1) →o fin(Δ'.len+1) := ⟨f', _⟩, swap,
-  { intros a b hab,
-    dsimp [f'],
-    split_ifs with ha hb; apply θ.to_order_hom.monotone',
-    { simpa only, },
-    { simp only [not_le] at hb,
-      rw fin.le_iff_coe_le_coe,
-      simp only [fin.coe_succ, fin.coe_cast_succ],
-      exact le_add_right (fin.le_iff_coe_le_coe.mp hab), },
-    { exfalso,
-      exact ha (le_trans (fin.le_iff_coe_le_coe.mp hab) h), },
-    { simpa only [fin.succ_le_succ_iff], }, },
-  use simplex_category.hom.mk F,
-  ext1, ext1, ext1 j,
-  simp only [simplex_category.hom.comp, simplex_category.hom.to_order_hom_mk,
-    simplex_category.small_category_comp, function.comp_app, order_hom.comp_coe,
-    order_hom.coe_fun_mk, coe_coe],
-  simp [simplex_category.σ, f'],
-  by_cases hj : j ≤ fin.cast_succ x',
-  { rw fin.pred_above_below x' j hj,
-    have hj' : j < fin.last (n+1),
-    { simp only [fin.lt_iff_coe_lt_coe, fin.coe_last],
-      rw fin.le_iff_coe_le_coe at hj,
-      simp only [fin.val_eq_coe, fin.cast_succ_mk, fin.eta] at hj,
-      exact lt_of_le_of_lt hj hx, },
-    split_ifs,
-    { congr,
-      rw fin.cast_succ_cast_pred,
-      exact hj', },
-    { exfalso,
-      apply h,
-      simpa only [fin.lt_last_iff_coe_cast_pred.mp hj', fin.val_eq_coe,
-        fin.le_iff_coe_le_coe, fin.cast_succ_mk, fin.eta] using hj, }, },
-  { simp only [not_le] at hj,
-    simp only [fin.pred_above_above x' j hj],
-    split_ifs,
-    { rw fin.lt_iff_coe_lt_coe at hj,
-      cases le_iff_exists_add.mp (nat.succ_le_iff.mpr hj) with c hc,
-      simp only [fin.val_eq_coe, fin.cast_succ_mk, fin.eta] at hc,
-      rw [fin.coe_pred, hc] at h,
-      simp only [add_le_iff_nonpos_right, nat.succ_add_sub_one, nonpos_iff_eq_zero] at h,
-      rw [h, add_zero] at hc,
-      have eq : (simplex_category.hom.to_order_hom θ) x = (simplex_category.hom.to_order_hom θ) j,
-      { rw le_antisymm_iff,
-        split,
-        { apply θ.to_order_hom.monotone',
-          rw [fin.le_iff_coe_le_coe, hc],
-          exact nat.le_succ _, },
-        { rw h₁,
-          apply θ.to_order_hom.monotone',
-          rw [fin.le_iff_coe_le_coe, hc],
-          rw [fin.lt_iff_coe_lt_coe] at h₂,
-          exact nat.succ_le_iff.mpr h₂, }, },
-      rw ← eq,
-      congr,
-      ext,
-      simp only [fin.coe_cast_succ, fin.coe_pred, hc,
-        tsub_zero, nat.succ_sub_succ_eq_sub], },
-    { simp only [fin.succ_pred], }, },
-end
-
 lemma P_infty_eq_zero_on_σ (X : simplicial_object C)
   {n : ℕ} (i : fin (n+1)) :
   (X.σ i) ≫ P_infty.f (n+1) = 0 :=
@@ -192,12 +109,10 @@ begin
     simp only [simplex_category.len_mk, nat.lt_one_iff] at hx hy,
     simp only [fin.ext_iff, hx, hy] at h₂,
     exact h₂ rfl, },
-  { rcases factorisation_non_injective θ hf with ⟨i,θ,h⟩,
+  { rcases simplex_category.factorisation_non_injective θ hf with ⟨i,θ,h⟩,
     erw [h, op_comp, X.map_comp, assoc,
       P_infty_eq_zero_on_σ X i, comp_zero], }
 end
-
-#exit
 
 lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A.1.len = n) :
   inclusion_Γ_summand K A ≫ P_infty.f n = 0 :=
@@ -250,7 +165,31 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
           split_ifs,
           { dsimp,
             split_ifs with h',
-            { sorry, },
+            { subst h',
+              simp only [id_comp, eq_to_hom_refl, preadditive.sum_comp, preadditive.comp_sum],
+              have hA := A_eq h,
+              subst hA,
+              erw finset.sum_eq_single (0 : fin (j+2)), rotate,
+              { intros b hb₀ hb,
+                rw [← assoc, preadditive.comp_zsmul],
+                let i := simplex_category.δ b,
+                erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+                  (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+                erw Γ_on_mono_eq_zero K i (λ hj, by simpa only [simplex_category.len_mk, nat.succ_ne_self]
+                    using congr_arg simplex_category.len hj) (by { rw is_d0_iff, exact hb, }),
+                simp only [smul_zero', zero_comp], },
+              { intro h0,
+                exfalso,
+                simpa only [finset.mem_univ, not_true] using h0, },
+              simp only [fin.coe_zero, one_zsmul, pow_zero, ← assoc],
+              let i := simplex_category.δ (0 : fin (j+2)),
+              erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+                (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+              erw Γ_on_mono_on_d0 K i (is_d0_iff.mpr rfl),
+              simp only [dite_eq_ite, if_true, cofan.mk_ι_app, simplex_category.len_mk,
+                eq_self_iff_true, colimit.ι_desc, assoc, id_comp, eq_to_hom_refl],
+              erw comp_id,
+              refl, },
             { exfalso,
               exact h' hij.symm, }, },
           { rw [zero_comp],
