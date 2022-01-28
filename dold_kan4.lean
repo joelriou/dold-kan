@@ -117,6 +117,9 @@ lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n a q : ℕ} (
     rw [eq', zero_comp],
   end }
 
+--lemma test (a b c: ℕ) (h : a +b  = c) : b ≤ c := by library_search
+
+
 lemma P_q_eq_zero_on_σ (X : simplicial_object C)
   {n q : ℕ} (i : fin (n+1)) (hi : (n+1) ≤ (i : ℕ)+q) :
   (X.σ i) ≫ (P q).f (n+1) = 0 :=
@@ -134,9 +137,31 @@ begin
         rw [← nat.lt_succ_iff, nat.succ_eq_add_one, add_assoc, hj, not_lt, add_le_iff_nonpos_right,
           nonpos_iff_eq_zero] at h,
         rw [← add_left_inj 1, add_assoc, hj, self_eq_add_right, h], },
-      sorry, }, },
+      cases n,
+      { rw [show i = 0, by { ext, simpa only [nat.lt_one_iff] using i.is_lt, }],
+        rw [show q = 0, by linarith],
+        unfold P,
+        simp only [id_comp, homological_complex.add_f_apply, preadditive.comp_add, homological_complex.id_f],
+        erw [comp_id, Hσ, homotopy.null_homotopic_map_f (cs_down_succ 1) (cs_down_succ 0)],
+        unfold hσ' hσ,
+        --simp,
+        sorry, },
+      { rw [← id_comp (X.σ i),
+          show 𝟙 (X.obj (op [n.succ])) = (P q).f (n+1) + (Q q).f (n+1), by { unfold Q,
+            simpa only [homological_complex.sub_f_apply, add_sub_cancel'_right, homological_complex.id_f]}],
+        simp only [preadditive.add_comp],
+        conv { to_rhs, erw ← zero_add (0 : X.obj (op [n+1]) ⟶ X.obj (op [n+2])), },
+        congr,
+        { sorry, },
+        { rw [decomposition_Q n q (by { simp only [nat.succ_eq_add_one] at hi, linarith, })],
+          simp only [preadditive.sum_comp],
+          apply finset.sum_eq_zero,
+          intros j hj,
+          simp only [true_and, finset.mem_univ, finset.mem_filter] at hj,
+          sorry, }, }, }, },
 end
 
+#exit
 lemma P_infty_eq_zero_on_σ (X : simplicial_object C)
   {n : ℕ} (i : fin (n+1)) :
   (X.σ i) ≫ P_infty.f (n+1) = 0 :=
