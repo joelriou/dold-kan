@@ -88,12 +88,65 @@ begin
   erw [Γ_on_mono_on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
 end
 
+lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
+  (v : higher_faces_vanish q φ) : higher_faces_vanish q (φ ≫ X.σ ⟨a+1,
+    by { rw [hnaq, nat.lt_succ_iff, add_le_add_iff_right, le_add_iff_nonneg_right], exact zero_le q, }⟩) :=
+{ vanishing := λ j hj, begin
+    rw assoc,
+    have eq := simplicial_object.δ_comp_σ_of_gt X (_ : fin.cast_succ ⟨a+1, _⟩ < j), rotate,
+    { rw [hnaq, add_lt_add_iff_right, lt_add_iff_pos_right],
+      by_contradiction,
+      simp only [not_lt, nonpos_iff_eq_zero] at h,
+      rw [h, add_zero] at hj,
+      exact (lt_self_iff_false _).mp (lt_of_le_of_lt hj (fin.is_lt j)), },
+    { rw [fin.cast_succ_mk, fin.lt_iff_coe_lt_coe, fin.coe_mk, nat.lt_iff_add_one_le,
+        ← add_le_add_iff_right q, add_assoc, add_comm 1 q, ← add_assoc, add_assoc a,
+        add_comm 1 q, ← add_assoc, ← hnaq],
+      exact hj, },
+    simp only [fin.cast_succ_mk] at eq,
+    erw [eq, ← assoc],
+    have eq' := v.vanishing (j.pred _) _, rotate,
+    { intro hj',
+      rw [hj', hnaq] at hj,
+      simpa only [fin.coe_zero, zero_add, add_comm a, add_assoc,
+        nat.one_ne_zero, add_le_iff_nonpos_right, add_eq_zero_iff, nonpos_iff_eq_zero, false_and] using hj, },
+    { rw [← add_le_add_iff_right 1, add_assoc _ q, add_comm q 1, ← add_assoc,
+        ← fin.coe_succ, fin.succ_pred],
+      exact hj, },
+    simp only [fin.succ_pred] at eq',
+    rw [eq', zero_comp],
+  end }
+
+lemma P_q_eq_zero_on_σ (X : simplicial_object C)
+  {n q : ℕ} (i : fin (n+1)) (hi : (n+1) ≤ (i : ℕ)+q) :
+  (X.σ i) ≫ (P q).f (n+1) = 0 :=
+begin
+  induction q with q hq,
+  { exfalso,
+    have h := fin.is_lt i,
+    linarith, },
+  { by_cases n+1 ≤ (i : ℕ)+q,
+    { unfold P,
+      simp only [homological_complex.comp_f, ← assoc],
+      rw [hq h, zero_comp], },
+    { have hi : n = (i : ℕ) + q,
+      { cases le_iff_exists_add.mp hi with j hj,
+        rw [← nat.lt_succ_iff, nat.succ_eq_add_one, add_assoc, hj, not_lt, add_le_iff_nonpos_right,
+          nonpos_iff_eq_zero] at h,
+        rw [← add_left_inj 1, add_assoc, hj, self_eq_add_right, h], },
+      sorry, }, },
+end
+
 lemma P_infty_eq_zero_on_σ (X : simplicial_object C)
   {n : ℕ} (i : fin (n+1)) :
   (X.σ i) ≫ P_infty.f (n+1) = 0 :=
 begin
-  sorry
+  rw P_infty_termwise,
+  apply P_q_eq_zero_on_σ X i,
+  simp only [zero_le, le_add_iff_nonneg_left],
 end
+
+#exit
 
 lemma P_infty_eq_zero_on_degeneracies (X : simplicial_object C)
   {n : ℕ} {Δ' : simplex_category} (θ : [n] ⟶ Δ')
