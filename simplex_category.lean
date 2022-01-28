@@ -346,6 +346,23 @@ begin
     { simp only [fin.succ_pred], }, },
 end
 
+lemma epi_eq_σ {n : ℕ} (θ : mk (n+1) ⟶ mk n) [epi θ] :
+  ∃ (i : fin(n+1)), θ = simplex_category.σ i :=
+begin
+  rcases factorisation_non_injective θ _ with ⟨i,θ',h⟩, swap,
+  { by_contradiction,
+    simpa only [nat.one_ne_zero, add_le_iff_nonpos_right, nonpos_iff_eq_zero]
+      using le_of_mono (mono_iff_injective.mpr h), },
+  use i,
+  haveI : epi (σ i ≫ θ'),
+  { rw ← h,
+    apply_instance, },
+  haveI := category_theory.epi_of_epi (σ i) θ',
+  have h' := congr_arg (λ (φ : _ ≅ _), φ.hom) (iso_refl_of_iso (is_iso_of_bijective (bijective_of_epi_and_eq θ' rfl))),
+  simp only [iso.refl_hom, is_iso_of_bijective_hom] at h',
+  simpa only [h', category.comp_id] using h,
+end
+
 end epi_mono
 
 end simplex_category
