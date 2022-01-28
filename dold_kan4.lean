@@ -288,13 +288,13 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
   { app := λ K,
     { f :=
       { f:= λ n, sigma.desc (λ A, begin
-        by_cases A.1.len = n,
-        { apply eq_to_hom,
-          simp only [to_karoubi_obj_X],
-          unfold Γ_summand,
-          rw h, },
-        { exact 0, }
-      end),
+          by_cases A.1.len = n,
+          { apply eq_to_hom,
+            simp only [to_karoubi_obj_X],
+            unfold Γ_summand,
+            rw h, },
+          { exact 0, }
+          end),
         comm' := λ i j hij, begin
           ext A,
           simp only [cofan.mk_ι_app, colimit.ι_desc_assoc],
@@ -335,7 +335,29 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
               simp only [id_comp, eq_to_hom_refl, ← assoc],
               erw [preadditive.comp_sum, preadditive.sum_comp],
               symmetry,
-              sorry, },
+              by_cases h' : A.1.len = j,
+              { sorry, },
+              { apply finset.sum_eq_zero,
+                intros i hi,
+                simp only [preadditive.comp_zsmul],
+                let em := image.mono_factorisation (simplex_category.δ i ≫ A.2.1),
+                haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+                erw [Γ_simplicial_on_summand K A em.fac],
+                simp only [← preadditive.zsmul_comp, assoc, cofan.mk_ι_app,
+                  image.as_ι, colimit.ι_desc],
+                split_ifs with h'',
+                { exfalso,
+                have hi := simplex_category.len_le_of_mono em.m_mono,
+                simp only at h'',
+                rw h'' at hi,
+                cases nat.le.dest hi with b hb,
+                have he := simplex_category.len_le_of_epi A.2.2,
+                simp only [unop_op, simplex_category.len_mk] at he,
+                simp only [← hb, add_right_eq_self, add_le_add_iff_left, add_right_inj] at he h h',
+                by_cases hb' : b=1,
+                { exact h hb', },
+                { exact h' (nat.lt_one_iff.mp ((ne.le_iff_lt h).mp he)), }, },
+                { simp only [comp_zero], }, }, },
             { exfalso,
               exact h' hij.symm, }, },
         end, },
@@ -372,6 +394,8 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
       { slice_lhs 1 2 { erw P_infty_eq_zero_on_Γ_summand K h, },
         simp only [zero_comp], }
     end }
+
+#exit
 
 abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
  :=
