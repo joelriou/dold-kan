@@ -259,7 +259,7 @@ begin
     simpa only [fintype.card_fin, add_left_inj] using
       (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
   haveI : epi A.2.1 := A.2.2,
-  rw [show A = ⟨A.1,⟨A.2.1,A.2.2⟩⟩, by { ext, { simp only, }, { apply heq_of_eq, ext1, refl, } }],
+  rw [show A = ⟨A.1,⟨A.2.1,A.2.2⟩⟩, by { ext1, { simp only [eq_to_hom_refl, comp_id], }, refl, }],
   slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },  
   rw [assoc, show Γ_simplicial K A.2.1 = (Γ.obj K).map A.2.1.op, by refl],
   slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
@@ -274,13 +274,13 @@ begin
     rw [h, simplex_category.len_mk], },
   subst hΔ,
   simp only [Γ_index_id],
-  ext,
-  { refl, },
-  { apply heq_of_eq,
-    haveI := hf,
+  ext1,
+  { haveI := hf,
+    simp only [eq_to_hom_refl, comp_id],
     simpa only [simplex_category.is_iso_of_bijective_hom] using congr_arg (λ (φ : _ ≅ _), φ.hom)
       (simplex_category.iso_refl_of_iso
-      (simplex_category.is_iso_of_bijective (simplex_category.bijective_of_epi_and_eq f rfl))), }
+      (simplex_category.is_iso_of_bijective (simplex_category.bijective_of_epi_and_eq f rfl))), },
+  { refl, }
 end
 
 abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
@@ -334,23 +334,40 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
             { subst h',
               simp only [id_comp, eq_to_hom_refl, ← assoc],
               erw [preadditive.comp_sum, preadditive.sum_comp],
+              simp only [preadditive.comp_zsmul, preadditive.zsmul_comp],
               symmetry,
               by_cases h' : A.1.len = j,
               { have eq : A.1 = [j],
                 { ext,
                   simp only [h', simplex_category.len_mk], },
-                let e : [j+1] ⟶ [j] := A.2.1 ≫ eq_to_hom eq,
                 haveI := A.2.2,
                 haveI := epi_comp A.2.1 (eq_to_hom eq),
-                cases simplex_category.epi_eq_σ e with i hi,
-                let A' : Γ_index_set [j+1] := ⟨[j],⟨e, by apply_instance⟩⟩,
-                have hA : A = A',
-                { ext,
-                  { exact h', },
-                  { apply heq_of_eq,
-                    sorry, }, },
-                rw hA,
-                sorry, },
+                cases simplex_category.epi_eq_σ (A.2.1 ≫ eq_to_hom eq : [j+1] ⟶ [j]) with i hi,
+                let A' : Γ_index_set [j+1] := ⟨[j],⟨simplex_category.σ i, by apply_instance⟩⟩,
+                rw [show A = A', by { ext1, exact hi, }],
+                rw fintype.sum_eq_add (fin.cast_succ i) i.succ, rotate,
+                { by_contradiction,
+                  simpa only [fin.ext_iff, nat.one_ne_zero, fin.coe_succ, fin.coe_cast_succ, self_eq_add_right] using h, },
+                { rintros k ⟨h₁,h₂⟩,
+                  let em := image.mono_factorisation (simplex_category.δ k ≫ A'.2.1),
+                  haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+                  erw [Γ_simplicial_on_summand K A' em.fac],
+                  simp only [cofan.mk_ι_app, image.as_ι, colimit.ι_desc, assoc],
+                  have hI : em.I.len ≠ j,
+                  { by_contradiction,
+                    sorry, },
+                  split_ifs with hI',
+                  { exfalso,
+                    exact hI hI', },
+                  { simp only [smul_zero', comp_zero], }, },
+                erw Γ_simplicial_on_summand K A' (show 𝟙 _ ≫ 𝟙 _ = simplex_category.δ (fin.cast_succ i) ≫
+                  simplex_category.σ i, by { rw [simplex_category.δ_comp_σ_self, id_comp], }),
+                erw Γ_simplicial_on_summand K A' (show 𝟙 _ ≫ 𝟙 _ = simplex_category.δ i.succ ≫
+                  simplex_category.σ i, by { rw [simplex_category.δ_comp_σ_succ, id_comp], }),
+                erw [Γ_on_mono_on_id, eq_to_hom_refl, id_comp],
+                simp only [dite_eq_ite, if_true, cofan.mk_ι_app, fin.coe_succ, fin.coe_cast_succ,
+                  simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc, eq_to_hom_refl, pow_succ,
+                  neg_mul_eq_neg_mul_symm, one_mul, add_right_neg, neg_smul], },
               { apply finset.sum_eq_zero,
                 intros i hi,
                 simp only [preadditive.comp_zsmul],
@@ -408,9 +425,7 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
       { slice_lhs 1 2 { erw P_infty_eq_zero_on_Γ_summand K h, },
         simp only [zero_comp], }
     end }
-
 #exit
-
 abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
  :=
   { app := λ K,
