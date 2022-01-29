@@ -31,25 +31,39 @@ variables {C : Type*} [category C] [additive_category C]
 
 def Γ_index_set (Δ : simplex_category.{v}) := Σ (Δ' : simplex_category.{v}), { α : Δ ⟶ Δ' // epi α }
 
+@[ext]
+lemma Γ_index_set_ext {Δ : simplex_category.{v}} (A₁ A₂ : Γ_index_set Δ) (h1 : A₁.1 = A₂.1)
+  (h2 : A₁.2.1 ≫ eq_to_hom h1 = A₂.2.1) : A₁ = A₂ :=
+begin
+  rcases A₁ with ⟨Δ'₁, ⟨α₁, hα₁⟩⟩,
+  rcases A₂ with ⟨Δ'₂, ⟨α₂, hα₂⟩⟩,
+  simp only at h1 h2,
+  ext1,
+  { exact h1, },
+  { subst h1,
+    simp only [eq_to_hom_refl, comp_id] at h2,
+    apply heq_of_eq,
+    ext1,
+    exact h2, },
+end
+
 lemma fintype_Γ_index_set (Δ : simplex_category.{v}) : fintype (Γ_index_set Δ) :=
 begin
   apply fintype.of_injective
     ((λ A, ⟨⟨A.1.len,
       nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
       Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin(Δ.len+1) → fin(k+1))))),
-  rintros ⟨Δ₁,α₁'⟩ ⟨Δ₂,α₂'⟩ h,
+  rintros ⟨Δ₁,α₁⟩ ⟨Δ₂,α₂⟩ h,
   simp only at h,
-  have eq : Δ₁ = Δ₂ := by { ext, simpa using h.left, },
-  ext; dsimp,
-  { rw eq, },
-  { subst eq,
-    apply heq_of_eq,
-    rcases α₁' with ⟨α₁,h₁⟩,
-    rcases α₂' with ⟨α₂,h₂⟩,
-    ext,
-    dsimp at h ⊢,
-    simp only [fun_like.coe_fn_eq, eq_self_iff_true, heq_iff_eq] at h ⊢,
-    rw h.right, }
+  cases h with h₁ h₂,
+  have h₁' : Δ₁ = Δ₂ := by { ext, simpa using h₁, },
+  subst h₁',
+  rw heq_iff_eq at h₂,
+  ext1,
+  { simp only [eq_to_hom_refl, comp_id],
+    ext1, ext1,
+    assumption, },
+  { refl, }
 end
 
 instance {Δ : simplex_category} : fintype (Γ_index_set Δ) := fintype_Γ_index_set Δ
@@ -195,7 +209,9 @@ def Γ_obj (K : chain_complex C ℕ) : simplicial_object C :=
     simp only [Γ_on_mono_on_id K (𝟙 A.1) (by refl), eq_to_hom_refl] at eq,
     erw [eq, id_comp, comp_id],
     congr,
-    ext; simp only [subtype.coe_eta, subtype.val_eq_coe],
+    ext1,
+    simp only [eq_to_hom_refl, comp_id],
+    refl,
   end,
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
     ext A,
