@@ -494,7 +494,7 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
       { slice_lhs 1 2 { erw P_infty_eq_zero_on_Γ_summand K h, },
         simp only [zero_comp], }
     end }
-#exit
+
 abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
  :=
   { app := λ K,
