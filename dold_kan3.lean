@@ -143,8 +143,8 @@ begin
   { unfreezingI { subst h1, },
     have hi := simplex_category.bijective_of_mono_and_eq i (by refl),
     have h2 := congr_arg (λ (φ : Δ ≅ Δ), φ.hom)
-      (simplex_category.iso_refl_of_iso (simplex_category.is_iso_of_bijective hi)),
-    simp only [iso.refl_hom, simplex_category.is_iso_of_bijective_hom] at h2,
+      (simplex_category.iso_refl_of_iso (simplex_category.iso_of_bijective hi)),
+    simp only [iso.refl_hom, simplex_category.iso_of_bijective_hom] at h2,
     conv { to_rhs, congr, congr, skip, rw h2, },
     rw Γ_on_mono_on_id K i (by refl),
     simp only [eq_to_hom_refl, comp_id, id_comp], },
@@ -153,8 +153,8 @@ begin
   { unfreezingI { subst h2, },
     have hi' := simplex_category.bijective_of_mono_and_eq i' (by refl),
     have h3 := congr_arg (λ (φ : Δ' ≅ Δ'), φ.hom)
-      (simplex_category.iso_refl_of_iso (simplex_category.is_iso_of_bijective hi')),
-    simp only [iso.refl_hom, simplex_category.is_iso_of_bijective_hom] at h3,
+      (simplex_category.iso_refl_of_iso (simplex_category.iso_of_bijective hi')),
+    simp only [iso.refl_hom, simplex_category.iso_of_bijective_hom] at h3,
     conv { to_rhs, congr, congr, rw h3, },
     rw Γ_on_mono_on_id K i' (by refl),
     simp only [eq_to_hom_refl, comp_id, id_comp], },

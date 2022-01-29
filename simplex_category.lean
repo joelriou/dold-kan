@@ -157,9 +157,19 @@ begin
   simpa only using h,
 end
 
+lemma eq_id_of_is_iso {x : simplex_category.{u}} {f : x ⟶ x} (hf : is_iso f) : f = 𝟙 _ :=
+begin
+  haveI := hf,
+  simpa only [iso.refl_hom, as_iso_hom] using congr_arg (λ (φ : _ ≅ _), φ.hom) (iso_refl_of_iso (as_iso f)),
+end
+
 lemma eq_to_iso_of_iso {x y : simplex_category.{u}} (e : x ≅ y) :
   e = eq_to_iso (skeletal (nonempty.intro e)) :=
 by { have h := skeletal (nonempty.intro e), subst h, dsimp, exact iso_refl_of_iso e, }
+
+lemma eq_eq_to_hom_of_is_iso {x y : simplex_category.{u}} {f : x ⟶ y} (hf : is_iso f) :
+  f = eq_to_hom (skeletal (nonempty.intro (as_iso f))) :=
+congr_arg (λ (φ : _ ≅ _), φ.hom) (eq_to_iso_of_iso (as_iso f))
 
 /- Two mono factorisations satisfying the universal property of
 the image are equal. -/
@@ -197,7 +207,7 @@ begin
 end
 
 @[simps]
-noncomputable lemma is_iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
+noncomputable lemma iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
   (hf : function.bijective (f.to_order_hom.to_fun)) : x ≅ y :=
 { hom := f,
   inv := hom.mk
@@ -358,8 +368,8 @@ begin
   { rw ← h,
     apply_instance, },
   haveI := category_theory.epi_of_epi (σ i) θ',
-  have h' := congr_arg (λ (φ : _ ≅ _), φ.hom) (iso_refl_of_iso (is_iso_of_bijective (bijective_of_epi_and_eq θ' rfl))),
-  simp only [iso.refl_hom, is_iso_of_bijective_hom] at h',
+  have h' := congr_arg (λ (φ : _ ≅ _), φ.hom) (iso_refl_of_iso (iso_of_bijective (bijective_of_epi_and_eq θ' rfl))),
+  simp only [iso.refl_hom, iso_of_bijective_hom] at h',
   simpa only [h', category.comp_id] using h,
 end
 

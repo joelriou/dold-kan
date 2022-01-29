@@ -277,9 +277,9 @@ begin
   ext1,
   { haveI := hf,
     simp only [eq_to_hom_refl, comp_id],
-    simpa only [simplex_category.is_iso_of_bijective_hom] using congr_arg (λ (φ : _ ≅ _), φ.hom)
+    simpa only [simplex_category.iso_of_bijective_hom] using congr_arg (λ (φ : _ ≅ _), φ.hom)
       (simplex_category.iso_refl_of_iso
-      (simplex_category.is_iso_of_bijective (simplex_category.bijective_of_epi_and_eq f rfl))), },
+      (simplex_category.iso_of_bijective (simplex_category.bijective_of_epi_and_eq f rfl))), },
   { refl, }
 end
 
@@ -355,7 +355,36 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
                   simp only [cofan.mk_ι_app, image.as_ι, colimit.ι_desc, assoc],
                   have hI : em.I.len ≠ j,
                   { by_contradiction,
-                    sorry, },
+                    have hm := simplex_category.eq_eq_to_hom_of_is_iso (is_iso.of_iso (simplex_category.iso_of_bijective
+                      (simplex_category.bijective_of_mono_and_eq em.m (by { ext, exact h, })))),
+                    have he := simplex_category.eq_eq_to_hom_of_is_iso (is_iso.of_iso (simplex_category.iso_of_bijective
+                      (simplex_category.bijective_of_epi_and_eq em.e (by { ext, exact h.symm, })))),
+                    simp only [simplex_category.iso_of_bijective_hom] at hm he,
+                    have eq : (simplex_category.δ k ≫ A'.snd.val) = 𝟙 _,
+                    { erw [← em.fac, he, hm, eq_to_hom_trans, eq_to_hom_refl], },
+                    have eq' := λ (l : fin (j+1)), congr_arg (λ φ, (simplex_category.hom.to_order_hom φ) l) eq,
+                    simp only at eq',
+                    simp only [simplex_category.hom.comp, order_hom.id_coe, fin.coe_coe_eq_self,
+                      simplex_category.hom.to_order_hom_mk, id.def, simplex_category.small_category_comp,
+                      simplex_category.small_category_id, function.comp_app, order_hom.comp_coe,
+                      simplex_category.hom.id, coe_coe] at eq',
+                    have ineqi := fin.is_lt i,
+                    by_cases (k : ℕ) < i,
+                    { let l : fin (j+1) := ⟨k, by linarith⟩,
+                      have hk := eq' l,
+                      erw fin.succ_above_above k l (by { rw [fin.le_iff_coe_le_coe,
+                        fin.cast_succ_mk, fin.eta], }) at hk,
+                      simp only [simplex_category.σ, simplex_category.hom.to_order_hom_mk,
+                        simplex_category.mk_hom, order_hom.coe_fun_mk] at hk,
+                      rw fin.pred_above_below i l.succ _ at hk, swap,
+                      { simp only [fin.succ_mk, nat.succ_eq_add_one, fin.coe_mk,
+                          fin.le_iff_coe_le_coe, fin.coe_cast_succ],
+                        linarith, },
+                      simp only [fin.ext_iff, fin.succ_mk, fin.coe_mk] at hk,
+                      rw fin.cast_pred_mk at hk, swap,
+                      { linarith, },
+                      simpa only [nat.succ_ne_self, fin.coe_mk] using hk, },
+                    { sorry, }, },
                   split_ifs with hI',
                   { exfalso,
                     exact hI hI', },
