@@ -41,12 +41,31 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
     { app := λ Δ, sigma.desc (λ A, 
         P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
       naturality' := sorry, },
-    comm := sorry },
+    comm := begin
+      ext Δ A,
+      dsimp,
+      simp only [colimit.ι_desc],
+      dsimp,
+      slice_rhs 1 2 { erw ι_colim_map, },
+      simp only [discrete.nat_trans_app, cofan.mk_ι_app, colimit.ι_desc,
+        eq_to_hom_map, assoc, comp_id, functor.map_comp],
+      slice_rhs 1 2 { erw P_infty_termwise_is_a_projector, },
+      simp only [assoc],
+    end },
   naturality' := λ X Y f, begin
     ext Δ A,
-    sorry,
+    simp only [N'_functor.map_f, N'_map, Γ_map_app, nat_trans.naturality, functor.comp_map, discrete.nat_trans_app, cofan.mk_ι_app,
+      colimit.ι_desc_assoc, Γ_map_2, chain_complex.of_hom_f, colimit.ι_desc, ι_colim_map_assoc, assoc,
+      alternating_face_map_complex.obj_d, karoubi.functor_extension_map_f, alternating_face_map_complex_map,
+      alternating_face_map_complex.map, functor.map_comp, karoubi.comp, nat_trans.comp_app, subtype.val_eq_coe,
+      to_karoubi_map_f],
+    slice_lhs 2 3 { erw P_infty_termwise_naturality, },
+    slice_lhs 1 2 { erw P_infty_termwise_is_a_projector, },
+    slice_lhs 2 3 { erw ← f.naturality, },
+    simpa only [← assoc],
   end }
 
+#exit
 @[simps]
 def ΓN_trans : N ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _)
   ⟶ 𝟭 _ :=
