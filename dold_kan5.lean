@@ -33,6 +33,12 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {n' n : ℕ} (i : ([n'] : simplex_category.{v}) ⟶ [n]) [mono i] :
+  Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n' = P_infty.f n ≫ X.map i.op :=
+begin
+  sorry
+end
+
 @[simps]
 def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _)
   ⟶ to_karoubi _ :=
@@ -40,7 +46,25 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
   { f :=
     { app := λ Δ, sigma.desc (λ A, 
         P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
-      naturality' := sorry, },
+      naturality' := λ Δ Δ' θ, begin
+        ext A,
+        slice_rhs 1 2 { erw colimit.ι_desc, },
+        dsimp,
+        let em := image.mono_factorisation (θ.unop ≫ A.2.1),
+        haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+        slice_lhs 1 2 { erw [Γ_simplicial_on_summand _ A em.fac], },
+        slice_lhs 2 3 { erw colimit.ι_desc, },
+        dsimp,
+        let φ : [em.I.len] ⟶ em.I := eq_to_hom (by { simp only [simplex_category.mk_len] }),
+        let φ' : A.1 ⟶ [A.1.len] := eq_to_hom (by { simp only [simplex_category.mk_len] }),
+        have h := Γ_on_mono_comp_P_infty X (φ ≫ em.m ≫ φ'),
+        haveI : mono φ := by apply_instance,
+        haveI : mono φ' := by apply_instance,
+        repeat { erw ← Γ_on_mono_comp at h, },
+        --simp,
+        sorry,
+      end },
+    comm := sorry,/-
     comm := begin
       ext Δ A,
       dsimp,
@@ -51,8 +75,8 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
         eq_to_hom_map, assoc, comp_id, functor.map_comp],
       slice_rhs 1 2 { erw P_infty_termwise_is_a_projector, },
       simp only [assoc],
-    end },
-  naturality' := λ X Y f, begin
+    end -/},
+  naturality' := sorry /-λ X Y f, begin
     ext Δ A,
     simp only [N'_functor.map_f, N'_map, Γ_map_app, nat_trans.naturality, functor.comp_map, discrete.nat_trans_app, cofan.mk_ι_app,
       colimit.ι_desc_assoc, Γ_map_2, chain_complex.of_hom_f, colimit.ι_desc, ι_colim_map_assoc, assoc,
@@ -63,7 +87,7 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
     slice_lhs 1 2 { erw P_infty_termwise_is_a_projector, },
     slice_lhs 2 3 { erw ← f.naturality, },
     simpa only [← assoc],
-  end }
+  end -/}
 
 #exit
 @[simps]

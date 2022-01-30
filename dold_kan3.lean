@@ -94,6 +94,10 @@ lemma Γ_on_mono_on_id (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}}
   (hi : Δ = Δ') : Γ_on_mono K i = eq_to_hom (by { congr, assumption, }) :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
+lemma Γ_on_mono_on_eq_to_hom (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (hi : Δ = Δ') :
+  Γ_on_mono K (eq_to_hom hi.symm) = eq_to_hom (by { congr, assumption, }) :=
+Γ_on_mono_on_id K (eq_to_hom hi.symm) hi
+
 lemma Γ_on_mono_on_d0 (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i]
   (hi : is_d0 i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
 begin
