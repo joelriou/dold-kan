@@ -33,11 +33,67 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i] 
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
+  P_infty.f n ≫ X.map i.op = 0 :=
+begin
+  sorry
+end
+
+lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
+  P_infty.f n ≫ X.map f = 0 :=
+P_infty_eq_zero_on X f.unop h₁ h₂
+
 lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
   Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
     X.map (eq_to_hom (by simp only [simplex_category.mk_len]) ≫ i.op ≫ eq_to_hom (by simp only [simplex_category.mk_len])) :=
 begin
-  sorry
+  by_cases Δ = Δ',
+  { unfreezingI { subst h, },
+    simp only [Γ_on_mono_on_id, eq_to_hom_refl, id_comp],
+    nth_rewrite 0 ← comp_id (P_infty.f Δ.len),
+    erw ← X.map_id,
+    congr',
+    have h := is_iso.of_iso (simplex_category.iso_of_bijective (simplex_category.bijective_of_mono_and_eq i rfl)),
+    simp only [simplex_category.iso_of_bijective_hom] at h,
+    rw simplex_category.eq_eq_to_hom_of_is_iso h,
+    simpa only [eq_to_hom_op, eq_to_hom_trans], },
+  by_cases hi : is_d0 i,
+  { erw [Γ_on_mono_on_d0 _ i hi, ← P_infty.comm' Δ.len Δ'.len hi.left.symm],
+    dsimp [alternating_face_map_complex.obj, chain_complex.of],
+    split_ifs with h', swap,
+    { exfalso, exact h' hi.left, },
+    simp only [preadditive.comp_sum],
+    rw finset.sum_eq_single (0 : fin (Δ'.len+2)), rotate,
+    { sorry, },
+    { sorry, },
+    simp only [fin.coe_zero, one_zsmul, pow_zero],
+    congr' 1,
+    erw ← eq_to_hom_map X, swap,
+    { rw h', },
+    erw ← X.map_comp,
+    congr' 1,
+    apply quiver.hom.unop_inj,
+    simp only [unop_comp, eq_to_hom_unop, quiver.hom.unop_op],
+    simp only [simplex_category.hom.comp, quiver.hom.unop_op, simplex_category.hom.to_order_hom_mk,
+  simplex_category.small_category_comp, eq_to_hom_unop, unop_comp],
+    -- eq_to_hom_op,
+    sorry, },
+  { rw [Γ_on_mono_eq_zero _ i h hi, zero_comp],
+    rw P_infty_eq_zero_on',
+    { simp only [simplex_category.mk_len, ne.def],
+      by_contradiction h',
+      exact h (simplex_category.ext _ _ h'.symm), },
+    { by_contradiction h',
+      apply hi,
+      split,
+      { exact h'.left, },
+      { simpa only [unop_comp, eq_to_hom_unop, quiver.hom.unop_op,
+          simplex_category.hom.comp, simplex_category.hom.to_order_hom_mk, simplex_category.small_category_comp,
+          function.comp_app, order_hom.comp_coe, simplex_category.eq_to_hom_eq, fin.mk_zero, fin.val_zero',
+          fin.val_eq_coe, fin.eta] using h'.right, }
+    }, }
 end
 
 @[simps]

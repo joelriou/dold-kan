@@ -373,6 +373,14 @@ begin
   simpa only [h', category.comp_id] using h,
 end
 
+lemma eq_to_hom_eq {Δ Δ' : simplex_category.{u}} (e : Δ = Δ') (k : fin (Δ.len+1)):
+  (simplex_category.hom.to_order_hom (eq_to_hom e)) k = ⟨k.val, by { rw ← e, exact fin.is_lt k, }⟩  :=
+begin
+  subst e,
+  simp only [hom.id, order_hom.id_coe, fin.val_eq_coe, id.def, hom.to_order_hom_mk,
+    eq_to_hom_refl, fin.eta, small_category_id],
+end
+
 end epi_mono
 
 end simplex_category
