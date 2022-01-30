@@ -543,6 +543,7 @@ abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_exten
       simpa only [discrete.nat_trans_app, ι_colim_map, inclusion_Γ_summand],
     end }
 
+@[simps]
 lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
   ≅ to_karoubi _ :=
 { hom := NΓ'_hom,

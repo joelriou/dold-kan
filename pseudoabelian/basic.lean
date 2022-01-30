@@ -340,6 +340,25 @@ def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabeli
   (F : C ⥤ D) : karoubi C ⥤ D :=
   functor_extension F ⋙ (karoubi_is_equivalence D).inverse
 
+@[simp]
+lemma to_karoubi_comp_functor_extension' {D : Type*} [category D] [preadditive D]
+  (F : C ⥤ karoubi D) : to_karoubi C ⋙ karoubi.functor_extension' F = F :=
+begin
+  apply category_theory.functor.ext,
+  { intros X Y f,
+    ext,
+    dsimp,
+    simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl,
+      to_karoubi_obj_p, karoubi.functor_extension'_obj_p, comp_id],
+    erw [F.map_id, karoubi.id_eq, ← (F.map f).comm], },
+  { intro X,
+    ext,
+    { dsimp,
+      erw F.map_id,
+      simp only [id_comp, karoubi.id_eq, comp_id], },
+    { refl, }, },
+end
+
 @[simps]
 def decomp_id_i (P : karoubi C) : P ⟶ P.X := ⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩
 
