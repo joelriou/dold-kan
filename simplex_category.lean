@@ -381,8 +381,6 @@ begin
     eq_to_hom_refl, fin.eta, small_category_id],
 end
 
-lemma test (a b : ℕ) (h : a ≤ b)  (h' : a ≠ b) : a < b := (ne.le_iff_lt h').mp h
-
 lemma factorisation_non_surjective' {n : ℕ} {Δ : simplex_category} (θ : Δ ⟶ mk (n+1))
   (i : fin (n+2)) (hi : ∀ x, θ.to_order_hom x ≠ i) :
   ∃ (θ' : Δ ⟶ (mk n)), θ = θ' ≫ simplex_category.δ i :=

@@ -33,14 +33,25 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+lemma test (a b : ℕ )  (h : a ≤ b) : ∃ c, b=a+c := le_iff_exists_add.mp h
+
 lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i] 
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
   P_infty.f n ≫ X.map i.op = 0 :=
 begin
-  sorry
+  have h₃ := simplex_category.len_le_of_mono (show mono i, by apply_instance),
+  simp only [simplex_category.len_mk] at h₃,
+  cases le_iff_exists_add.mp h₃ with c hc,
+  by_cases hc' : c=1,
+  { unfreezingI { subst hc', },
+  
+    sorry, },
+  { sorry, }
+  
 end
 
-lemma test (a b : ℕ ) (h : a < b) : a +1 <b+1 := nat.succ_lt_succ h
+#exit
+
 lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
   P_infty.f n ≫ X.map f = 0 :=
@@ -49,7 +60,27 @@ P_infty_eq_zero_on X f.unop h₁ h₂
 lemma is_d0_eq {Δ Δ' : simplex_category.{u}} {i : Δ ⟶ Δ'} [mono i] (hi : is_d0 i) (k : fin (Δ.len+1)) :
   simplex_category.hom.to_order_hom i k = ⟨(k : ℕ)+1, by { have h := fin.is_lt k, rw hi.left, exact nat.succ_lt_succ h, }⟩ :=
 begin
-  sorry,
+  have eq : Δ' = [Δ.len+1],
+  { ext,
+    rw [simplex_category.len_mk, hi.left], },
+  unfreezingI { subst eq, },
+  have fact := simplex_category.factorisation_non_surjective' i 0 _, swap,
+  { intro x,
+    apply (fin.pos_iff_ne_zero _).mp,
+    apply lt_of_lt_of_le ((fin.pos_iff_ne_zero _).mpr hi.right),
+    exact (simplex_category.hom.to_order_hom i).monotone (fin.zero_le x), },
+  cases fact with θ' h1,
+  haveI := mono_of_mono_fac h1.symm,
+  have h2 := simplex_category.eq_eq_to_hom_of_is_iso (is_iso.of_iso
+    (simplex_category.iso_of_bijective (simplex_category.bijective_of_mono_and_eq θ'
+    (by simp only [simplex_category.mk_len])))),
+  simp only [simplex_category.iso_of_bijective_hom] at h2,
+  rw h2 at h1,
+  simp only [h1, simplex_category.hom.comp, simplex_category.hom.to_order_hom_mk,
+    simplex_category.small_category_comp, function.comp_app, order_hom.comp_coe,
+    simplex_category.eq_to_hom_eq, simplex_category.δ],
+  erw [fin.succ_above_zero, fin.ext_iff],
+  simp only [fin.val_eq_coe, fin.coe_succ, fin.coe_mk],
 end
 
 lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
