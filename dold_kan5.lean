@@ -33,8 +33,6 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
-lemma test (a b : ℕ )  (h : a ≤ b) : ∃ c, b=a+c := le_iff_exists_add.mp h
-
 lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i] 
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
   P_infty.f n ≫ X.map i.op = 0 :=
@@ -43,14 +41,60 @@ begin
   simp only [simplex_category.len_mk] at h₃,
   cases le_iff_exists_add.mp h₃ with c hc,
   by_cases hc' : c=1,
-  { unfreezingI { subst hc', },
-  
-    sorry, },
-  { sorry, }
-  
+  { rw hc' at hc,
+    unfreezingI { subst hc, },
+    have fac := simplex_category.factorisation_non_surjective i _, swap,
+    { by_contradiction h₄,
+      simpa only [nat.one_ne_zero, add_le_iff_nonpos_right, simplex_category.len_mk, nonpos_iff_eq_zero]
+        using simplex_category.len_le_of_epi (simplex_category.epi_iff_surjective.mpr h₄), },
+    rcases fac with ⟨j,θ',hi⟩,
+    have hj : j ≠ 0,
+    { intro hj,
+      unfold is_d0 at h₂,
+      simp only [true_and, not_not, simplex_category.len_mk, eq_self_iff_true, hi, hj,
+        simplex_category.hom.comp, simplex_category.hom.to_order_hom_mk, simplex_category.small_category_comp,
+        function.comp_app, order_hom.comp_coe] at h₂,
+      haveI : mono θ' := mono_of_mono_fac hi.symm,
+      have h₄ := simplex_category.eq_eq_to_hom_of_is_iso (is_iso.of_iso
+        (simplex_category.iso_of_bijective (simplex_category.bijective_of_mono_and_eq θ'
+        (by simp only [simplex_category.mk_len])))),
+      simp only [simplex_category.iso_of_bijective_hom] at h₄,
+      rw h₄ at h₂,
+      simpa only [simplex_category.eq_to_hom_eq, fin.mk_zero, fin.val_zero',
+        simplex_category.δ, fin.one_eq_zero_iff, simplex_category.hom.to_order_hom_mk,
+        simplex_category.mk_hom, order_embedding.to_order_hom_coe,
+        nat.succ_ne_zero, fin.zero_succ_above, fin.succ_zero_eq_one] using h₂, },
+    rw ← fin.succ_pred j hj at hi,
+    erw [hi, op_comp, X.map_comp, ← assoc, P_infty_termwise,
+      (higher_faces_vanish_P (Δ'.len+1) Δ'.len).vanishing _ le_add_self, zero_comp], },
+  { have hc'' : 2 ≤ c := nat.succ_le_iff.mpr ((ne.symm hc').le_iff_lt.mp
+      (nat.one_le_iff_ne_zero.mpr (by { simpa only [hc, self_eq_add_right, ne.def] using h₁, }))),
+    cases nat.le.dest hc'' with k hk,
+    rw add_comm at hk,
+    rw [← hk, ← add_assoc] at hc,
+    unfreezingI { subst hc, },
+    have fac := simplex_category.factorisation_non_surjective i _, swap,
+    { by_contradiction h₄,
+      have h₅ := simplex_category.len_le_of_epi (simplex_category.epi_iff_surjective.mpr h₄),
+      simp only [simplex_category.len_mk, add_assoc] at h₅,
+      nth_rewrite 1 ← add_zero Δ'.len at h₅,
+      simpa only [add_le_iff_nonpos_right, add_zero, nat.succ_ne_zero, nonpos_iff_eq_zero] using h₅, },
+    rcases fac with ⟨j,θ',hi⟩,
+    by_cases hj : j = 0, swap,
+    { rw ← fin.succ_pred j hj at hi,
+      erw [hi, op_comp, X.map_comp, ← assoc, P_infty_termwise,
+        (higher_faces_vanish_P (Δ'.len+k+2) (Δ'.len+k+1)).vanishing _ le_add_self, zero_comp], },
+    { have fac' := simplex_category.factorisation_non_surjective θ' _, swap,
+      { by_contradiction h₄,
+        have h₅ := simplex_category.len_le_of_epi (simplex_category.epi_iff_surjective.mpr h₄),
+        simp only [simplex_category.len_mk, add_assoc] at h₅,
+        nth_rewrite 1 ← add_zero Δ'.len at h₅,
+        simpa only [add_le_iff_nonpos_right, add_zero, nonpos_iff_eq_zero] using h₅, },
+      rcases fac' with ⟨j',θ'',hi'⟩,
+      erw [hi', hj, assoc, ← simplex_category.δ_comp_δ (fin.zero_le j'), ← assoc] at hi,
+      erw [hi, op_comp, X.map_comp, ← assoc,
+        (higher_faces_vanish_P (Δ'.len+k+2) (Δ'.len+k+1)).vanishing _ le_add_self, zero_comp], }, }  
 end
-
-#exit
 
 lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
