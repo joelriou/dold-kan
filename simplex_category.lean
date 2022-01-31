@@ -381,6 +381,61 @@ begin
     eq_to_hom_refl, fin.eta, small_category_id],
 end
 
+lemma test (a b : ℕ) (h : a ≤ b)  (h' : a ≠ b) : a < b := (ne.le_iff_lt h').mp h
+
+lemma factorisation_non_surjective' {n : ℕ} {Δ : simplex_category} (θ : Δ ⟶ mk (n+1))
+  (i : fin (n+2)) (hi : ∀ x, θ.to_order_hom x ≠ i) :
+  ∃ (θ' : Δ ⟶ (mk n)), θ = θ' ≫ simplex_category.δ i :=
+begin
+  by_cases i < fin.last (n+1),
+  { use θ ≫ simplex_category.σ (fin.cast_pred i),
+    ext1, ext1, ext1 x,
+    simp only [hom.to_order_hom_mk, function.comp_app,
+      order_hom.comp_coe, hom.comp, small_category_comp],
+    by_cases h' : θ.to_order_hom x ≤ i,
+    { simp only [simplex_category.σ, mk_hom, hom.to_order_hom_mk,
+        order_hom.coe_fun_mk],
+      erw fin.pred_above_below (fin.cast_pred i) (θ.to_order_hom x)
+        (by simpa [fin.cast_succ_cast_pred h] using h'),
+      erw fin.succ_above_below i, swap,
+      { simp only [fin.lt_iff_coe_lt_coe, fin.coe_cast_succ],
+        exact lt_of_le_of_lt (fin.coe_cast_pred_le_self _)
+          (fin.lt_iff_coe_lt_coe.mp ((ne.le_iff_lt (hi x)).mp h')), },
+      rw fin.cast_succ_cast_pred,
+      apply lt_of_le_of_lt h' h, },
+    { simp only [not_le] at h',
+      simp only [simplex_category.σ, mk_hom, hom.to_order_hom_mk,
+        order_hom.coe_fun_mk],
+      erw fin.pred_above_above (fin.cast_pred i) (θ.to_order_hom x)
+        (by simpa only [fin.cast_succ_cast_pred h] using h'),
+      erw fin.succ_above_above i, swap,
+      { rw fin.le_iff_coe_le_coe,
+        simp only [fin.coe_cast_succ, fin.coe_pred],
+        exact nat.le_pred_of_lt (fin.lt_iff_coe_lt_coe.mp h'), },
+      rw fin.succ_pred, }, },
+  { have h' := le_antisymm (fin.le_last i) (not_lt.mp h),
+    subst h',
+    use θ ≫ simplex_category.σ (fin.last _),
+    ext1, ext1, ext1 x,
+    simp only [hom.to_order_hom_mk, function.comp_app,
+      order_hom.comp_coe, hom.comp, small_category_comp,
+      σ, δ, mk_hom, order_hom.coe_fun_mk,
+      order_embedding.to_order_hom_coe,
+      fin.pred_above_last, fin.succ_above_last],
+    rw [fin.cast_succ_cast_pred],
+    exact (ne.le_iff_lt (hi x)).mp (fin.le_last _), },
+end
+
+lemma factorisation_non_surjective {n : ℕ} {Δ : simplex_category} (θ : Δ ⟶ mk (n+1))
+  (hθ : ¬function.surjective θ.to_order_hom) :
+  ∃ (i : fin(n+2)) (θ' : Δ ⟶ (mk n)), θ = θ' ≫ simplex_category.δ i :=
+begin
+  cases not_forall.mp hθ with i hi,
+  rw not_exists at hi,
+  use i,
+  exact factorisation_non_surjective' θ i hi,
+end
+
 end epi_mono
 
 end simplex_category

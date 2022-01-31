@@ -40,10 +40,17 @@ begin
   sorry
 end
 
+lemma test (a b : ℕ ) (h : a < b) : a +1 <b+1 := nat.succ_lt_succ h
 lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
   P_infty.f n ≫ X.map f = 0 :=
 P_infty_eq_zero_on X f.unop h₁ h₂
+
+lemma is_d0_eq {Δ Δ' : simplex_category.{u}} {i : Δ ⟶ Δ'} [mono i] (hi : is_d0 i) (k : fin (Δ.len+1)) :
+  simplex_category.hom.to_order_hom i k = ⟨(k : ℕ)+1, by { have h := fin.is_lt k, rw hi.left, exact nat.succ_lt_succ h, }⟩ :=
+begin
+  sorry,
+end
 
 lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
   Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
@@ -66,8 +73,25 @@ begin
     { exfalso, exact h' hi.left, },
     simp only [preadditive.comp_sum],
     rw finset.sum_eq_single (0 : fin (Δ'.len+2)), rotate,
-    { sorry, },
-    { sorry, },
+    { intros b hb hb',
+      simp only [preadditive.comp_zsmul],
+      erw ← eq_to_hom_map X, swap,
+      { rw h', },
+      erw ← X.map_comp,
+      rw [P_infty_eq_zero_on', zsmul_zero],
+      { rw h',
+        simp only [nat.one_ne_zero, simplex_category.mk_len, self_eq_add_right, ne.def, not_false_iff], },
+      { by_contradiction,
+        have h' := h.right,
+        simp only [simplex_category.hom.comp, quiver.hom.unop_op, simplex_category.hom.to_order_hom_mk,
+          simplex_category.small_category_comp, function.comp_app, order_hom.comp_coe, eq_to_hom_unop, unop_comp,
+          simplex_category.eq_to_hom_eq, fin.ext_iff, fin.coe_zero, fin.val_eq_coe, fin.coe_mk, fin.ne_iff_vne, ne.def,
+          simplex_category.δ, simplex_category.mk_hom] at h',
+        erw [(fin.succ_above_eq_zero_iff hb').mpr rfl, fin.coe_zero] at h',
+        exact h' rfl, }, },
+    { intro h,
+      exfalso,
+      simpa only [finset.mem_univ, not_true] using h, },
     simp only [fin.coe_zero, one_zsmul, pow_zero],
     congr' 1,
     erw ← eq_to_hom_map X, swap,
@@ -76,10 +100,11 @@ begin
     congr' 1,
     apply quiver.hom.unop_inj,
     simp only [unop_comp, eq_to_hom_unop, quiver.hom.unop_op],
-    simp only [simplex_category.hom.comp, quiver.hom.unop_op, simplex_category.hom.to_order_hom_mk,
-  simplex_category.small_category_comp, eq_to_hom_unop, unop_comp],
-    -- eq_to_hom_op,
-    sorry, },
+    ext1, ext1, ext1 k,
+    simp only [simplex_category.hom.comp, simplex_category.hom.to_order_hom_mk, simplex_category.small_category_comp,
+      function.comp_app, order_hom.comp_coe, simplex_category.eq_to_hom_eq],
+    erw fin.succ_above_zero,
+    simp only [fin.ext_iff, fin.val_eq_coe, fin.coe_mk, fin.coe_succ, fin.eta, is_d0_eq hi k], },
   { rw [Γ_on_mono_eq_zero _ i h hi, zero_comp],
     rw P_infty_eq_zero_on',
     { simp only [simplex_category.mk_len, ne.def],
