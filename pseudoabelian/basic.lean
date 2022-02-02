@@ -270,4 +270,3 @@ end karoubi
 end pseudoabelian
 
 end category_theory
-

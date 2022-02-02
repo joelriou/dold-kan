@@ -68,7 +68,7 @@ def bicone : limits.bicone F :=
 
 end biproducts
 
-instance [has_finite_biproducts C] : has_finite_biproducts (karoubi C) :=
+instance : has_finite_biproducts (karoubi C) :=
 { has_biproducts_of_shape := λ J hJ1 hJ2,
   { has_biproduct := λ F, begin
       letI := hJ2,
