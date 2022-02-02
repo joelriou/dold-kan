@@ -102,10 +102,8 @@ def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi
     simpa only [hom_ext, id_eq] using P.idempotence,
   end, }
 
-end karoubi_karoubi
-
 @[simps]
-def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
+def equivalence : karoubi C ≌ karoubi (karoubi C) :=
 { functor := to_karoubi (karoubi C),
   inverse := karoubi_karoubi.inverse C,
   unit_iso := karoubi_karoubi.unit_iso C,
@@ -116,12 +114,13 @@ def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
     simp only [comp, id_eq, subtype.coe_mk, P_idempotence],
   end, }
 
-instance : functor.additive (karoubi_karoubi_equivalence C).functor :=
+instance additive_functor : functor.additive (equivalence C).functor :=
   by { dsimp, apply_instance, }
 
-instance : functor.additive (karoubi_karoubi_equivalence C).inverse :=
+instance additive_inverse : functor.additive (equivalence C).inverse :=
   by { dsimp, apply_instance, }
 
+end karoubi_karoubi
 
 end pseudoabelian
 

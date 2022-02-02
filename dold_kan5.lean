@@ -197,7 +197,7 @@ begin
 end
 
 @[simps]
-def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _)
+def ΓN'_trans : N' ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _)
   ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
@@ -235,7 +235,7 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
     ext Δ A,
     simp only [N'_functor.map_f, N'_map, Γ_map_app, nat_trans.naturality, functor.comp_map, discrete.nat_trans_app, cofan.mk_ι_app,
       colimit.ι_desc_assoc, Γ_map_2, chain_complex.of_hom_f, colimit.ι_desc, ι_colim_map_assoc, assoc,
-      alternating_face_map_complex.obj_d, karoubi.functor_extension_map_f, alternating_face_map_complex_map,
+      alternating_face_map_complex.obj_d, functor_extension_map_f, alternating_face_map_complex_map,
       alternating_face_map_complex.map, functor.map_comp, karoubi.comp, nat_trans.comp_app, subtype.val_eq_coe,
       to_karoubi_map_f],
     slice_lhs 2 3 { erw P_infty_termwise_naturality, },
@@ -245,11 +245,11 @@ def ΓN'_trans : N' ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ 
   end }
 
 @[simps]
-def ΓN_trans : N ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _)
+def ΓN_trans : N ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _)
   ⟶ 𝟭 _ :=
-((karoubi.to_karoubi_hom_equiv
-    (N ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _)) (𝟭 _)).inv_fun)
-    ((eq_to_hom (by { rw ← karoubi.to_karoubi_comp_functor_extension' N', refl, }))
+((to_karoubi_hom_equiv
+    (N ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _)) (𝟭 _)).inv_fun)
+    ((eq_to_hom (by { rw ← to_karoubi_comp_functor_extension' N', refl, }))
     ≫ ΓN'_trans ≫ eq_to_hom (functor.comp_id _).symm)
 
 lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤_ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
@@ -257,7 +257,7 @@ begin
   ext P n,
   simp only [NΓ_inv_app_f_f, Γ_map_app, functor.comp_map, homological_complex.comp_f,
     Γ_map_2, N_obj_p_f, nat_trans.hcomp_app, ΓN_trans_app_f_app, nat_trans.id_app,
-    N_map_f_f, assoc, karoubi.id_eq, karoubi.functor_extension_map_f, karoubi.comp,
+    N_map_f_f, assoc, karoubi.id_eq, functor_extension_map_f, karoubi.comp,
     nat_trans.comp_app],
   have eq₁ : P_infty.f n ≫ P_infty.f n = P_infty.f n := P_infty_termwise_is_a_projector n,
   have eq₂ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
@@ -311,13 +311,13 @@ begin
   { apply (N_reflects_iso C).reflects, },
   have h := congr_app identity_N P,
   simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app,
-    (karoubi.functor_extension Γ ⋙ N).map_id, comp_id] at h,
+    (functor_extension Γ ⋙ N).map_id, comp_id] at h,
   erw [id_comp, hom_comp_eq_id] at h,
   rw h,
   apply_instance,
 end
 
-def ΓN : N ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ≅ 𝟭 _ := as_iso (ΓN_trans)
+def ΓN : N ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ≅ 𝟭 _ := as_iso (ΓN_trans)
 
 @[simp]
 lemma ΓN_hom : (ΓN.hom : (_ : karoubi (simplicial_object C) ⥤ _ ) ⟶ _ ) = ΓN_trans := as_iso_hom _
@@ -325,13 +325,13 @@ lemma ΓN_hom : (ΓN.hom : (_ : karoubi (simplicial_object C) ⥤ _ ) ⟶ _ ) = 
 @[simps]
 def NΓ_equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ) :=
 { functor := N,
-  inverse := karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ),
+  inverse := functor_extension (Γ : chain_complex C ℕ ⥤ _ ),
   unit_iso := ΓN.symm,
   counit_iso := NΓ,
   functor_unit_iso_comp' := λ P, begin
     have h := congr_app identity_N P,
     simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app,
-      (karoubi.functor_extension Γ ⋙ N).map_id, comp_id] at h,
+      (functor_extension Γ ⋙ N).map_id, comp_id] at h,
     erw [id_comp, ← ΓN_hom] at h,
     rw [← is_iso.inv_id],
     simp only [← h, is_iso.inv_comp],

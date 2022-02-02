@@ -283,7 +283,7 @@ begin
   { refl, }
 end
 
-abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
+abbreviation NΓ'_hom : to_karoubi _ ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
   ⟶ to_karoubi _ :=
   { app := λ K,
     { f :=
@@ -481,7 +481,7 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
       ext n A,
       simp only [Γ_map_app, functor.comp_map, homological_complex.comp_f,
         cofan.mk_ι_app, colimit.ι_desc_assoc, Γ_map_2, N_map_f_f, dif_neg,
-        assoc, karoubi.functor_extension_map_f, karoubi.comp, to_karoubi_map_f],
+        assoc, functor_extension_map_f, karoubi.comp, to_karoubi_map_f],
       split_ifs,
       { have h' := A_eq h,
         subst h',
@@ -495,7 +495,7 @@ abbreviation NΓ'_hom : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_c
         simp only [zero_comp], }
     end }
 
-abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
+abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
  :=
   { app := λ K,
     { f :=
@@ -538,13 +538,13 @@ abbreviation NΓ'_inv :  to_karoubi _ ⟶ to_karoubi _ ⋙ karoubi.functor_exten
     naturality' := λ K L f, begin
       ext n,
       simp only [Γ_map_app, functor.comp_map, homological_complex.comp_f, Γ_map_2,
-        N_map_f_f, karoubi.functor_extension_map_f, karoubi.comp, to_karoubi_map_f],
+        N_map_f_f, functor_extension_map_f, karoubi.comp, to_karoubi_map_f],
       erw [← assoc, P_infty_eq_id_on_Γ_summand],
       simpa only [discrete.nat_trans_app, ι_colim_map, inclusion_Γ_summand],
     end }
 
 @[simps]
-lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
+lemma NΓ' : to_karoubi _ ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N
   ≅ to_karoubi _ :=
 { hom := NΓ'_hom,
   inv := NΓ'_inv,
@@ -569,8 +569,8 @@ lemma NΓ' : to_karoubi _ ⋙ karoubi.functor_extension (Γ : chain_complex C �
   end }
 
 @[simps]
-theorem NΓ : karoubi.functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N ≅ 𝟭 _ :=
-(karoubi.to_karoubi_iso_equiv _ _).inv_fun (NΓ'.trans (eq_to_iso (functor.comp_id _).symm))
+theorem NΓ : functor_extension (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N ≅ 𝟭 _ :=
+(to_karoubi_iso_equiv _ _).inv_fun (NΓ'.trans (eq_to_iso (functor.comp_id _).symm))
 
 end dold_kan
 

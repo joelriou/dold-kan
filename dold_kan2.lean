@@ -10,6 +10,7 @@ import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.alternating_face_map_complex
+import category_theory.pseudoabelian.nat_trans
 import category_theory.pseudoabelian.karoubi_karoubi
 import category_theory.pseudoabelian.simplicial_object
 import category_theory.pseudoabelian.homological_complex
@@ -204,7 +205,7 @@ begin
     exact (congr_obj (to_karoubi_comp_karoubi_simplifical_object_functor C) X.X).symm,
   end,
   have h₂₃ : (P₃.f n).f = P₂.f n := karoubi.hom_ext.mp (map_P_infty_termwise (to_karoubi C) X.X n),
-  have h₁₄ := (karoubi.nat_trans_eq
+  have h₁₄ := (pseudoabelian.nat_trans_eq
     ((𝟙 (karoubi_simplicial_object_functor C)) ◫ nat_trans_termwise_P_infty (karoubi C) n) X),
   dsimp at h₁₄,
   simp only [nat_trans_termwise_P_infty_app] at h₁₄,
@@ -454,7 +455,7 @@ end
 variables {C}
 @[simps]
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
-  karoubi.functor_extension' N'
+  pseudoabelian.functor_extension' N'
 
 lemma karoubi_alternating_face_map_complex_d (X : karoubi (simplicial_object C)) (n : ℕ) :
   ((((alternating_face_map_complex (karoubi C)).obj
@@ -492,7 +493,7 @@ begin
   let F1 := karoubi_simplicial_object_functor C,
   let F2 : simplicial_object (karoubi C) ⥤ _ := N',
   let F3 := (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor,
-  let F4 := functor.map_homological_complex (karoubi_karoubi_equivalence C).inverse (complex_shape.down ℕ),
+  let F4 := functor.map_homological_complex (karoubi_karoubi.equivalence C).inverse (complex_shape.down ℕ),
   haveI : reflects_isomorphisms F2 := N'_reflects_iso _,
   haveI : is_iso ((F1 ⋙ F2 ⋙ F3 ⋙ F4).map f), swap,
   { exact is_iso_of_reflects_iso f (F1 ⋙ F2 ⋙ F3 ⋙ F4), },
