@@ -7,6 +7,7 @@ import category_theory.preadditive.additive_functor
 import category_theory.additive.basic
 import category_theory.limits.shapes.biproducts
 import category_theory.equivalence
+import category_theory.functor_ext
 
 /-!
 # Pseudoabelian categories
@@ -258,7 +259,7 @@ theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
     let ι : Q ⟶ P.X := ⟨P.X.p - P.p.1,
       by simp only [sub_comp, comp_sub, id_comp, p_comp, comp_p,
         P.X.idempotence, h, sub_zero, sub_self],⟩,
-    refine { exists_limit :=
+    exact { exists_limit :=
       ⟨{ cone := limits.kernel_fork.of_ι ι _, is_limit := _ }⟩ },
     { simp only [hom_eq_zero_iff, comp, sub_comp, p_comp, h, sub_self], },
     { refine is_limit.of_ι _ _ _ _ _,
@@ -335,7 +336,25 @@ def functor_extension' {D : Type*} [category D] [preadditive D]
     simpa only [F.map_comp, hom_ext] using h,
   end⟩, }
 
-@[simp]
+lemma functor_extension_eq {D : Type*} [category D] [preadditive D]
+  (F : C ⥤ D) : functor_extension F = functor_extension' (F ⋙ to_karoubi D) :=
+begin
+  apply functor.ext,
+  { intros P Q f,
+    ext,
+    simpa only [functor_extension'_obj_p, functor_extension'_map_f,
+      functor_extension_map_f, functor.comp_map, comp, id_eq,
+      functor_extension_obj_p, eq_to_hom_refl, to_karoubi_map_f,
+      F.map_comp] using congr_map F f.comm, },
+  { intro P,
+    ext,
+    { simp only [functor_extension'_obj_p, functor.comp_map,
+        functor_extension_obj_p, id_comp, eq_to_hom_refl, comp_id,
+        to_karoubi_map_f], },
+    refl, },
+end
+
+@[simps]
 def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabelian D]
   (F : C ⥤ D) : karoubi C ⥤ D :=
   functor_extension F ⋙ (karoubi_is_equivalence D).inverse
@@ -344,7 +363,7 @@ def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabeli
 lemma to_karoubi_comp_functor_extension' {D : Type*} [category D] [preadditive D]
   (F : C ⥤ karoubi D) : to_karoubi C ⋙ karoubi.functor_extension' F = F :=
 begin
-  apply category_theory.functor.ext,
+  apply functor.ext,
   { intros X Y f,
     ext,
     dsimp,
@@ -358,6 +377,11 @@ begin
       simp only [id_comp, karoubi.id_eq, comp_id], },
     { refl, }, },
 end
+
+@[simp]
+lemma to_karoubi_comp_functor_extension {D : Type*} [category D] [preadditive D]
+  (F : C ⥤ D) : to_karoubi C ⋙ functor_extension F = F ⋙ to_karoubi D :=
+by rw [functor_extension_eq, to_karoubi_comp_functor_extension']
 
 @[simps]
 def decomp_id_i (P : karoubi C) : P ⟶ P.X := ⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩
@@ -394,7 +418,7 @@ by { ext, simp only [comp, decomp_id_i_f, karoubi.comp_p, karoubi.p_comp], }
 def decomp_id_p_naturality {P Q : karoubi C} (f : P ⟶ Q) : decomp_id_p P ≫ f =
   (⟨f.f, by erw [comp_id, id_comp]⟩ : (P.X : karoubi C) ⟶ Q.X) ≫ decomp_id_p Q :=
 by { ext, simp only [comp, decomp_id_p_f, karoubi.comp_p, karoubi.p_comp], }
-
+/-
 @[simps]
 def functor_extension_hom_equiv {D : Type*} [category D] [preadditive D]
   (F G : C ⥤ D) : (F ⟶ G) ≃ (functor_extension F ⟶ functor_extension G) :=
@@ -478,6 +502,7 @@ def functor_extension_iso_equiv {D : Type*} [category D] [preadditive D]
     inv_hom_id' := by rw [← functor_extension_hom_inv_fun_comp, ψ.inv_hom_id, functor_extension_hom_inv_fun_id], },
   left_inv := λ φ, by { ext1, exact (functor_extension_hom_equiv F G).left_inv φ.hom, },
   right_inv := λ ψ, by { ext1, exact (functor_extension_hom_equiv F G).right_inv ψ.hom, }, }
+-/
 
 @[simps]
 def to_karoubi_hom_equiv {D : Type*} [category D]
@@ -546,112 +571,6 @@ def to_karoubi_iso_equiv {D : Type*} [category D]
     equiv.inv_fun_as_coe], } }
 
 end karoubi
-
-namespace karoubi_karoubi
-
-@[simps]
-def inverse : karoubi (karoubi C) ⥤ karoubi C :=
-  { obj := λ P, ⟨P.X.X, P.p.1,
-      by simpa only [hom_ext] using P.idempotence⟩,
-    map := λ P Q f, ⟨f.1.1,
-      by simpa only [hom_ext] using f.2⟩, }
-
-instance : functor.additive (inverse C) := { }
-
-@[simps]
-def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
-{ hom :=
-  { app := λ P, eq_to_hom (by { cases P, refl, }),
-    naturality' := λ P Q f,
-      by { cases P, cases Q, cases f, dsimp [inverse],
-        simp only [comp_id, id_comp, hom_ext], }, },
-  inv :=
-  { app := λ P, eq_to_hom (by { cases P, refl, }),
-    naturality' := λ P Q f, begin
-      cases P,
-      cases Q,
-      dsimp [inverse],
-      simp only [comp_id, id_comp, hom_ext],
-    end },
-  hom_inv_id' := begin
-    ext P,
-    cases P,
-    dsimp,
-    simpa only [id_eq, hom_ext] using P_idempotence,
-  end,
-  inv_hom_id' := begin
-    ext P,
-    cases P,
-    dsimp,
-    simpa only [id_eq, hom_ext] using P_idempotence,
-  end, }
-
-@[simps]
-def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi C)) :=
-{ hom := 
-  { app := λ P, ⟨⟨P.p.1, begin
-    have h := P.idempotence,
-    simp only [hom_ext, comp] at h,
-    erw [← assoc, h, comp_p],
-    end⟩,
-    begin
-      have h := P.idempotence,
-      simp only [hom_ext, comp] at h ⊢,
-      erw [h, h],
-    end⟩,
-    naturality' := λ P Q f, begin
-      have h := comp_p f,
-      have h' := p_comp f,
-      simp only [hom_ext] at h h' ⊢,
-      erw [h, h'],
-    end, },
-  inv :=
-  { app := λ P, ⟨⟨P.p.1, begin
-      have h := P.idempotence,
-      simp only [hom_ext, comp] at h,
-      erw [h, p_comp],
-    end⟩,
-    begin
-      have h := P.idempotence,
-      simp only [hom_ext, comp] at h ⊢,
-      erw [h, h],
-    end⟩,
-    naturality' := λ P Q f, begin
-      have h := comp_p f,
-      have h' := p_comp f,
-      simp only [hom_ext] at h h' ⊢,
-      erw [h, h'],
-    end, },
-  hom_inv_id' := begin
-    ext P,
-    dsimp,
-    simpa only [hom_ext, id_eq] using P.idempotence,
-  end,
-  inv_hom_id' := begin
-    ext P,
-    dsimp,
-    simpa only [hom_ext, id_eq] using P.idempotence,
-  end, }
-
-end karoubi_karoubi
-
-@[simps]
-def karoubi_karoubi_equivalence : karoubi C ≌ karoubi (karoubi C) :=
-{ functor := to_karoubi (karoubi C),
-  inverse := karoubi_karoubi.inverse C,
-  unit_iso := karoubi_karoubi.unit_iso C,
-  counit_iso := karoubi_karoubi.counit_iso C,
-  functor_unit_iso_comp' := λ P, begin
-    cases P,
-    dsimp [karoubi_karoubi.unit_iso, karoubi_karoubi.counit_iso, to_karoubi],
-    simp only [comp, id_eq, subtype.coe_mk, P_idempotence],
-  end, }
-
-instance : functor.additive (karoubi_karoubi_equivalence C).functor :=
-  by { dsimp, apply_instance, }
-
-instance : functor.additive (karoubi_karoubi_equivalence C).inverse :=
-  by { dsimp, apply_instance, }
 
 end pseudoabelian
 

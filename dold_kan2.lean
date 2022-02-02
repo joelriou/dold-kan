@@ -10,6 +10,7 @@ import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.alternating_face_map_complex
+import category_theory.pseudoabelian.karoubi_karoubi
 import category_theory.pseudoabelian.simplicial_object
 import category_theory.pseudoabelian.homological_complex
 
