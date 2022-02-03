@@ -24,15 +24,19 @@ open_locale big_operators
 
 namespace category_theory
 
-namespace pseudoabelian
-
 variables (C : Type*) [category C] [preadditive C]
+
+namespace pseudoabelian
 
 @[nolint has_inhabited_instance]
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
 
+end pseudoabelian
+
 class is_pseudoabelian : Prop :=
-(idempotents_have_kernels : Π (P : karoubi C), has_kernel P.p)
+(idempotents_have_kernels : Π (P : pseudoabelian.karoubi C), has_kernel P.p)
+
+namespace pseudoabelian
 
 namespace karoubi
 

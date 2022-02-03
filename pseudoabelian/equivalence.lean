@@ -145,24 +145,24 @@ begin
     apply limits.has_kernel_comp_mono, },
 end
 
-lemma equivalence_preserves_pseudoabelian (e : C ≌ D) (hC : is_pseudoabelian C) :
+lemma equivalence_preserves_is_pseudoabelian (e : C ≌ D) (hC : is_pseudoabelian C) :
   is_pseudoabelian D :=
 ⟨λ P, begin
   rw has_kernel_iff_of_equivalence e.symm P.p,
   simpa only using is_pseudoabelian.idempotents_have_kernels ((functor_extension e.inverse).obj P),
 end⟩
 
-lemma pseudoabelian_iff_of_equivalence (e : C ≌ D) :
+lemma is_pseudoabelian_iff_of_equivalence (e : C ≌ D) :
   is_pseudoabelian C ↔ is_pseudoabelian D :=
 begin
   split,
-  { exact equivalence_preserves_pseudoabelian e, },
-  { exact equivalence_preserves_pseudoabelian e.symm, },
+  { exact equivalence_preserves_is_pseudoabelian e, },
+  { exact equivalence_preserves_is_pseudoabelian e.symm, },
 end
 
-lemma pseudoabelian_iff_of_is_equivalence (F : C ⥤ D) [is_equivalence F] :
+lemma is_pseudoabelian_iff_of_is_equivalence (F : C ⥤ D) [is_equivalence F] :
   is_pseudoabelian C ↔ is_pseudoabelian D :=
-pseudoabelian_iff_of_equivalence (functor.as_equivalence F)
+is_pseudoabelian_iff_of_equivalence (functor.as_equivalence F)
 
 end pseudoabelian
 
