@@ -28,11 +28,16 @@ variables (C : Type*) [category C] [preadditive C]
 
 namespace pseudoabelian
 
+/-- When an object `X` decomposes as `X ≅ P ⨿ Q`, one may consider `P` as a direct factor of `X` and up to unique isomorphism,
+it is determined by the obvious idempotent `X ⟶ P ⟶ X` which is the projector on `P` with kernel `Q`. More generally,
+one may define a formal director of an object `X : C` : it consists of an idempotent `p : X ⟶ X` which is thought as the 
+"formal image" of `p`. The type `karoubi C` of these objects shall have a structure of category. -/
 @[nolint has_inhabited_instance]
 structure karoubi := (X : C) (p : X ⟶ X) (idempotence : p ≫ p = p)
 
 end pseudoabelian
 
+/-- A preadditive category is pseudoabelian iff all idempotent endomorphisms have a kernel. -/
 class is_pseudoabelian : Prop :=
 (idempotents_have_kernels : Π (P : pseudoabelian.karoubi C), has_kernel P.p)
 
@@ -54,6 +59,7 @@ begin
     heq_iff_eq, comp_id] using h_p,
 end
 
+/-- When `p : X ⟶ X` is idempotent, then `𝟙 X - p` is also idempotent. -/
 @[simps]
 def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
 { X := P.X,
@@ -79,7 +85,7 @@ by rw [f.2, assoc, assoc, Q.idempotence]
 lemma p_comm {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 ≫ Q.p :=
 by rw [p_comp, comp_p]
 
-def comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
+lemma comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
   f'.1 ≫ g'.1 = P.p ≫ (f'.1 ≫ g'.1) ≫ R.p :=
 by rw [assoc, comp_p, ← assoc, p_comp]
 
@@ -102,6 +108,8 @@ lemma comp {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
 @[simp]
 lemma id_eq {P : karoubi C} : 𝟙 P = ⟨P.p, by repeat { rw P.idempotence, }⟩ := by refl
 
+/-- It is possible to coerce an object of `C` into an object of `karoubi C`. See also the functor
+`to_karoubi`. -/
 instance coe : has_coe_t C (karoubi C) := ⟨λ X, ⟨X, 𝟙 X, by rw comp_id⟩⟩
 
 @[simp]
@@ -111,12 +119,14 @@ lemma coe_X (X : C) : (X : karoubi C).X = X := by refl
 lemma coe_p (X : C) : (X : karoubi C).p = 𝟙 X := by refl
 
 @[simp]
-def eq_to_hom_f {P Q : karoubi C} (h : P = Q) :
+lemma eq_to_hom_f {P Q : karoubi C} (h : P = Q) :
   karoubi.hom.f (eq_to_hom h) = P.p ≫ eq_to_hom (congr_arg karoubi.X h) :=
 by { subst h, simp only [eq_to_hom_refl, karoubi.id_eq, comp_id], }
 
 end karoubi
 
+/-- The obvious fully faithful functor `to_karoubi` sends an object `X : C` to the obvious 
+formal direct factor of `X` given by `𝟙 X`. -/
 @[simps]
 def to_karoubi : C ⥤ karoubi C := {
   obj := λ X, ⟨X, 𝟙 X, by rw comp_id⟩,
@@ -156,7 +166,8 @@ def inclusion_hom (P Q : karoubi C) : add_monoid_hom (P ⟶ Q) (P.X ⟶ Q.X) :=
   map_zero' := rfl,
   map_add'  := λ f' g', rfl }
 
-def sum_hom {P Q : karoubi C} {α : Type*} (s : finset α) (f : α → (P ⟶ Q)) :
+@[simp]
+lemma sum_hom {P Q : karoubi C} {α : Type*} (s : finset α) (f : α → (P ⟶ Q)) :
   (∑ x in s, f x).1 = ∑ x in s, (f x).1  := 
 add_monoid_hom.map_sum (inclusion_hom P Q) f s
 
@@ -242,30 +253,33 @@ namespace karoubi
 
 variables {C}
 
+/-- The split mono which appears in the factorisation `decomp_id P`. -/
 @[simps]
 def decomp_id_i (P : karoubi C) : P ⟶ P.X := ⟨P.p, by erw [coe_p, comp_id, P.idempotence]⟩
 
+/-- The split epi which appears in the factorisation `decomp_id P`. -/
 @[simps]
 def decomp_id_p (P : karoubi C) : (P.X : karoubi C) ⟶ P := ⟨P.p, by erw [coe_p, id_comp, P.idempotence]⟩
 
+/-- The formal direct factor of `P.X` given by the idempotent `P.p` in the category `C` is actually
+a direct factor in the category `karoubi C`. -/
 lemma decomp_id (P : karoubi C) :
   𝟙 P = (decomp_id_i P) ≫ (decomp_id_p P) :=
 by { ext, simp only [comp, id_eq, P.idempotence, decomp_id_i, decomp_id_p], }
-
 
 lemma decomp_p (P : karoubi C) :
   (to_karoubi C).map P.p = (decomp_id_p P) ≫ (decomp_id_i P) :=
 by { ext, simp only [comp, decomp_id_p_f, decomp_id_i_f, P.idempotence, to_karoubi_map_f], }
 
-def decomp_id_i_to_karoubi (X : C) : decomp_id_i ((to_karoubi C).obj X) = 𝟙 _ := by { ext, refl, }
+lemma decomp_id_i_to_karoubi (X : C) : decomp_id_i ((to_karoubi C).obj X) = 𝟙 _ := by { ext, refl, }
 
-def decomp_id_p_to_karoubi (X : C) : decomp_id_p ((to_karoubi C).obj X) = 𝟙 _ := by { ext, refl, }
+lemma decomp_id_p_to_karoubi (X : C) : decomp_id_p ((to_karoubi C).obj X) = 𝟙 _ := by { ext, refl, }
 
-def decomp_id_i_naturality {P Q : karoubi C} (f : P ⟶ Q) : f ≫ decomp_id_i _ =
+lemma decomp_id_i_naturality {P Q : karoubi C} (f : P ⟶ Q) : f ≫ decomp_id_i _ =
   decomp_id_i _ ≫ ⟨f.f, by erw [comp_id, id_comp]⟩ :=
 by { ext, simp only [comp, decomp_id_i_f, karoubi.comp_p, karoubi.p_comp], }
 
-def decomp_id_p_naturality {P Q : karoubi C} (f : P ⟶ Q) : decomp_id_p P ≫ f =
+lemma decomp_id_p_naturality {P Q : karoubi C} (f : P ⟶ Q) : decomp_id_p P ≫ f =
   (⟨f.f, by erw [comp_id, id_comp]⟩ : (P.X : karoubi C) ⟶ Q.X) ≫ decomp_id_p Q :=
 by { ext, simp only [comp, decomp_id_p_f, karoubi.comp_p, karoubi.p_comp], }
 
