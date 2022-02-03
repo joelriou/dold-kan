@@ -171,7 +171,6 @@ instance : preadditive (karoubi C) :=
 
 instance : functor.additive (to_karoubi C) := { }
 
-
 open karoubi
 
 theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
@@ -208,29 +207,30 @@ begin
   haveI : has_kernel Q.p := kernels Q,
   have h := kernel.condition Q.p,
   simp only [idempotent_of_id_sub_idempotent_p, comp_sub, sub_eq_zero] at h,
-  erw comp_id at h,  
+  erw comp_id at h,
   use kernel Q.p,
   apply nonempty.intro,
-  refine
-    { hom := ⟨kernel.ι Q.p, _⟩,
-      inv := ⟨kernel.lift Q.p P.p _, _⟩,
-      inv_hom_id' := _,
-      hom_inv_id' := _, },
-  /- hom is well defined -/
-  { erw [← h, to_karoubi_obj_p, id_comp], },
-  /- inv is well defined -/
-  { simp only [comp_sub, idempotent_of_id_sub_idempotent_p, sub_eq_zero,
-        P.idempotence], erw comp_id, },
-  { slice_rhs 2 3 { erw [comp_id], },
-    ext,
-    simp only [assoc, kernel.lift_ι, P.idempotence], },
-  /- inv_hom_id' -/
-  { ext,
-    simp only [equalizer_as_kernel, assoc, kernel.lift_ι,
-      to_karoubi_obj_p, comp, assoc, id_eq],
-    erw [← h, id_comp], },
-  /- hom_inv_id' -/
-  { simp only [comp, id_eq, kernel.lift_ι], },
+  exact
+    { hom :=
+      { f := kernel.ι Q.p,
+        comm := by erw [← h, to_karoubi_obj_p, id_comp] },
+      inv :=
+      { f := kernel.lift Q.p P.p begin
+          simp only [comp_sub, idempotent_of_id_sub_idempotent_p, sub_eq_zero,
+          P.idempotence], erw comp_id,
+        end,
+        comm := begin
+          slice_rhs 2 3 { erw [comp_id], },
+          ext,
+          simp only [assoc, kernel.lift_ι, P.idempotence],
+        end },
+      inv_hom_id' := by simp only [comp, id_eq, kernel.lift_ι],
+      hom_inv_id' := begin
+        ext,
+        simp only [equalizer_as_kernel, assoc, kernel.lift_ι,
+          to_karoubi_obj_p, comp, assoc, id_eq],
+        erw [← h, id_comp],
+      end },
 end⟩
 
 variables (C)
