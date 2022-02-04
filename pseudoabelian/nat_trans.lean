@@ -59,7 +59,7 @@ end
 @[simps]
 def functor_extension'' {D : Type*} [category D] [preadditive D] [is_pseudoabelian D]
   (F : C ⥤ D) : karoubi C ⥤ D :=
-  functor_extension F ⋙ (karoubi_is_equivalence D).inverse
+  functor_extension F ⋙ (to_karoubi_is_equivalence D).inverse
 
 @[simp]
 lemma to_karoubi_comp_functor_extension' {D : Type*} [category D] [preadditive D]
