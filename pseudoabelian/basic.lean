@@ -67,14 +67,21 @@ def idempotent_of_id_sub_idempotent (P : karoubi C) : karoubi C :=
   idempotence := by simp only [comp_sub, sub_comp, id_comp, comp_id, P.idempotence,
     sub_self, sub_zero], }
 
+/-- A morphism `P ⟶ Q` in the category `karoubi C` is a morphism in the underlying category
+`C` which satisfies a relation expressing that it induces a map between the corresponding
+"formal direct factors" and that it vanishes on the complement formal direct factor. -/
 @[ext]
 structure hom (P Q : karoubi C) := (f : P.X ⟶ Q.X) (comm : f = P.p ≫ f ≫ Q.p)
 
 instance (P Q : karoubi C) : inhabited (hom P Q) := ⟨⟨0, by rw [zero_comp, comp_zero]⟩⟩
 
-@[ext]
-lemma hom_ext {P Q : karoubi C} {f' g' : hom P Q} : f' = g' ↔ f'.f = g'.f :=
-by { split; intro h, { congr, assumption, }, { ext, assumption, }, }
+@[simp]
+lemma hom_ext {P Q : karoubi C} {f g : hom P Q} : f = g ↔ f.f = g.f :=
+begin
+  split,
+  { intro h, rw h, },
+  { ext, }
+end
 
 lemma p_comp {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 :=
 by rw [f.2, ← assoc, P.idempotence]
@@ -85,8 +92,8 @@ by rw [f.2, assoc, assoc, Q.idempotence]
 lemma p_comm {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.1 = f.1 ≫ Q.p :=
 by rw [p_comp, comp_p]
 
-lemma comp_proof {P Q R : karoubi C} (g' : hom Q R) (f' : hom P Q) :
-  f'.1 ≫ g'.1 = P.p ≫ (f'.1 ≫ g'.1) ≫ R.p :=
+lemma comp_proof {P Q R : karoubi C} (g : hom Q R) (f : hom P Q) :
+  f.f ≫ g.f = P.p ≫ (f.f ≫ g.f) ≫ R.p :=
 by rw [assoc, comp_p, ← assoc, p_comp]
 
 end karoubi
@@ -94,16 +101,16 @@ end karoubi
 instance : category (karoubi C) :=
 { hom      := karoubi.hom,
   id       := λ P, ⟨P.p, by { repeat { rw P.idempotence, }, }⟩,
-  comp     := λ P Q R f' g', ⟨f'.1 ≫ g'.1, karoubi.comp_proof g' f'⟩,
-  id_comp' := λ P Q f', by { ext, simp only [karoubi.p_comp], },
-  comp_id' := λ P Q f', by { ext, simp only [karoubi.comp_p], },
-  assoc'   := λ P Q R S f' g' h', by { ext, simp only [category.assoc], }, }
+  comp     := λ P Q R f g, ⟨f.f ≫ g.f, karoubi.comp_proof g f⟩,
+  id_comp' := λ P Q f, by { ext, simp only [karoubi.p_comp], },
+  comp_id' := λ P Q f, by { ext, simp only [karoubi.comp_p], },
+  assoc'   := λ P Q R S f g h, by { ext, simp only [category.assoc], }, }
 
 namespace karoubi
 
 @[simp]
-lemma comp {P Q R : karoubi C} (f' : P ⟶ Q) (g' : Q ⟶ R) :
-  f' ≫ g' = ⟨f'.1 ≫ g'.1, comp_proof g' f'⟩ := by refl
+lemma comp {P Q R : karoubi C} (f : P ⟶ Q) (g : Q ⟶ R) :
+  f ≫ g = ⟨f.f ≫ g.f, comp_proof g f⟩ := by refl
 
 @[simp]
 lemma id_eq {P : karoubi C} : 𝟙 P = ⟨P.p, by repeat { rw P.idempotence, }⟩ := by refl
@@ -133,8 +140,8 @@ def to_karoubi : C ⥤ karoubi C := {
   map := λ X Y f, ⟨f, by simp only [comp_id, id_comp]⟩ }
 
 instance : full (to_karoubi C) := {
-  preimage := λ X Y f', f'.1,
-  witness' := λ X Y f', by { ext, simp only [to_karoubi_map_f], }, }
+  preimage := λ X Y f, f.f,
+  witness' := λ X Y f, by { ext, simp only [to_karoubi_map_f], }, }
 
 instance : faithful (to_karoubi C) := { }
 
@@ -142,42 +149,43 @@ variables {C}
 
 @[simps]
 instance {P Q : karoubi C} : add_comm_group (P ⟶ Q) :=
-{ add := λ f' g', ⟨f'.1+g'.1, begin
+{ add := λ f g, ⟨f.f+g.f, begin
     rw [add_comp, comp_add],
     congr',
-    exact f'.2,
-    exact g'.2,
+    exact f.comm,
+    exact g.comm,
   end⟩,
   zero := ⟨0, by simp only [comp_zero, zero_comp]⟩,
-  zero_add := λ f', by { ext, simp only [zero_add], },
-  add_zero := λ f', by { ext, simp only [add_zero], },
-  add_assoc := λ f' g' h', by simp only [add_assoc],
-  add_comm := λ f' g', by { ext, apply_rules [add_comm], },
-  neg := λ f', ⟨-f'.1, by simpa only [neg_comp, comp_neg, neg_inj] using f'.2⟩,
-  add_left_neg := λ f', by { ext, apply_rules [add_left_neg], }, }
+  zero_add := λ f, by { ext, simp only [zero_add], },
+  add_zero := λ f, by { ext, simp only [add_zero], },
+  add_assoc := λ f g h', by simp only [add_assoc],
+  add_comm := λ f g, by { ext, apply_rules [add_comm], },
+  neg := λ f, ⟨-f.f, by simpa only [neg_comp, comp_neg, neg_inj] using f.comm⟩,
+  add_left_neg := λ f, by { ext, apply_rules [add_left_neg], }, }
 
 namespace karoubi
 
-lemma hom_eq_zero_iff {P Q : karoubi C} {f' : hom P Q} : f' = 0 ↔ f'.f = 0 := by tidy
+lemma hom_eq_zero_iff {P Q : karoubi C} {f : hom P Q} : f = 0 ↔ f.f = 0 := hom_ext
 
+/-- The map sending `f : P ⟶ Q` to `f.f : P.X ⟶ Q.X` is additive. -/
 @[simps]
 def inclusion_hom (P Q : karoubi C) : add_monoid_hom (P ⟶ Q) (P.X ⟶ Q.X) :=
-{ to_fun   := λ f', f'.1,
+{ to_fun   := λ f, f.f,
   map_zero' := rfl,
-  map_add'  := λ f' g', rfl }
+  map_add'  := λ f g, rfl }
 
 @[simp]
 lemma sum_hom {P Q : karoubi C} {α : Type*} (s : finset α) (f : α → (P ⟶ Q)) :
-  (∑ x in s, f x).1 = ∑ x in s, (f x).1  := 
+  (∑ x in s, f x).f = ∑ x in s, (f x).f  := 
 add_monoid_hom.map_sum (inclusion_hom P Q) f s
 
 end karoubi
 
 instance : preadditive (karoubi C) :=
 { hom_group := λ P Q, by apply_instance,
-  add_comp' := λ P Q R f' g' h',
+  add_comp' := λ P Q R f g h,
     by { ext, simp only [add_comp, quiver.hom.add_comm_group_add_f, karoubi.comp], },
-  comp_add' := λ P Q R f' g' h',
+  comp_add' := λ P Q R f g h,
     by { ext, simp only [comp_add, quiver.hom.add_comm_group_add_f, karoubi.comp], }, }
 
 instance : functor.additive (to_karoubi C) := { }
@@ -203,7 +211,7 @@ theorem karoubi_is_pseudoabelian : is_pseudoabelian (karoubi C) :=
         refine ⟨g.1, _⟩,
         simp only [hom_eq_zero_iff, comp] at hg,
         simp only [Q, comp_sub, comp, hg, comp_zero, sub_zero],
-        exact g.2, },
+        exact g.comm, },
       { intros W g hg,
         simp only [hom_eq_zero_iff, comp] at hg,
         simp only [comp, comp_sub, hom_ext, hg, sub_zero, comp_p], },
@@ -246,6 +254,7 @@ end⟩
 
 variables (C)
 
+/-- If `C` is pseudoabelian, the functor `to_karoubi : C ⥤ karoubi C` is an equivalence. -/
 def karoubi_is_equivalence [is_pseudoabelian C] : is_equivalence (to_karoubi C) :=
   equivalence.of_fully_faithfully_ess_surj (to_karoubi C)
 
