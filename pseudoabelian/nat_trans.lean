@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 
 import category_theory.pseudoabelian.basic
+import category_theory.functor_ext
 
 noncomputable theory
 
