@@ -7,13 +7,14 @@ Authors: Joël Riou
 import category_theory.idempotents.karoubi
 
 /-!
-# Idempotence completeness of functor categories
+# Idempotence completeness and functor categories
 
 -/
 
 open category_theory
 open category_theory.category
 open category_theory.idempotents.karoubi
+open category_theory.limits
 
 namespace category_theory
 
@@ -21,6 +22,40 @@ namespace idempotents
 
 variables {J : Type*} [category J]
 variables {C : Type*} [category C]
+
+instance [is_idempotent_complete C] : is_idempotent_complete (J ⥤ C) :=
+begin
+	refine ⟨_⟩,
+	intros F p hp,
+	have hC := (is_idempotent_complete_iff_has_equalizer_of_id_and_idempotent C).mp infer_instance,
+	haveI : ∀ (j : J), has_equalizer (𝟙 _) (p.app j) := λ j, hC _ _ (congr_app hp j),
+	let Y : J ⥤ C :=
+	{ obj := λ j, limits.equalizer (𝟙 _) (p.app j),
+		map := λ j j' φ, equalizer.lift (limits.equalizer.ι (𝟙 _) (p.app j) ≫ F.map φ)
+			(by rw [comp_id, assoc, p.naturality φ, ← assoc, ← limits.equalizer.condition, comp_id]),
+		map_id' := λ j, by { ext, simp only [comp_id, functor.map_id, equalizer.lift_ι, id_comp], },
+		map_comp' := λ j j' j'' φ φ', begin
+			ext,
+			simp only [assoc, functor.map_comp, equalizer.lift_ι, equalizer.lift_ι_assoc],
+		end },
+	let i : Y ⟶ F :=
+	{ app := λ j, equalizer.ι _ _,
+		naturality' := λ j j' φ, by erw [equalizer.lift_ι],	},
+	let e : F ⟶ Y :=
+	{ app := λ j, equalizer.lift (p.app j)
+			(by { rw comp_id, exact (congr_app hp j).symm, }),
+		naturality' := λ j j' φ, begin
+			ext,
+			simp only [assoc, equalizer.lift_ι, nat_trans.naturality, equalizer.lift_ι_assoc],
+		end },
+	use [Y, i, e],
+	split,
+	{ ext j,
+		simp only [nat_trans.comp_app, assoc, equalizer.lift_ι, nat_trans.id_app, id_comp,
+			← equalizer.condition, comp_id], },
+	{ ext j,
+		simp only [nat_trans.comp_app, equalizer.lift_ι], },
+end
 
 namespace karoubi_functor_category
 
@@ -64,7 +99,10 @@ def map {P Q : karoubi (J ⥤ C)} (f : P ⟶ Q) :
 
 end karoubi_functor_category
 
-def karoubi_functor_category_functor :
+variables (J) (C)
+
+@[simps]
+def karoubi_functor_category_embedding :
 	karoubi (J ⥤ C) ⥤ (J ⥤ karoubi C) :=
 { obj := karoubi_functor_category.obj,
 	map := λ P Q f, karoubi_functor_category.map f,
@@ -72,6 +110,49 @@ def karoubi_functor_category_functor :
     by { ext j, simpa only [nat_trans.id_app, id_eq], },
 	map_comp' := λ P Q R f g,
 		by { ext j, simpa only [comp, nat_trans.comp_app], } }
+
+instance : full (karoubi_functor_category_embedding J C) :=
+{ preimage := λ P Q f,
+  { f :=
+    { app := λ j, (f.app j).f,
+      naturality' := λ j j' φ, begin
+				slice_rhs 1 1 { rw ← karoubi.comp_p, },
+        have h := hom_ext.mp (f.naturality φ),
+        simp only [comp] at h,
+        dsimp [karoubi_functor_category_embedding] at h ⊢,
+        erw [assoc, ← h, ← P.p.naturality φ, assoc, p_comp (f.app j')],
+      end },
+    comm := by { ext j, exact (f.app j).comm, } },
+  witness' := λ P Q f, by { ext j, refl, }, }
+
+instance : faithful (karoubi_functor_category_embedding J C) :=
+{ map_injective' := λ P Q f f' h, begin
+    ext j,
+		simp only [nat_trans.ext_iff, karoubi_functor_category_embedding_map,
+			karoubi_functor_category.map] at h,
+    simpa only using congr_fun h j,
+  end, }
+
+lemma to_karoubi_comp_karoubi_functor_category_embedding :
+  (to_karoubi _) ⋙ karoubi_functor_category_embedding J C =
+	(whiskering_right J _ _).obj (to_karoubi C) :=
+begin
+  apply functor.ext,
+  { intros X Y f,
+    ext j,
+    dsimp,
+		simp only [to_karoubi_map_f, karoubi_functor_category.obj_obj_p, to_karoubi_obj_p,
+			eq_to_hom_app, eq_to_hom_refl, id_eq, comp],
+	  erw [id_comp, comp_id], },
+  { intro X,
+    apply functor.ext,
+    { intros j j' φ,
+      ext,
+			dsimp,
+			simpa only [comp_id, id_comp], },
+    { intro j,
+      refl, }, }
+end
 
 end idempotents
 
