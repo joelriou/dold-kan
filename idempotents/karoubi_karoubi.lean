@@ -41,28 +41,28 @@ instance [preadditive C] : functor.additive (inverse C) := { }
 def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
 { hom :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
-    naturality' := λ P Q f,
-      by { cases P, cases Q, cases f, dsimp [inverse],
-        simp only [comp_id, id_comp, hom_ext], }, },
+    naturality' := λ P Q f, begin
+      ext,
+      simp only [eq_to_hom_f, eq_to_hom_refl, comp_id, functor.id_map, comp, inverse_map_f,
+        to_karoubi_map_f, functor.comp_map],
+      erw [comp_p, p_comp],
+    end },
   inv :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
     naturality' := λ P Q f, begin
-      cases P,
-      cases Q,
-      dsimp [inverse],
-      simp only [comp_id, id_comp, hom_ext],
+      ext,
+      simp only [comp, eq_to_hom_f, eq_to_hom_refl, comp_id],
+      erw [comp_p f, p_comp f],
     end },
   hom_inv_id' := begin
     ext P,
-    cases P,
-    dsimp,
-    simpa only [id_eq, hom_ext] using P_idempotence,
+    simpa only [nat_trans.comp_app, nat_trans.id_app, comp, eq_to_hom_f, eq_to_hom_refl,
+      id_eq, comp_id] using P.idempotence,
   end,
   inv_hom_id' := begin
     ext P,
-    cases P,
-    dsimp,
-    simpa only [id_eq, hom_ext] using P_idempotence,
+    simpa only [nat_trans.comp_app, nat_trans.id_app, comp, eq_to_hom_f, eq_to_hom_refl,
+      id_eq, comp_id] using P.idempotence,
   end, }
 
 /-- The counit isomorphism of the equivalence -/
