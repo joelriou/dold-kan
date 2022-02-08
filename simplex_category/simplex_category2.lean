@@ -127,7 +127,6 @@ instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
   has_strong_epi_mono_factorisations.mk
   (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
-
 /- Two mono factorisations satisfying the universal property of
 the image are equal. -/
 def uniqueness_mono_factorisation {x y : simplex_category.{u}} {f : x ⟶ y}

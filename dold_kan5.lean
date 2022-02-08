@@ -10,7 +10,7 @@ import dold_kan4
 
 /-!
 
-Goal : 
+Goal :
 * check that this gives the expected equivalence of categories (TODO)
 
 -/
@@ -33,7 +33,7 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
-lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i] 
+lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
   P_infty.f n ≫ X.map i.op = 0 :=
 begin
@@ -93,7 +93,7 @@ begin
       rcases fac' with ⟨j',θ'',hi'⟩,
       erw [hi', hj, assoc, ← simplex_category.δ_comp_δ (fin.zero_le j'), ← assoc] at hi,
       erw [hi, op_comp, X.map_comp, ← assoc,
-        (higher_faces_vanish_P (Δ'.len+k+2) (Δ'.len+k+1)).vanishing _ le_add_self, zero_comp], }, }  
+        (higher_faces_vanish_P (Δ'.len+k+2) (Δ'.len+k+1)).vanishing _ le_add_self, zero_comp], }, }
 end
 
 lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
@@ -201,7 +201,7 @@ def ΓN'_trans : N' ⋙ functor_extension (Γ : chain_complex C ℕ ⥤ _)
   ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
-    { app := λ Δ, sigma.desc (λ A, 
+    { app := λ Δ, sigma.desc (λ A,
         P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
       naturality' := λ Δ Δ' θ, begin
         ext A,
