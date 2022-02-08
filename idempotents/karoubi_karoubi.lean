@@ -43,16 +43,14 @@ def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
     naturality' := λ P Q f, begin
       ext,
-      simp only [eq_to_hom_f, eq_to_hom_refl, comp_id, functor.id_map, comp, inverse_map_f,
-        to_karoubi_map_f, functor.comp_map],
-      erw [comp_p, p_comp],
+      simpa only [eq_to_hom_f, eq_to_hom_refl, comp_id, functor.id_map, comp, inverse_map_f,
+        to_karoubi_map_f, functor.comp_map, p_comm],
     end },
   inv :=
   { app := λ P, eq_to_hom (by { cases P, refl, }),
     naturality' := λ P Q f, begin
       ext,
-      simp only [comp, eq_to_hom_f, eq_to_hom_refl, comp_id],
-      erw [comp_p f, p_comp f],
+      simpa only [comp, eq_to_hom_f, eq_to_hom_refl, comp_id, ← p_comm],
     end },
   hom_inv_id' := begin
     ext P,
@@ -70,21 +68,16 @@ def unit_iso : 𝟭 (karoubi C) ≅ to_karoubi (karoubi C) ⋙ inverse C :=
 def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi C)) :=
 { hom :=
   { app := λ P, ⟨⟨P.p.1, begin
-    have h := P.idempotence,
-    simp only [hom_ext, comp] at h,
-    erw [← assoc, h, comp_p],
+      have h := P.idempotence,
+      simp only [hom_ext, comp] at h,
+      erw [← assoc, h, comp_p],
     end⟩,
     begin
       have h := P.idempotence,
       simp only [hom_ext, comp] at h ⊢,
       erw [h, h],
     end⟩,
-    naturality' := λ P Q f, begin
-      have h := comp_p f,
-      have h' := p_comp f,
-      simp only [hom_ext] at h h' ⊢,
-      erw [h, h'],
-    end, },
+    naturality' := λ P Q f, by simpa only [hom_ext] using (p_comm f).symm, },
   inv :=
   { app := λ P, ⟨⟨P.p.1, begin
       have h := P.idempotence,
@@ -96,22 +89,9 @@ def counit_iso : inverse C ⋙ to_karoubi (karoubi C) ≅ 𝟭 (karoubi (karoubi
       simp only [hom_ext, comp] at h ⊢,
       erw [h, h],
     end⟩,
-    naturality' := λ P Q f, begin
-      have h := comp_p f,
-      have h' := p_comp f,
-      simp only [hom_ext] at h h' ⊢,
-      erw [h, h'],
-    end, },
-  hom_inv_id' := begin
-    ext P,
-    dsimp,
-    simpa only [hom_ext, id_eq] using P.idempotence,
-  end,
-  inv_hom_id' := begin
-    ext P,
-    dsimp,
-    simpa only [hom_ext, id_eq] using P.idempotence,
-  end, }
+    naturality' := λ P Q f, by simpa [hom_ext] using (p_comm f).symm, },
+  hom_inv_id' := by { ext P, simpa only [hom_ext, id_eq] using P.idempotence, },
+  inv_hom_id' := by { ext P, simpa only [hom_ext, id_eq] using P.idempotence, }, }
 
 /-- The equivalence `karoubi C ≌ karoubi (karoubi C)` -/
 @[simps]
@@ -127,11 +107,11 @@ def equivalence : karoubi C ≌ karoubi (karoubi C) :=
     erw [P.idempotence, P.idempotence],
   end, }
 
-instance additive_functor [preadditive C] : functor.additive (equivalence C).functor :=
-  by { dsimp, apply_instance, }
+instance equivalence.additive_functor [preadditive C] :
+  functor.additive (equivalence C).functor := by { dsimp, apply_instance, }
 
-instance additive_inverse [preadditive C] : functor.additive (equivalence C).inverse :=
-  by { dsimp, apply_instance, }
+instance equivalence.additive_inverse [preadditive C] :
+  functor.additive (equivalence C).inverse := by { dsimp, apply_instance, }
 
 end karoubi_karoubi
 
