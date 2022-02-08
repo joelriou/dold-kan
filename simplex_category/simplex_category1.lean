@@ -22,34 +22,24 @@ begin
   simp only [σ, mk_hom, hom.to_order_hom_mk, order_hom.coe_fun_mk],
   by_cases b ≤ i,
   { use b,
-    erw fin.pred_above_below i b (by simpa only [fin.coe_eq_cast_succ] using h),
+    rw fin.pred_above_below i b (by simpa only [fin.coe_eq_cast_succ] using h),
     simp only [fin.coe_eq_cast_succ, fin.cast_pred_cast_succ], },
   { use b.succ,
-    erw fin.pred_above_above i b.succ _, swap,
-    { rw not_le at h,
-      rw fin.lt_iff_coe_lt_coe at h ⊢,
-      simp only [fin.coe_succ, fin.coe_cast_succ],
-      exact nat.lt.step h, },
-    simp only [fin.pred_succ], }
+    rw [fin.pred_above_above i b.succ _, fin.pred_succ],
+    rw not_le at h,
+    rw fin.lt_iff_coe_lt_coe at h ⊢,
+    simpa only [fin.coe_succ, fin.coe_cast_succ] using nat.lt.step h, }
 end
 
 lemma bijective_of_mono_and_eq {x y : simplex_category.{u}} (i : x ⟶ y) [mono i]
   (hxy : x = y) : function.bijective i.to_order_hom :=
-begin
-  apply (fintype.bijective_iff_injective_and_card i.to_order_hom).mpr,
-  split,
-  { exact mono_iff_injective.mp (by apply_instance), },
-  { congr', },
-end
+by simpa only [fintype.bijective_iff_injective_and_card i.to_order_hom,
+    ← mono_iff_injective, hxy, and_true, eq_self_iff_true]
 
 lemma bijective_of_epi_and_eq {x y : simplex_category.{u}} (e : x ⟶ y) [epi e]
   (hxy : x = y) : function.bijective e.to_order_hom :=
-begin
-  apply (fintype.bijective_iff_surjective_and_card e.to_order_hom).mpr,
-  split,
-  { exact epi_iff_surjective.mp (by apply_instance), },
-  { congr', },
-end
+by simpa only [fintype.bijective_iff_surjective_and_card e.to_order_hom,
+    ← epi_iff_surjective, hxy, and_true, eq_self_iff_true]
 
 @[simps]
 noncomputable def iso_of_bijective {x y : simplex_category.{u}} {f : x ⟶ y}
@@ -127,13 +117,63 @@ begin
     eq_to_hom_refl, fin.eta, small_category_id],
 end
 
+lemma factorisation_non_injective' {n : ℕ} {Δ' : simplex_category} (θ : mk (n+1) ⟶ Δ')
+  (i : fin (n+1)) (hi : θ.to_order_hom i.cast_succ = θ.to_order_hom i.succ):
+  ∃ (θ' : mk n ⟶ Δ'), θ = σ i ≫ θ' :=
+begin
+  use δ i.succ ≫ θ,
+  ext1, ext1, ext1 x,
+  simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
+    hom.comp, small_category_comp, σ, mk_hom, order_hom.coe_fun_mk],
+  by_cases h' : x ≤ i.cast_succ,
+  { rw fin.pred_above_below i x h',
+    have eq := fin.cast_succ_cast_pred (gt_of_gt_of_ge (fin.cast_succ_lt_last i) h'),
+    erw fin.succ_above_below i.succ x.cast_pred _, swap,
+    { rwa [eq, ← fin.le_cast_succ_iff], },
+    rw eq, },
+  { simp only [not_le] at h',
+    let y := x.pred (begin
+      intro h,
+      rw h at h',
+      simpa only [fin.lt_iff_coe_lt_coe, nat.not_lt_zero, fin.coe_zero] using h',
+    end),
+    simp only [show x = y.succ, by rw fin.succ_pred] at h' ⊢,
+    rw [fin.pred_above_above i y.succ h', fin.pred_succ],
+    by_cases h'' : y = i,
+    { rw h'',
+      convert hi.symm,
+      erw fin.succ_above_below i.succ _,
+      exact fin.lt_succ, },
+    { erw fin.succ_above_above i.succ _,
+      simp only [fin.lt_iff_coe_lt_coe, fin.le_iff_coe_le_coe,
+        fin.coe_succ, fin.coe_cast_succ, nat.lt_succ_iff] at h' ⊢,
+      simp only [fin.ext_iff] at h'',
+      cases nat.le.dest h' with c hc,
+      cases c,
+      { exfalso,
+        rw [add_zero] at hc,
+        rw [hc] at h'',
+        exact h'' rfl, },
+      { rw ← hc,
+        simp only [add_le_add_iff_left, nat.succ_eq_add_one,
+          le_add_iff_nonneg_left, zero_le], }, }, }
+end
+
+lemma fin.cast_succ_lt_iff_succ_le {n : ℕ} {i : fin n} {j : fin (n+1)} : i.cast_succ < j ↔ i.succ ≤ j :=
+begin
+  simp only [fin.lt_iff_coe_lt_coe, fin.le_iff_coe_le_coe, fin.coe_succ, fin.coe_cast_succ],
+  exact nat.lt_iff_add_one_le,
+end
+
 lemma factorisation_non_injective {n : ℕ} {Δ' : simplex_category} (θ : mk (n+1) ⟶ Δ')
   (hθ : ¬function.injective θ.to_order_hom) :
-  ∃ (i : fin (n+1)) (θ' : (mk n) ⟶ Δ'), θ = simplex_category.σ i ≫ θ' :=
+  ∃ (i : fin (n+1)) (θ' : (mk n) ⟶ Δ'), θ = σ i ≫ θ' :=
 begin
   simp only [function.injective, exists_prop, not_forall] at hθ,
+  -- as θ is not injective, there exists `x<y` such that `θ x = θ y`
+  -- and then, `θ x = θ (x+1)`
   have hθ₂ : ∃ (x y : fin (n+2)), (hom.to_order_hom θ) x = (hom.to_order_hom θ) y ∧ x<y,
-  { rcases hθ with ⟨x,y,⟨h₁,h₂⟩⟩,
+  { rcases hθ with ⟨x, y, ⟨h₁, h₂⟩⟩,
     by_cases x<y,
     { exact ⟨x, y, ⟨h₁, h⟩⟩, },
     { refine ⟨y, x, ⟨h₁.symm, _⟩⟩,
@@ -141,78 +181,22 @@ begin
       { exact h', },
       { exfalso,
         exact h₂ h'.symm, }, }, },
-  rcases hθ₂ with ⟨x,y,⟨h₁,h₂⟩⟩,
-  have hx : (x : ℕ) < n+1 := lt_of_lt_of_le (fin.lt_iff_coe_lt_coe.mp h₂)
-    (nat.lt_succ_iff.mp (fin.is_lt y)),
-  let x' : fin (n+1) := ⟨x.val, hx⟩,
-  use x',
-  let f' : fin (n+1) → fin (Δ'.len+1) := λ j, if (j : ℕ) ≤ x.val
-    then θ.to_order_hom j.cast_succ
-    else θ.to_order_hom j.succ,
-  let F : fin ((mk n).len+1) →o fin (Δ'.len+1) := ⟨f', _⟩, swap,
-  { intros a b hab,
-    dsimp [f'],
-    split_ifs with ha hb; apply θ.to_order_hom.monotone',
-    { simpa only, },
-    { simp only [not_le] at hb,
-      rw fin.le_iff_coe_le_coe,
-      simp only [fin.coe_succ, fin.coe_cast_succ],
-      exact le_add_right (fin.le_iff_coe_le_coe.mp hab), },
-    { exfalso,
-      exact ha (le_trans (fin.le_iff_coe_le_coe.mp hab) h), },
-    { simpa only [fin.succ_le_succ_iff], }, },
-  use hom.mk F,
-  ext1, ext1, ext1 j,
-  simp only [hom.comp, hom.to_order_hom_mk, small_category_comp,
-    function.comp_app, order_hom.comp_coe,
-    order_hom.coe_fun_mk, coe_coe],
-  simp only [σ, f', mk_hom, fin.val_eq_coe, hom.to_order_hom_mk, order_hom.coe_fun_mk],
-  by_cases hj : j ≤ fin.cast_succ x',
-  { rw fin.pred_above_below x' j hj,
-    have hj' : j < fin.last (n+1),
-    { simp only [fin.lt_iff_coe_lt_coe, fin.coe_last],
-      rw fin.le_iff_coe_le_coe at hj,
-      simp only [fin.val_eq_coe, fin.cast_succ_mk, fin.eta] at hj,
-      exact lt_of_le_of_lt hj hx, },
-    split_ifs,
-    { congr,
-      rw fin.cast_succ_cast_pred,
-      exact hj', },
-    { exfalso,
-      apply h,
-      simpa only [fin.lt_last_iff_coe_cast_pred.mp hj', fin.val_eq_coe,
-        fin.le_iff_coe_le_coe, fin.cast_succ_mk, fin.eta] using hj, }, },
-  { simp only [not_le] at hj,
-    simp only [fin.pred_above_above x' j hj],
-    split_ifs,
-    { rw fin.lt_iff_coe_lt_coe at hj,
-      cases le_iff_exists_add.mp (nat.succ_le_iff.mpr hj) with c hc,
-      simp only [fin.val_eq_coe, fin.cast_succ_mk, fin.eta] at hc,
-      rw [fin.coe_pred, hc] at h,
-      simp only [add_le_iff_nonpos_right, nat.succ_add_sub_one, nonpos_iff_eq_zero] at h,
-      rw [h, add_zero] at hc,
-      have eq : (hom.to_order_hom θ) x = (hom.to_order_hom θ) j,
-      { rw le_antisymm_iff,
-        split,
-        { apply θ.to_order_hom.monotone',
-          rw [fin.le_iff_coe_le_coe, hc],
-          exact nat.le_succ _, },
-        { rw h₁,
-          apply θ.to_order_hom.monotone',
-          rw [fin.le_iff_coe_le_coe, hc],
-          rw [fin.lt_iff_coe_lt_coe] at h₂,
-          exact nat.succ_le_iff.mpr h₂, }, },
-      rw ← eq,
-      congr,
-      ext,
-      simp only [fin.coe_cast_succ, fin.coe_pred, hc,
-        tsub_zero, nat.succ_sub_succ_eq_sub], },
-    { simp only [fin.succ_pred], }, },
+  rcases hθ₂ with ⟨x, y, ⟨h₁, h₂⟩⟩,
+  let z := x.cast_pred,
+  simp only [← (show z.cast_succ = x,
+    by exact fin.cast_succ_cast_pred (lt_of_lt_of_le h₂ (fin.le_last y)))] at h₁ h₂,
+  use z,
+  apply factorisation_non_injective',
+  rw fin.cast_succ_lt_iff_succ_le at h₂,
+  apply le_antisymm,
+  { exact θ.to_order_hom.monotone (le_of_lt (fin.cast_succ_lt_succ z)), },
+  { rw h₁,
+    exact θ.to_order_hom.monotone h₂, },
 end
 
 lemma factorisation_non_surjective' {n : ℕ} {Δ : simplex_category} (θ : Δ ⟶ mk (n+1))
   (i : fin (n+2)) (hi : ∀ x, θ.to_order_hom x ≠ i) :
-  ∃ (θ' : Δ ⟶ (mk n)), θ = θ' ≫ simplex_category.δ i :=
+  ∃ (θ' : Δ ⟶ (mk n)), θ = θ' ≫ δ i :=
 begin
   by_cases i < fin.last (n+1),
   { use θ ≫ σ (fin.cast_pred i),

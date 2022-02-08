@@ -31,7 +31,7 @@ def strong_epi_of_epi {X Y : simplex_category.{u}} (f : X ⟶ Y) [epi f] :
     { intro x,
       apply mono_iff_injective.mp hw,
       simp only [comm', hlift], },
-    let γ : Y ⟶ A := simplex_category.hom.mk
+    let γ : Y ⟶ A := hom.mk
       { to_fun := γ',
         monotone' := λ y₁ y₂ h, begin
           cases eq_or_lt_of_le h with h' h',
@@ -91,7 +91,7 @@ begin
   let φ := mono_equiv_of_fin α eq,
   let γ : order_hom α (fin (y.len+1)) := ⟨λ j, j.1,
     by { rintros ⟨i₁,_⟩ ⟨i₂,_⟩ h, simpa only using h, }⟩,
-  let e : x ⟶ simplex_category.mk n := simplex_category.hom.mk (order_hom.comp
+  let e : x ⟶ mk n := hom.mk (order_hom.comp
       (order_embedding.to_order_hom (order_iso.to_order_embedding φ.symm)) ψ),
   haveI : epi e,
   { apply epi_iff_surjective.mpr,
@@ -104,8 +104,8 @@ begin
       order_iso.symm_apply_apply, subtype.coe_eta, subtype.val_eq_coe], },
   haveI : strong_epi e := strong_epi_of_epi e,
   exact
-  { I := simplex_category.mk n,
-    m := simplex_category.hom.mk (order_hom.comp
+  { I := mk n,
+    m := hom.mk (order_hom.comp
       γ (order_embedding.to_order_hom (order_iso.to_order_embedding φ))),
     e := e,
     m_mono := begin
