@@ -10,11 +10,11 @@ open category_theory.category
 open category_theory.idempotents.karoubi
 
 namespace category_theory
-
+/-
 lemma functor.assoc {C D E F : Type*} [category C] [category D]
   [category E] [category F] (φ : C ⥤ D)
   (φ' : D ⥤ E) (φ'' : E ⥤ F) : (φ ⋙ φ') ⋙ φ'' = φ ⋙ (φ' ⋙ φ'') :=
-by refl
+by refl-/
 
 lemma congr_obj {D D' : Type*} [category D] [category D'] {F G : D ⥤ D'}
 (h : F = G) : ∀ X : D, F.obj X = G.obj X :=
@@ -92,10 +92,9 @@ def is_equivalence_cancel_comp_right {C D E : Type*} [category C] [category D] [
   (F : C ⥤ D) (G : D ⥤ E) (hG : is_equivalence G) (hGF : is_equivalence (F ⋙ G)) :
   is_equivalence F :=
 begin
-  have φ : F ⋙ G ⋙ G.inv ≅ F :=
+  let φ : F ⋙ G ⋙ G.inv ≅ F :=
     (nat_iso.hcomp (iso.refl F) hG.unit_iso.symm).trans (eq_to_iso (functor.comp_id F)),
-  apply is_equivalence_of_iso φ,
-  rw ← functor.assoc,
+  apply is_equivalence_of_iso ((functor.associator F G G.inv).trans φ),
   exact functor.is_equivalence_trans (F ⋙ G) (G.inv),
 end
 
@@ -106,11 +105,10 @@ def is_equivalence_cancel_comp_left {C D E : Type*} [category C] [category D] [c
 begin
   have φ : (F.inv ⋙ F) ⋙ G ≅ G :=
     (nat_iso.hcomp hF.counit_iso (iso.refl G)).trans (eq_to_iso (functor.id_comp G)),
-  apply is_equivalence_of_iso φ,
-  rw functor.assoc,
+  apply is_equivalence_of_iso ((functor.associator F.inv F G).symm.trans φ),
   exact functor.is_equivalence_trans F.inv (F ⋙ G),
 end
-
+#exit
 namespace idempotents
 
 variables (C D : Type*) [category C] [category D]
@@ -358,3 +356,4 @@ variables (C) (D)
 end idempotents
 
 end category_theory
+#lint
