@@ -24,6 +24,8 @@ lemma congr_map {D D' : Type*} [category D] [category D'] (F : D ⥤ D')
 {X Y : D} {f g : X ⟶ Y} (h : f = g) : F.map f = F.map g :=
 by { subst h, }
 
+/-- When a functor `F` is an equivalence of categories, and `G` is isomorphic to `F`, then
+`G` is also an equivalence of categories. -/
 @[simps]
 def is_equivalence_of_iso {C D : Type*} [category C] [category D]
   {F G : C ⥤ D} (e : F ≅ G) (hF : is_equivalence F) : is_equivalence G :=
@@ -33,12 +35,11 @@ def is_equivalence_of_iso {C D : Type*} [category C] [category D]
   functor_unit_iso_comp' := λ X, begin
     unfreezingI { rcases hF with ⟨H, η, ε, Fcomp⟩, },
     dsimp [nat_iso.hcomp],
-    erw [id_comp, F.map_id, comp_id, G.map_comp, assoc],
+    erw [id_comp, F.map_id, comp_id],
     apply (cancel_epi (e.hom.app X)).mp,
     slice_lhs 1 2 { rw ← e.hom.naturality, },
-    slice_lhs 2 3 { rw ← e.hom.naturality, },
-    slice_lhs 3 4 { rw [← nat_trans.vcomp_app', e.hom_inv_id], },
-    simp only [nat_trans.id_app, id_comp, comp_id],
+    slice_lhs 2 3 { rw [← nat_trans.vcomp_app', e.hom_inv_id], },
+    simp only [nat_trans.id_app, id_comp, comp_id, F.map_comp, assoc],
     erw ε.hom.naturality,
     slice_lhs 1 2 { rw Fcomp, },
     simp only [functor.id_map, id_comp],
@@ -75,6 +76,8 @@ begin
     simp only [id_comp, F.map_id], }
 end
 
+/-- When `F` and `G` are two isomorphic functors, then `F` is an equivalence iff
+`G` is. -/
 def is_equivalence_equiv_of_iso {C D : Type*} [category C] [category D]
   {F G : C ⥤ D} (e : F ≅ G) : is_equivalence F ≃ is_equivalence G :=
 { to_fun := is_equivalence_of_iso e,
@@ -84,6 +87,7 @@ def is_equivalence_equiv_of_iso {C D : Type*} [category C] [category D]
   right_inv := λ hF,
     by rw [is_equivalence_of_iso_trans, iso.symm_self_id, is_equivalence_of_iso_refl], }
 
+/-- If `G` and `F ⋙ G` are equivalence of categories, then `F` is also an equivalence. -/
 def is_equivalence_cancel_comp_right {C D E : Type*} [category C] [category D] [category E]
   (F : C ⥤ D) (G : D ⥤ E) (hG : is_equivalence G) (hGF : is_equivalence (F ⋙ G)) :
   is_equivalence F :=
@@ -95,6 +99,7 @@ begin
   exact functor.is_equivalence_trans (F ⋙ G) (G.inv),
 end
 
+/-- If `F` and `F ⋙ G` are equivalence of categories, then `G` is also an equivalence. -/
 def is_equivalence_cancel_comp_left {C D E : Type*} [category C] [category D] [category E]
   (F : C ⥤ D) (G : D ⥤ E) (hF : is_equivalence F) (hGF : is_equivalence (F ⋙ G)) :
   is_equivalence G :=
@@ -113,14 +118,12 @@ variables (C D : Type*) [category C] [category D]
 @[simps]
 def functor_extension' : (C ⥤ karoubi D) ⥤ (karoubi C ⥤ karoubi D) :=
 { obj := λ F,
-  { obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).f, begin
-      have h := congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idempotence,
-      simpa only [F.map_comp, hom_ext] using h,
-    end⟩,
-    map := λ P Q f, ⟨(F.map f.f).f, begin
-      have h := congr_arg (λ (f : P.X ⟶ Q.X), F.map f) f.comm,
-      simpa only [F.map_comp, hom_ext] using h,
-    end⟩, },
+  { obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).f,
+      by simpa only [F.map_comp, hom_ext]
+        using congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idempotence ⟩,
+    map := λ P Q f, ⟨(F.map f.f).f,
+      by simpa only [F.map_comp, hom_ext]
+        using congr_arg (λ (f : P.X ⟶ Q.X), F.map f) f.comm ⟩, },
   map := λ F G φ,
   { app := λ P,
     { f := (F.map P.p).f ≫ (φ.app P.X).f,
@@ -321,10 +324,8 @@ end
 
 end section
 
+#exit
 
-#exit
--- à voir, whiskering to_karoubi C  à valeurs dans D est une équivalence si D est idempot complete
-#exit
 variables {C} {D}
 lemma nat_trans_eq {F G : karoubi C ⥤ D} (φ : F ⟶ G) (P : karoubi C) :
   φ.app P = F.map (decomp_id_i P) ≫ φ.app P.X ≫ G.map (decomp_id_p P) :=
