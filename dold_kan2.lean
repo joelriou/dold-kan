@@ -4,22 +4,22 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-import category_theory.functor_ext
+import functor_ext
 
 import algebra.homology.homological_complex
 import algebra.homology.homotopy
 import algebra.big_operators.basic
 import algebraic_topology.alternating_face_map_complex
-import category_theory.pseudoabelian.nat_trans
-import category_theory.pseudoabelian.karoubi_karoubi
-import category_theory.pseudoabelian.simplicial_object
-import category_theory.pseudoabelian.homological_complex
+import pseudoabelian.nat_trans
+import pseudoabelian.karoubi_karoubi
+import pseudoabelian.simplicial_object
+import pseudoabelian.homological_complex
 
 import dold_kan1
 
 /-!
 
-Goal : 
+Goal :
 * show that a morphism of simplicial objects is an isomorphisms if and only if it
 induces an isomorphism on normalized Moore complexes,
 this is `normalized_Moore_complex_reflects_iso`
@@ -213,7 +213,7 @@ begin
   conv at h₁₄ { to_rhs, congr, skip, erw comp_id, },
   erw [h₁₄, ← h₂₃, h₃₄],
   simp only [karoubi_simplicial_object.map_app_f, karoubi.comp],
-  have eq := karoubi.hom_ext.mp (P_infty_termwise_naturality n 
+  have eq := karoubi.hom_ext.mp (P_infty_termwise_naturality n
     (((karoubi_simplicial_object_functor C).map ⟨X.p, by erw [karoubi.coe_p, comp_id, id_comp]⟩) : Y₄ ⟶ Y₄)),
   simp only [karoubi.comp, karoubi_simplicial_object_functor_map,
     karoubi_simplicial_object.map_app_f] at eq,
@@ -223,13 +223,13 @@ begin
 end
 
 /-- Q q is the complement projector associated to P q -/
-def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶ 
+def Q {X : simplicial_object C} (q : ℕ) : ((alternating_face_map_complex C).obj X ⟶
 (alternating_face_map_complex C).obj X) := 𝟙 _ - P q
 
 /-- This is the decreasing involution of `fin (n+1)` which appears in `decomposition_Q`. -/
 def reverse_fin {n : ℕ} (i : fin(n+1)) : fin(n+1):= ⟨n-i, nat.sub_lt_succ n ↑i⟩
 
-lemma reverse_fin_eq {n a : ℕ} (i : fin(n+1)) (hnaq : n=a+i) : reverse_fin i = 
+lemma reverse_fin_eq {n a : ℕ} (i : fin(n+1)) (hnaq : n=a+i) : reverse_fin i =
   ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
 begin
   ext,
@@ -257,7 +257,7 @@ begin
     let i : fin(n+1) := ⟨q,nat.lt_succ_iff.mpr (nat.le.intro ha)⟩,
     simp only [fin.succ_mk, fin.coe_mk, norm_num.sub_nat_pos n q a ha,
       reverse_fin_eq i (show n=a+i, by { simp only [fin.coe_mk, add_comm, ha], })],
-    have eq : ((_ : X _[n+1] ⟶ _) = _ ) := eq_neg_of_eq_neg 
+    have eq : ((_ : X _[n+1] ⟶ _) = _ ) := eq_neg_of_eq_neg
       (Hσφ_eq_neg_σδ (show n=a+q, by linarith) (higher_faces_vanish_P q n)),
     rw eq,
     unfold Q P,
@@ -267,7 +267,7 @@ begin
   },
 end
 
-/-- The structure `morph_components` is an ad hoc structure that is used the 
+/-- The structure `morph_components` is an ad hoc structure that is used the
 proof of `normalized_Moore_complex_reflects_iso`. The fields are the data
 that are needed in order to construct a morphism `X _[n+1] ⟶ Z` (see `F`)
 using the decomposition of the identity given by `decomposition_Q n (n+1)`.
@@ -284,7 +284,7 @@ structure morph_components (X : simplicial_object C) (n : ℕ) (Z : C) :=
 def F {Z : C} {n : ℕ} {X : simplicial_object C} (f : morph_components X n Z) :
   X _[n+1] ⟶ Z :=
   P_infty.f (n+1) ≫ f.a + ∑ (i : fin (n+1)),
-  (((P i).f (n+1)) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i))) 
+  (((P i).f (n+1)) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i)))
 
 /-- the canonical `morph_components` whose associated morphism is the identity
 (see `F_id`) thanks to `decomposition_Q n (n+1)` -/

@@ -3,23 +3,25 @@ Copyright (c) 2022 Joël Riou. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
-import category_theory.pseudoabelian.equivalence
-import algebra.homology.homological_complex_misc
+--import category_theory.pseudoabelian.equivalence
+import homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
+import category_theory.idempotents.karoubi
 
 noncomputable theory
 
 open category_theory
 open category_theory.category
 open category_theory.preadditive
+open category_theory.idempotents
 
 variables {C : Type*} [category C] [preadditive C]
 variables {ι : Type*} {c : complex_shape ι}
 
 namespace category_theory
 
-namespace pseudoabelian
+namespace idempotents
 
 namespace karoubi_homological_complex
 
@@ -39,7 +41,7 @@ def obj (P : karoubi (homological_complex C c)) : homological_complex (karoubi C
       end, },
   shape' := λ i j hij, by simp only [karoubi.hom_eq_zero_iff,
     P.X.shape i j hij, limits.comp_zero],
-  d_comp_d' := λ i j k hij hjk, begin 
+  d_comp_d' := λ i j k hij hjk, begin
     simp only [karoubi.hom_eq_zero_iff, karoubi.comp, P.p.comm j k],
     slice_lhs 2 3 { rw P.X.d_comp_d' i j k hij hjk, },
     simp only [limits.comp_zero, limits.zero_comp],
@@ -115,8 +117,7 @@ begin
   { intro P,
     ext i j,
     { simp [homological_complex.eq_to_hom_f],
-      dsimp,
-      slice_lhs 2 3 { erw karoubi.comp_p, }, },
+      refl, },
     { ext n,
       { simpa only [id_comp, eq_to_hom_refl, comp_id], },
       { refl, }, }, },
@@ -148,7 +149,7 @@ def unit_iso : 𝟭 (karoubi (homological_complex C c)) ≅ functor ⋙ inverse 
       simpa only [functor.map_f_f, homological_complex.comp_f,
         inverse.map_f_f, karoubi.comp] using h,
     end },
-  inv := 
+  inv :=
   { app := λ P,
     { f :=
       { f := λ n, P.p.f n,
@@ -222,6 +223,6 @@ def karoubi_cochain_complex_equivalence (α : Type*) [add_right_cancel_semigroup
     cochain_complex (karoubi C) α :=
   karoubi_homological_complex_equivalence C (complex_shape.up α)
 
-end pseudoabelian
+end idempotents
 
 end category_theory
