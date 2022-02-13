@@ -146,7 +146,6 @@ begin
       functor.map_add, functor.map_comp, hq, map_Hσ], }
 end
 
-
 end dold_kan
 
 end algebraic_topology

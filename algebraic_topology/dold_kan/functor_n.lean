@@ -19,7 +19,6 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-
 namespace N'_functor
 
 @[simps]
