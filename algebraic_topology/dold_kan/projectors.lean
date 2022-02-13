@@ -47,6 +47,19 @@ noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
+/-- Q q is the complement projector associated to P q -/
+def Q (q : ℕ) : K[X] ⟶ K[X] := 𝟙 _ - P q
+
+lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel }
+
+lemma P_add_Q_degreewise (q n : ℕ) : (P q).f n + (Q q).f n = 𝟙 (X _[n]) :=
+by simpa only [← homological_complex.add_f_apply, P_add_Q q]
+
+lemma Q_eq_0 : (Q 0 : K[X] ⟶ _) = 0 := sub_self _
+
+lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
+by { unfold Q P, simp only [comp_add, comp_id], abel, }
+
 /- All the `P q` coincide with `𝟙` in degree 0. -/
 lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
