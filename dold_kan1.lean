@@ -22,7 +22,7 @@ homological convention that the degree is decreased by the differentials).
 More generally, this results holds for pseudo-abelian categories. Taking this
 into consideration, the strategy of proof that is used here is to state and
 prove most of the technical results without referring to notions of kernel,
-images, etc. The core of the arguments shall be constructing morphisms and 
+images, etc. The core of the arguments shall be constructing morphisms and
 check equalities between morphisms. The applications to abelian categories
 are handled at the very end of the proof.
 
@@ -33,7 +33,7 @@ the alternating face map complex, see `P_infty`
 and `homotopy_equiv_inclusion_of_Moore_complex`
 * show that a morphism of simplicial objects is an isomorphisms if and only if it
 induces an isomorphism on normalized Moore complexes
-* construct the inverse functor from chain complexes to simplicial objects 
+* construct the inverse functor from chain complexes to simplicial objects
 * check that this gives the expected equivalence of categories (TODO)
 
 ## References
@@ -102,7 +102,7 @@ def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] := if n<q then 0
 def hσ' (q : ℕ) : prehomotopy ((alternating_face_map_complex C).obj X)
   ((alternating_face_map_complex C).obj X) := λ ij,
 (hσ q ij.val.1) ≫ eq_to_hom (by { congr', exact ij.property, })
-  
+
 /-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
 def Hσ (q : ℕ) : (alternating_face_map_complex C).obj X ⟶
   (alternating_face_map_complex C).obj X := homotopy.null_homotopic_map (hσ' q)
@@ -144,7 +144,7 @@ that they commute with the differentials. The approach we have chosen saves some
 calculations.
 -/
 @[simp]
-noncomputable def P : ℕ → ((alternating_face_map_complex C).obj X ⟶ 
+noncomputable def P : ℕ → ((alternating_face_map_complex C).obj X ⟶
 (alternating_face_map_complex C).obj X)
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
@@ -187,7 +187,7 @@ lemma remove_trailing_zeros_in_sum {β : Type*} [add_comm_monoid β] {n a q : �
   (hnaq : n=a+q) (f : fin(n) → β)
   (hf : ∀ (j : fin(q)), f (translate_fin a hnaq j) = 0) :
   ∑ (i : fin(n)), f i =
-  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i := 
+  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i :=
 begin
   let lt_a := λ (i : fin(n)), (i:ℕ)<a,
   have vanishing : ∀ (i : fin(n)), i ∈ (finset.univ : finset(fin(n))) → f i ≠ 0 → lt_a i,
@@ -210,7 +210,7 @@ end
 
 lemma leave_out_last_term {β : Type*} [add_comm_monoid β] {n a : ℕ} (hna : a<n)
   {f : fin(n) → β} :
-  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a+1) finset.univ, f i = 
+  ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a+1) finset.univ, f i =
   ∑ (i : fin(n)) in finset.filter (λ i : fin(n), (i:ℕ)<a) finset.univ, f i + f ⟨a, hna⟩ :=
 begin
   conv { to_rhs, rw add_comm, },
@@ -228,7 +228,7 @@ begin
 end
 
 lemma Hσφ_eq_neg_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
-  (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 
+  (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) =
   - φ ≫ X.δ ⟨a+1, nat.succ_lt_succ (nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)))⟩ ≫
   X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
 begin
@@ -398,7 +398,7 @@ begin
       simp only [← assoc, dφ, zero_comp, smul_zero'], }, },
 end
 
-lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} 
+lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 { vanishing :=
   begin
@@ -484,7 +484,7 @@ lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
     exact le_add_right hj,
   end }
 
-lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} 
+lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (P q).f (n+1) = φ :=
 begin
   induction q with q hq,
@@ -506,7 +506,7 @@ begin
       simp only [fin.succ_mk] at eq,
       simp only [← assoc, eq, zero_comp], }, },
 end
-  
+
 lemma P_is_a_projector (q : ℕ) : (P q : (alternating_face_map_complex C).obj X ⟶ _) ≫ P q = P q :=
 begin
   ext n,
@@ -526,12 +526,12 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
       (homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q)),
     refine homotopy.trans (homotopy.of_eq _) (homotopy.trans h (homotopy.of_eq _)),
     { unfold P, simp only [comp_add, comp_id], },
-    { simp only [add_zero, comp_zero], }, 
+    { simp only [add_zero, comp_zero], },
   end
 
 lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
   (((P_is_homotopic_to_id (q+1)).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩) : X _[n] ⟶ X _[n+1]) =
-  (P_is_homotopic_to_id q).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩ := 
+  (P_is_homotopic_to_id q).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩ :=
 begin
   unfold P_is_homotopic_to_id,
   simp only [homotopy.trans, homotopy.of_eq, homotopy.comp_left, homotopy.add,
@@ -552,7 +552,7 @@ begin
 end
 
 /-- Definition of P_infty from the P q -/
-def P_infty : ((alternating_face_map_complex C).obj X ⟶ 
+def P_infty : ((alternating_face_map_complex C).obj X ⟶
 (alternating_face_map_complex C).obj X) :=
 begin
   apply chain_complex.of_hom _ _ _ _ _ _
@@ -565,7 +565,7 @@ begin
   assumption,
 end
 
-lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = 
+lemma P_infty_termwise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) =
   (P n).f n := by refl
 
 lemma P_infty_termwise_is_a_projector (n : ℕ) :
@@ -578,12 +578,12 @@ end
 lemma P_infty_is_a_projector : (P_infty : (alternating_face_map_complex C).obj X ⟶ _) ≫ P_infty = P_infty :=
 by { ext n, rw [homological_complex.comp_f, P_infty_termwise_is_a_projector], }
 
-/-- Construction of the homotopy from `P_infty` to the identity using eventually 
+/-- Construction of the homotopy from `P_infty` to the identity using eventually
 (termwise) constant homotopies from `P q` to the identity for all q -/
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : (alternating_face_map_complex C).obj X ⟶ _) (𝟙 _) :=
 { hom := λ ij, (P_is_homotopic_to_id (ij.val.1+2)).hom ij,
-  comm := begin 
+  comm := begin
     ext n,
     cases n,
     { have h : ((_ : X _[0] ⟶ _) = _) := (P_is_homotopic_to_id 2).comm_ext 0,
@@ -608,7 +608,7 @@ variables {A : Type*} [category A] [abelian A]
 variable {Y : simplicial_object A}
 
 lemma higher_faces_vanish_on_Moore_complex (n : ℕ) :
-  higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map Y).f (n+1)) := 
+  higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map Y).f (n+1)) :=
 { vanishing := λ j hj,
   begin
     simp only [inclusion_of_Moore_complex_map, chain_complex.of_hom],
@@ -657,7 +657,7 @@ chain_complex.of_hom _ _ _ _ _ _
         (show ((normalized_Moore_complex A).obj Y).d (n+1) n = normalized_Moore_complex.obj_d Y n,
           by erw chain_complex.of_d)] at eq,
       erw [← eq, ← assoc, factor_thru_arrow,
-        P_infty.comm' (n+1) n (by simp only [complex_shape.down_rel]), chain_complex.of_d],   
+        P_infty.comm' (n+1) n (by simp only [complex_shape.down_rel]), chain_complex.of_d],
     end)
 
 lemma P_infty_is_a_retraction (Y : simplicial_object A) :
