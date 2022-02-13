@@ -17,7 +17,6 @@ open category_theory.simplicial_object
 open_locale simplicial
 open_locale big_operators
 
-
 namespace algebraic_topology
 
 namespace dold_kan
@@ -27,6 +26,10 @@ variables {X : simplicial_object C}
 
 structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
 (vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
+
+lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
+  (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
+{ vanishing := λ j hj, v.vanishing j (by { rw ← add_assoc, exact le_add_right hj, }) }
 
 /-- the map `λ a, a+i` from `fin` q to `fin n`, when $n=a+q$ -/
 @[simp]
@@ -151,21 +154,94 @@ begin
     ring_exp, },
 end
 
+@[simp] lemma fin.cast_le_one {n m : ℕ} (h : n.succ.succ ≤ m.succ.succ) :
+  fin.cast_le h 1 = 1 :=
+by simpa only [fin.eq_iff_veq]
+
 lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
-  sorry
+  simp only [Hσ, homotopy.null_homotopic_map_f (c_mk (n+2) (n+1) rfl) (c_mk (n+1) n rfl),
+    hσ'_eq_zero hqn (cs_down_succ n), comp_zero, zero_add],
+  by_cases hqn' : n+1<q,
+  { rw [hσ'_eq_zero hqn' (c_mk (n+2) (n+1) rfl), zero_comp, comp_zero], },
+  { simp only [hσ'_eq (show n+1=0+q, by linarith) (c_mk (n+2) (n+1) rfl),
+      pow_zero, fin.mk_zero, one_zsmul, eq_to_hom_refl, comp_id],
+    erw chain_complex.of_d,
+    simp only [alternating_face_map_complex.obj_d, comp_sum],
+    rw sum_trunc (show n+3=2+(n+1), by linarith),
+    { simp only [fin.sum_univ_cast_succ, fin.sum_univ_zero, zero_add],
+      simp only [fin.last, fin.mk_zero, fin.cast_succ_zero, fin.cast_le_zero, fin.coe_zero,
+        pow_zero, one_zsmul, fin.mk_one, fin.cast_le_one, fin.coe_one, pow_one, neg_smul,
+        comp_neg],
+      erw [δ_comp_σ_self, δ_comp_σ_succ, add_right_neg], },
+    { rintro j,
+      have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin(n+1)) < j.succ), swap,
+      { simpa only [fin.cast_succ_zero] using fin.succ_pos j, },
+      simp only [fin.cast_succ_zero, cast_succ] at δσ_rel,
+      have h : translate_fin 2 (by rw add_comm 2) j = j.succ.succ,
+      { ext, simp only [translate_fin, fin.coe_mk, fin.coe_succ, add_comm 2], },
+      simp only [comp_zsmul, h, δσ_rel, ← assoc, v.vanishing j (by linarith),
+        zero_comp, zsmul_zero], }, },
 end
+
+lemma test (a j : ℕ) (h1 : ¬a=j) (h2 : a≤ j) : a< j := (ne.le_iff_lt h1).mp h2
 
 lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
-begin
-  sorry
-end
-
-lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
-  (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
-{ vanishing := λ j hj, v.vanishing j (by { rw ← add_assoc, exact le_add_right hj, }) }
+{ vanishing := begin
+    intros j hj₁,
+    simp only [add_comp, comp_add, homological_complex.add_f_apply, homological_complex.id_f],
+    erw comp_id,
+    -- when n < q, the result follows immediately from the assumption
+    by_cases hqn : n<q,
+    { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v.vanishing j (by linarith)], },
+    -- we now assume that n≥q, and write n=a+q
+    cases nat.le.dest (not_lt.mp hqn) with a ha,
+    rw [Hσφ_eq_neg_σδ (show n=a+q, by linarith) v,
+      neg_comp, add_neg_eq_zero, assoc, assoc],
+    cases n with m hm,
+    -- the boundary case n=0
+    { simp only [nat.eq_zero_of_add_eq_zero_left ha, fin.eq_zero j,
+        fin.mk_zero, fin.mk_one],
+      erw [δ_comp_σ_succ],
+      simp only [fin.succ_zero_eq_one, comp_id], },
+    -- in the other case, we need to write n as m+1
+    -- then, we first consider the particular case j = a
+    by_cases hj₂ : a = (j : ℕ),
+    { simp only [hj₂, fin.eta, δ_comp_σ_succ, comp_id],
+      congr,
+      ext,
+      simp only [fin.coe_succ, fin.coe_mk], },
+    -- now, we assume j ≠ a (i.e. a < j)
+    have haj : a<j := (ne.le_iff_lt hj₂).mp (by linarith),
+    have hj₃ := j.is_lt,
+    have ham : a≤m,
+    { by_contradiction,
+      rw [not_le, ← nat.succ_le_iff] at h,
+      linarith, },
+    have ineq1 : (fin.cast_succ (⟨a, nat.lt_succ_iff.mpr ham⟩ : fin(m+1)) < j),
+    { rw fin.lt_iff_coe_lt_coe, exact haj, },
+    erw [δ_comp_σ_of_gt X ineq1],
+    by_cases ham' : a<m,
+    { -- case where `a<m`
+      have ineq2 : (fin.cast_succ (⟨a+1, nat.succ_lt_succ ham'⟩ : fin(m+1)) ≤ j),
+      { simpa only [fin.le_iff_coe_le_coe] using nat.succ_le_iff.mpr haj, },
+      have δδ_rel := δ_comp_δ X ineq2,
+      simp only [fin.cast_succ_mk, fin.eta] at δδ_rel,
+      slice_rhs 2 3 { erw [← δδ_rel], },
+      simp only [← assoc, v.vanishing j (by linarith), zero_comp], },
+    { -- in the last case, a=m, q=1 and j=a+1
+      have ham'' : a=m := le_antisymm ham (not_lt.mp ham'),
+      have hq : q=1,
+      { simpa [← ham'', show a.succ=a+1, by refl, add_comm a, add_right_inj] using ha, },
+      have hj₄ : (⟨a+1, by linarith⟩ : fin (m+3)) = (fin.cast_succ j),
+      { ext,
+        simp only [fin.coe_mk, fin.coe_cast_succ],
+        linarith, },
+      slice_rhs 2 3 { rw [hj₄, δ_comp_δ_self], },
+      simp only [← assoc, v.vanishing j (by linarith), zero_comp], },
+  end, }
 
 end dold_kan
 

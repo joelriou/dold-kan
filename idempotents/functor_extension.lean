@@ -6,23 +6,18 @@ Authors: Joël Riou
 
 import category_theory.idempotents.karoubi
 import category_theory.natural_isomorphism
+import functor_ext
+
 open category_theory.category
 open category_theory.idempotents.karoubi
 
+
 namespace category_theory
-/-
+
 lemma functor.assoc {C D E F : Type*} [category C] [category D]
   [category E] [category F] (φ : C ⥤ D)
   (φ' : D ⥤ E) (φ'' : E ⥤ F) : (φ ⋙ φ') ⋙ φ'' = φ ⋙ (φ' ⋙ φ'') :=
-by refl-/
-
-lemma congr_obj {D D' : Type*} [category D] [category D'] {F G : D ⥤ D'}
-(h : F = G) : ∀ X : D, F.obj X = G.obj X :=
-by { intro X, rw h, }
-
-lemma congr_map {D D' : Type*} [category D] [category D'] (F : D ⥤ D')
-{X Y : D} {f g : X ⟶ Y} (h : f = g) : F.map f = F.map g :=
-by { subst h, }
+by refl
 
 /-- When a functor `F` is an equivalence of categories, and `G` is isomorphic to `F`, then
 `G` is also an equivalence of categories. -/
@@ -108,7 +103,7 @@ begin
   apply is_equivalence_of_iso ((functor.associator F.inv F G).symm.trans φ),
   exact functor.is_equivalence_trans F.inv (F ⋙ G),
 end
-#exit
+
 namespace idempotents
 
 variables (C D : Type*) [category C] [category D]
@@ -272,7 +267,7 @@ lemma functor_extension''_comp_whiskering_left_to_karoubi :
 by simp only [functor_extension'', functor.assoc,
   functor_extension'_comp_whiskering_left_to_karoubi, functor.comp_id]
 
-section
+section is_idempotent_complete
 
 variable [is_idempotent_complete D]
 
@@ -320,9 +315,7 @@ begin
     apply_instance, }
 end
 
-end section
-
-#exit
+end is_idempotent_complete
 
 variables {C} {D}
 lemma nat_trans_eq {F G : karoubi C ⥤ D} (φ : F ⟶ G) (P : karoubi C) :
@@ -338,22 +331,6 @@ lemma nat_trans_eq' {F G : karoubi C ⥤ D} (φ : F ⟶ G) (P : karoubi C) :
   φ.app P = F.map (decomp_id_i P) ≫ φ.app ((to_karoubi C).obj P.X) ≫ G.map (decomp_id_p P) :=
 by { rw [nat_trans_eq], refl, }
 
-#exit
-
-instance : is_equivalence (functor_extension C D) :=
-by { rw ← karoubi_universal'_functor, apply_instance, }
-
-instance [is_idempotent_complete D] :
-  is_equivalence ((whiskering_left C (karoubi C) D).obj (to_karoubi C)) := sorry
-
-
-variables (C) (D)
-
-
-
-
-
 end idempotents
 
 end category_theory
-#lint

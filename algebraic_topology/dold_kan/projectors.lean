@@ -12,7 +12,9 @@ open category_theory
 open category_theory.category
 open category_theory.limits
 open category_theory.preadditive
+open category_theory.simplicial_object
 open simplex_category
+open opposite
 open_locale simplicial
 
 noncomputable theory
@@ -21,9 +23,10 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [preadditive C]
-variables {X : simplicial_object C}
+universe v
 
+variables {C : Type*} [category.{v} C] [preadditive C]
+variables {X : simplicial_object C}
 
 /-- This is the inductive definition of the projectors `P q`, with `P 0 := Id` and
 `P (q+1) := P q ≫ (𝟙 _ + Hσ q)`.
@@ -59,7 +62,7 @@ end
 lemma higher_faces_vanish_P : Π (q : ℕ),
   Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0     := λ n,
-  { vanishing := λ j hj, by { exfalso, have hj2 := fin.is_lt j, linarith, } }
+  { vanishing := λ j hj₁, by { exfalso, have hj₂ := fin.is_lt j, linarith, } }
 | (q+1) := λ n,
   { vanishing := begin
       unfold P,
@@ -88,7 +91,7 @@ begin
       simp only [eq, zero_comp], }, },
 end
 
-lemma P_termwise_is_a_projector (q n : ℕ) :
+lemma P_degreewise_is_a_projector (q n : ℕ) :
   ((P q).f n : X _[n] ⟶ _) ≫ ((P q).f n) = (P q).f n :=
 begin
   cases n,
@@ -97,7 +100,39 @@ begin
 end
 
 lemma P_is_a_projector (q : ℕ) : (P q : K[X] ⟶ K[X]) ≫ P q = P q :=
-by { ext n, exact P_termwise_is_a_projector q n, }
+by { ext n, exact P_degreewise_is_a_projector q n, }
+
+/-- For each q, P q is a natural transformation. -/
+def nat_trans_P (q : ℕ) :
+  alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
+{ app := λ _, P q,
+  naturality' := λ X Y f, begin
+    induction q with q hq,
+    { erw [id_comp, comp_id], },
+    { unfold P,
+      simp only [add_comp, comp_add, assoc, comp_id, hq],
+      congr' 1,
+      rw [← assoc, hq, assoc],
+      congr' 1,
+      exact (nat_trans_Hσ q).naturality' f, }
+  end }
+
+lemma P_degreewise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+  f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
+homological_complex.congr_hom ((nat_trans_P q).naturality f) n
+
+lemma map_P {D : Type*} [category.{v} D] [preadditive D]
+  (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
+  ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) =
+    G.map ((P q : K[X] ⟶ _).f n) :=
+begin
+  induction q with q hq,
+  { erw [G.map_id], refl, },
+  { unfold P,
+    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply, comp_id,
+      functor.map_add, functor.map_comp, hq, map_Hσ], }
+end
+
 
 end dold_kan
 
