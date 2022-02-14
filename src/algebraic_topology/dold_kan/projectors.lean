@@ -5,7 +5,6 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.dold_kan.faces
-import homotopy
 
 open category_theory
 open category_theory.category

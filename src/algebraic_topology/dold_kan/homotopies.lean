@@ -4,11 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-import algebraic_topology.alternating_face_map_complex
-import homotopy
-
-import homological_complex_misc
-import functor_ext
+import for_mathlib.alternating_face_map_complex
+import for_mathlib.homotopy
+import for_mathlib.homological_complex_misc
+import for_mathlib.functor_misc
 
 open category_theory
 open category_theory.category

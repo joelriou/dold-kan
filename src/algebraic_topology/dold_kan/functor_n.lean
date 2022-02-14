@@ -5,7 +5,7 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.dold_kan.p_infty
-import idempotents.functor_extension
+import for_mathlib.idempotents.functor_extension
 
 open category_theory
 open category_theory.category

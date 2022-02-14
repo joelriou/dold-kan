@@ -6,8 +6,8 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.functor_n
 import algebraic_topology.dold_kan.decomposition
-import category_theory.idempotents.karoubi_karoubi
-import idempotents.homological_complex
+import for_mathlib.idempotents.karoubi_karoubi
+import for_mathlib.idempotents.homological_complex
 
 open category_theory
 open category_theory.category

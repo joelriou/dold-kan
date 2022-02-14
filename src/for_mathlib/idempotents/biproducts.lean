@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import category_theory.idempotents.karoubi
-import category_theory.limits.shapes.biproducts
+import for_mathlib.biproducts
+import for_mathlib.idempotents.karoubi
 
 noncomputable theory
 

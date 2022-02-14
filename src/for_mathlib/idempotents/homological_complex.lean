@@ -4,10 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 --import category_theory.pseudoabelian.equivalence
-import homological_complex_misc
+import for_mathlib.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
-import category_theory.idempotents.karoubi
+import for_mathlib.idempotents.karoubi
 
 noncomputable theory
 

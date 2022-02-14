@@ -4,9 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import category_theory.idempotents.karoubi
+import for_mathlib.idempotents.karoubi
+import for_mathlib.functor_misc
 import category_theory.natural_isomorphism
-import functor_ext
 
 open category_theory.category
 open category_theory.idempotents.karoubi

@@ -5,11 +5,11 @@ Author: Joël Riou
 -/
 
 import category_theory.additive.basic
-import idempotents.functor_extension
+import for_mathlib.idempotents.functor_extension
 import algebra.homology.homological_complex
 import algebraic_topology.simplicial_object
-import algebraic_topology.alternating_face_map_complex
-import simplex_category.simplex_category2
+import for_mathlib.alternating_face_map_complex
+import for_mathlib.simplex_category.simplex_category2
 
 noncomputable theory
 
