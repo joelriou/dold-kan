@@ -1,7 +1,7 @@
 import algebraic_topology.simplex_category
 import category_theory.limits.shapes.images
 import category_theory.limits.shapes.strong_epi
-import simplex_category.simplex_category1
+--import simplex_category.simplex_category1
 
 universes u v
 
@@ -127,15 +127,32 @@ instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
   has_strong_epi_mono_factorisations.mk
   (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
+lemma eq_of_is_iso {x y : simplex_category.{v}} {f : x ⟶ y} (hf : is_iso f) : x = y :=
+begin
+  ext,
+  apply le_antisymm,
+  { exact len_le_of_mono (show mono f, by apply_instance), },
+  { exact len_le_of_epi (show epi f, by apply_instance), },
+end
+
+
+lemma eq_eq_to_hom_of_is_iso {x y : simplex_category.{v}} {f : x ⟶ y} (hf : is_iso f) :
+  f = eq_to_hom (eq_of_is_iso hf) :=
+begin
+  have h := eq_of_is_iso hf,
+  unfreezingI { subst h, },
+  exact eq_id_of_is_iso hf,
+end
+
 /- Two mono factorisations satisfying the universal property of
 the image are equal. -/
 def uniqueness_mono_factorisation {x y : simplex_category.{u}} {f : x ⟶ y}
   (F F' : mono_factorisation f) (hF : is_image F) (hF' : is_image F') :
   F = F' :=
 begin
-  let eqI := eq_to_iso_of_iso (is_image.iso_ext hF hF'),
+  let eqI := eq_eq_to_hom_of_is_iso (show is_iso (is_image.iso_ext hF hF').hom, by apply_instance),
   have eqm := is_image.iso_ext_hom_m hF hF',
-  rw [eqI, eq_to_iso.hom] at eqm,
+  rw [eqI] at eqm,
   ext1,
   { exact eqm.symm, },
 end

@@ -4,9 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-import algebraic_topology.dold_kan.homotopies
 import algebraic_topology.dold_kan.faces
-import algebra.homology.homotopy
+import homotopy
 
 open category_theory
 open category_theory.category

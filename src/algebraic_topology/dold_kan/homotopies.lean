@@ -5,7 +5,7 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.alternating_face_map_complex
-import algebra.homology.homotopy
+import homotopy
 
 import homological_complex_misc
 import functor_ext
