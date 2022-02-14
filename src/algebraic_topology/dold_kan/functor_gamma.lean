@@ -71,6 +71,23 @@ instance {Δ : simplex_category} : fintype (Γ_index_set Δ) := fintype_Γ_index
 @[simps]
 def Γ_index_id (n : ℕ) : Γ_index_set [n] := ⟨[n], ⟨𝟙 _, by apply_instance,⟩⟩
 
+lemma eq_Γ_index_id {n : ℕ} {A : Γ_index_set [n]} (h : A.1.len = n) :
+  A = Γ_index_id n :=
+begin
+  rcases A with ⟨Δ, ⟨f, hf⟩⟩,
+  have hΔ : Δ = [n],
+  { apply simplex_category.ext,
+    simpa only [h], },
+  subst hΔ,
+  simp only [Γ_index_id],
+  ext1,
+  { haveI := hf,
+    simp only [eq_to_hom_refl, comp_id],
+    exact simplex_category.eq_id_of_epi f, },
+  { refl, }
+end
+
+
 def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category.{v})
   (A : Γ_index_set Δ) : C := K.X A.1.len
 
@@ -276,24 +293,9 @@ def Γ' : chain_complex C ℕ ⥤ simplicial_object C :=
 notation `K[`X`]` := alternating_face_map_complex.obj X
 
 @[simp]
-def inclusion_Γ_summand (K : chain_complex C ℕ) {Δ : simplex_category} {n : ℕ}
-  (A : Γ_index_set Δ) (hΔn : Δ.len = n) :
-Γ_summand K Δ A ⟶  K[Γ'.obj K].X n := sigma.ι (Γ_summand K Δ) A ≫ eq_to_hom
-begin
-  have h : Δ = [n] := by { ext, exact hΔn, },
-  subst h,
-  refl,
-end
-
-/- @[simp]
-def inclusion_Γ_summand_var (K : chain_complex C ℕ) {n : ℕ} (A : Γ_index_set [n]) :
-  Γ_summand K [n] A ⟶ ((alternating_face_map_complex C).obj (Γ'.obj K)).X n :=
+def inclusion_Γ_summand (K : chain_complex C ℕ) {n : ℕ} (A : Γ_index_set [n]) :
+  Γ_summand K [n] A ⟶ K[Γ'.obj K].X n :=
 sigma.ι (Γ_summand K [n]) A
-
-@[simp]
-def inclusion_Γ_summand_var' (K : chain_complex C ℕ) {n : ℕ} (A : Γ_index_set [n]) :
-  Γ_summand K (unop (op [n])) A ⟶ ((alternating_face_map_complex C).obj (Γ'.obj K)).X n :=
-sigma.ι (Γ_summand K [n]) A -/
 
 @[simps]
 def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
