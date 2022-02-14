@@ -1,0 +1,3 @@
+builtin_path
+path /home/joel/lean/mathlib_simplex_category_lemmas//src
+path ./src
