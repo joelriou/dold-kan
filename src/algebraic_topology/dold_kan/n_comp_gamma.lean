@@ -117,17 +117,9 @@ begin
   erw assoc,
 end
 
-lemma is_iso_cancel_comp_left {D : Type*} [category D] {X Y Z : D} (f : X ⟶ Y) (g : Y ⟶ Z) [hf : is_iso f]
-  [hfg : is_iso (f ≫ g)] : is_iso g :=
-begin
-  refine ⟨_⟩,
-  use inv (f ≫ g) ≫ f,
-  split,
-  { conv { to_lhs, congr, rw [← id_comp g, ← is_iso.inv_hom_id f], },
-    slice_lhs 2 4 { rw [← assoc, is_iso.hom_inv_id], },
-    rw [id_comp, is_iso.inv_hom_id], },
-  { rw [assoc, is_iso.inv_hom_id], },
-end
+lemma of_is_iso_comp_left {D : Type*} [category D] {X Y Z : D} (f : X ⟶ Y) (g : Y ⟶ Z)
+  [hf : is_iso f] [hfg : is_iso (f ≫ g)] : is_iso g :=
+by { rw [← id_comp g, ← is_iso.inv_hom_id f, assoc], apply_instance, }
 
 instance : is_iso (ΓN'_trans : (N' : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
 begin
@@ -136,7 +128,7 @@ begin
   intro X,
   have h : is_iso (ΓN_trans.app ((to_karoubi _).obj X)) := by apply_instance,
   rw ΓN_trans_app_to_karoubi at h,
-  exact @is_iso_cancel_comp_left _ _ _ _ _ _ _ infer_instance h,
+  exact @of_is_iso_comp_left _ _ _ _ _ _ _ infer_instance h,
 end
 
 @[simps]
