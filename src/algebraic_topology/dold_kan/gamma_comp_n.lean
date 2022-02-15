@@ -6,6 +6,7 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.functor_n
 import algebraic_topology.dold_kan.degeneracies
+import for_mathlib.idempotents.nat_trans
 
 noncomputable theory
 
@@ -24,6 +25,7 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+@[simps]
 abbreviation NΓ'_hom : to_karoubi (chain_complex C ℕ) ⋙ Γ ⋙ N ⟶ to_karoubi _ :=
 { app := λ K,
   { f :=
@@ -39,6 +41,7 @@ abbreviation NΓ'_hom : to_karoubi (chain_complex C ℕ) ⋙ Γ ⋙ N ⟶ to_kar
     comm := sorry, }, 
   naturality' := sorry, }
 
+@[simps]
 abbreviation NΓ'_inv :  to_karoubi (chain_complex C ℕ) ⟶ to_karoubi _ ⋙ Γ ⋙ N :=
 { app := λ K,
   { f :=
@@ -54,12 +57,9 @@ def NΓ' : to_karoubi (chain_complex C ℕ) ⋙ Γ ⋙ N ≅ to_karoubi _ :=
   hom_inv_id' := sorry,
   inv_hom_id' := sorry, }
 
---@[simps]
-theorem NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ)) := sorry
---(to_karoubi_iso_equiv _ _).inv_fun (NΓ'.trans (eq_to_iso (functor.comp_id _).symm))
-
-
-#lint
+@[simps]
+def NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
+(whiskering_left_to_karoubi_iso_equiv (Γ ⋙ N) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun NΓ'
 
 end dold_kan
 
