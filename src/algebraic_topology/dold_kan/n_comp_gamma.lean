@@ -79,7 +79,7 @@ begin
   slice_lhs 1 2 { erw eq₁, },
   slice_lhs 2 3 { erw comp_id, },
   slice_lhs 3 4 { erw colimit.ι_desc, },
-  dsimp,
+  dsimp only [cofan.mk],
   slice_lhs 3 4 { erw comp_id, },
   slice_lhs 3 4 { erw [P.X.map_id, comp_id], },
   slice_lhs 2 3 { erw eq₃, },
@@ -102,6 +102,44 @@ begin
   apply_instance,
 end
 
+lemma ΓN_trans_app_to_karoubi (X : simplicial_object C) :
+  ΓN_trans.app ((to_karoubi (simplicial_object C)).obj X) = eq_to_hom
+  (by { ext Δ j, { simp only [eq_to_hom_refl, comp_id, id_comp], congr' 1, dsimp, congr, ext A, erw comp_id, },
+    { refl,}, }) ≫ ΓN'_trans.app X  :=
+begin
+  ext Δ A,
+  simp only [karoubi.comp, eq_to_hom_refl, comp_id, karoubi.eq_to_hom_f],
+  dsimp [ΓN_trans, ΓN'_trans],
+  simp,
+  repeat { erw nat_trans.id_app, },
+  erw [comp_id, id_comp, id_comp],
+  slice_lhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+  erw assoc,
+end
+
+lemma is_iso_cancel_comp_left {D : Type*} [category D] {X Y Z : D} (f : X ⟶ Y) (g : Y ⟶ Z) [hf : is_iso f]
+  [hfg : is_iso (f ≫ g)] : is_iso g :=
+begin
+  refine ⟨_⟩,
+  use inv (f ≫ g) ≫ f,
+  split,
+  { conv { to_lhs, congr, rw [← id_comp g, ← is_iso.inv_hom_id f], },
+    slice_lhs 2 4 { rw [← assoc, is_iso.hom_inv_id], },
+    rw [id_comp, is_iso.inv_hom_id], },
+  { rw [assoc, is_iso.inv_hom_id], },
+end
+
+instance : is_iso (ΓN'_trans : (N' : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
+begin
+  haveI : ∀ (X : simplicial_object C), is_iso (ΓN'_trans.app X), swap,
+  { apply nat_iso.is_iso_of_is_iso_app, },
+  intro X,
+  have h : is_iso (ΓN_trans.app ((to_karoubi _).obj X)) := by apply_instance,
+  rw ΓN_trans_app_to_karoubi at h,
+  exact @is_iso_cancel_comp_left _ _ _ _ _ _ _ infer_instance h,
+end
+
+@[simps]
 def ΓN : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ ≅ 𝟭 _ := as_iso (ΓN_trans)
 
 end dold_kan

@@ -9,6 +9,8 @@ import for_mathlib.idempotents.functor_extension
 import for_mathlib.functor_misc
 import category_theory.natural_isomorphism
 
+import category_theory.fully_faithful
+
 open category_theory.category
 open category_theory.idempotents
 open category_theory.idempotents.karoubi
@@ -86,16 +88,21 @@ def whiskering_left_to_karoubi_iso_equiv
   right_inv := λ ψ, by { ext X, simp only [equiv.to_fun_as_coe, equiv.apply_symm_apply,
     equiv.inv_fun_as_coe], } }
 
-lemma karoubi_universal'_inverse_preimage {F G : karoubi C ⥤ karoubi D} :
-  (karoubi_universal' C D).inverse.preimage = (whiskering_left_to_karoubi_hom_equiv F G).inv_fun  :=
+lemma karoubi_universal'_inverse_preimage (F G : karoubi C ⥤ karoubi D)
+  (φ : ((karoubi_universal' C D).inverse).obj F ⟶ ((karoubi_universal' C D).inverse).obj G) :
+  (karoubi_universal' C D).inverse.preimage φ = (whiskering_left_to_karoubi_hom_equiv F G).inv_fun φ :=
 begin
-  ext1 φ,
   apply functor.map_injective (((whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C))),
   erw functor.image_preimage,
   ext1, ext1 X,
   dsimp [decomp_id_i, decomp_id_p],
   erw [F.map_id, G.map_id, id_comp, comp_id],
 end
+
+lemma karoubi_universal'_inverse_preimage_iso (F G : karoubi C ⥤ karoubi D)
+  (e : ((karoubi_universal' C D).inverse).obj F ≅ ((karoubi_universal' C D).inverse).obj G) :
+  preimage_iso e = (whiskering_left_to_karoubi_iso_equiv F G).inv_fun e :=
+by { ext1, exact karoubi_universal'_inverse_preimage F G e.hom, }
 
 end idempotents
 
