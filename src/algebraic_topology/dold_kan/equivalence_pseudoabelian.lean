@@ -25,11 +25,7 @@ open algebraic_topology.dold_kan
 instance : is_idempotent_complete (chain_complex C ℕ) := by sorry
 instance : is_idempotent_complete (simplicial_object C) := by sorry
 
-def N : simplicial_object C ⥤ chain_complex C ℕ :=
-N' ⋙ (to_karoubi_is_equivalence (chain_complex C ℕ)).inverse
-
-def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
-
+/-
 def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) :=
 begin
   let κ := to_karoubi (simplicial_object C),
@@ -77,7 +73,17 @@ begin
     rw functor.assoc,
     congr,
     exact h'.symm, }
-end
+end-/
+
+def N : simplicial_object C ⥤ chain_complex C ℕ :=
+N' ⋙ (to_karoubi_is_equivalence (chain_complex C ℕ)).inverse
+
+def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
+
+def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) := sorry
+
+def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := sorry
+
 
 @[simps]
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
@@ -86,7 +92,6 @@ def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
   unit_iso := ΓN.symm,
   counit_iso := NΓ,
   functor_unit_iso_comp' := λ X, begin
-
     sorry,
   end, }
 

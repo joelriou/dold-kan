@@ -47,7 +47,7 @@ begin
   { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N' ⋙ Γ), },
 end
 
-lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤_ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
+lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤ _ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
 begin
   ext P n,
   simp only [assoc, nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app,
@@ -60,20 +60,12 @@ begin
   have eq₃ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
     P_infty_degreewise_naturality _ _,
   slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
-  slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-  slice_lhs 2 3 { erw eq₃, },
-  slice_lhs 1 2 { erw eq₁, },
-  slice_lhs 2 3 { erw eq₂, },
-  slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
-  slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-  slice_lhs 2 3 { erw eq₃, },
-  slice_lhs 1 2 { erw eq₁, },
-  slice_lhs 2 3 { erw eq₂, },
-  slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
-  slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-  slice_lhs 2 3 { erw eq₃, },
-  slice_lhs 1 2 { erw eq₁, },
-  slice_lhs 2 3 { erw eq₂, },
+  repeat
+  { slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
+    slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
+    slice_lhs 2 3 { erw eq₃, },
+    slice_lhs 1 2 { erw eq₁, },
+    slice_lhs 2 3 { erw eq₂, }, },
   slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
   slice_lhs 2 3 { erw eq₃, },
   slice_lhs 1 2 { erw eq₁, },
@@ -85,6 +77,36 @@ begin
   slice_lhs 2 3 { erw eq₃, },
   slice_lhs 1 2 { erw eq₁, },
   slice_lhs 2 3 { erw eq₂, },
+end
+
+lemma identity_N' :
+((
+  ((𝟙 (N' : simplicial_object C ⥤ _ )) ◫ NΓ.inv) ≫ eq_to_hom (by refl) ≫ (ΓN'_trans ◫ 𝟙 N)
+    ≫ eq_to_hom (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N')) : N' ⟶ N')
+    = 𝟙 _
+ :=
+begin
+  ext X n,
+  simp only [karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id, karoubi.comp_p, assoc, id_comp, nat_trans.comp_app, nat_trans.hcomp_app,
+  nat_trans.id_app, karoubi.id_eq, functor.comp_map, karoubi.comp, nat_trans.hcomp_id_app, eq_to_hom_app,
+  homological_complex.comp_f, NΓ_inv_app_f_f, N_map_f_f, Γ_map_f_app, ΓN'_trans_app_f_app, subtype.val_eq_coe,
+  functor.map_comp, eq_to_hom_map],
+  dsimp,
+  have eq₁ : P_infty.f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
+  repeat { slice_lhs 2 3 { erw P_infty_eq_id_on_Γ_summand, }, },
+  simp only [assoc],
+  slice_lhs 2 3 { erw [ι_colim_map, discrete.nat_trans_app], },
+  slice_lhs 1 2 { erw [eq₁], },
+  slice_lhs 2 3 { erw P_infty_eq_id_on_Γ_summand, },
+  slice_lhs 2 3 { erw [ι_colim_map, discrete.nat_trans_app], },
+  slice_lhs 1 2 { erw [eq₁], },
+  slice_lhs 2 3 { erw P_infty_eq_id_on_Γ_summand, },
+  slice_lhs 2 3 { erw colimit.ι_desc, },
+  dsimp only [cofan.mk],
+  slice_lhs 1 2 { erw eq₁, },
+  slice_lhs 1 2 { erw comp_id, },
+  convert comp_id _,
+  apply X.map_id,
 end
 
 instance : is_iso (ΓN_trans : (N : karoubi (simplicial_object C) ⥤_ ) ⋙ _ ⟶ _) :=
