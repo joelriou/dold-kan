@@ -6,13 +6,16 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.decomposition
 import algebraic_topology.dold_kan.functor_gamma
+import algebraic_topology.dold_kan.functor_n
 
 open category_theory
 open category_theory.category
 open category_theory.limits
---open category_theory.idempotents
+open category_theory.idempotents
 open opposite
 open_locale simplicial
+
+noncomputable theory
 
 universe v
 

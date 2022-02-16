@@ -38,7 +38,6 @@ def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ
     erw [id_comp] at h,
     rw [← is_iso.inv_id],
     simp only [← h, is_iso.inv_comp],
-    clear h,
     congr',
     { rw ← functor.map_inv,
       congr,

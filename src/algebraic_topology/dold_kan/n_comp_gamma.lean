@@ -29,8 +29,7 @@ namespace dold_kan
 variables {C : Type*} [category.{v} C] [additive_category C]
 
 @[simps]
-def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ
-  ⟶ to_karoubi _ :=
+def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
     { app := λ Δ, sigma.desc (λ A,

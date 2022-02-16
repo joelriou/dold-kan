@@ -8,6 +8,7 @@ import for_mathlib.alternating_face_map_complex
 import for_mathlib.homotopy
 import for_mathlib.homological_complex_misc
 import for_mathlib.functor_misc
+import algebraic_topology.dold_kan.notations
 
 open category_theory
 open category_theory.category
@@ -28,8 +29,6 @@ universe v
 
 variables {C : Type*} [category.{v} C] [preadditive C]
 variables {X : simplicial_object C}
-
-notation `K[`X`]` := alternating_face_map_complex.obj X
 
 /-- As we are using chain complexes indexed by ℕ, we shall need the relation
 `c` such `c m n` if and only if `m=n+1`. -/

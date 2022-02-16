@@ -236,6 +236,10 @@ lemma decomp_id (P : karoubi C) :
   𝟙 P = (decomp_id_i P) ≫ (decomp_id_p P) :=
 by { ext, simp only [comp, id_eq, P.idempotence, decomp_id_i, decomp_id_p], }
 
+instance {P : karoubi C} : mono (decomp_id_i P) := mono_of_mono_fac (decomp_id P).symm
+
+instance {P : karoubi C} : epi (decomp_id_p P) := epi_of_epi_fac (decomp_id P).symm
+
 lemma decomp_p (P : karoubi C) :
   (to_karoubi C).map P.p = (decomp_id_p P) ≫ (decomp_id_i P) :=
 by { ext, simp only [comp, decomp_id_p_f, decomp_id_i_f, P.idempotence, to_karoubi_map_f], }

@@ -25,65 +25,52 @@ open algebraic_topology.dold_kan
 instance : is_idempotent_complete (chain_complex C ℕ) := by sorry
 instance : is_idempotent_complete (simplicial_object C) := by sorry
 
-/-
-def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) :=
+def e' := to_karoubi_is_equivalence (chain_complex C ℕ)
+def κ' := to_karoubi (chain_complex C ℕ)
+def κinv' : _ ⥤ chain_complex C ℕ := e'.inverse
+def e := to_karoubi_is_equivalence (simplicial_object C)
+def κ := to_karoubi (simplicial_object C)
+def κinv : _ ⥤ simplicial_object C := e.inverse
+def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
+
+def N : simplicial_object C ⥤ chain_complex C ℕ :=
+N' ⋙ κinv'
+
+def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
+
+#check ΓN'_trans
+
+def counit_var : (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (κ : simplicial_object C ⥤ _) :=
 begin
-  let κ := to_karoubi (simplicial_object C),
-  let κ' := to_karoubi (chain_complex C ℕ),
-  let κinv := is_equivalence.inverse κ,
-  let κinv' := is_equivalence.inverse κ',
-  let e := to_karoubi_is_equivalence (simplicial_object C),
-  let e' := to_karoubi_is_equivalence (chain_complex C ℕ),
-  let γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
-  calc N ⋙ Γ ≅ (N ⋙ Γ) ⋙ 𝟭 _ : (functor.right_unitor _).symm
-  ... ≅ (N ⋙ Γ) ⋙ (κ ⋙ κinv) : iso_whisker_left _ e.unit_iso
-  ... ≅ (N' ⋙ κinv') ⋙ Γ' ⋙ (κ ⋙ κinv) : by refl
-  ... ≅ (N' ⋙ κinv') ⋙ (Γ' ⋙ κ) ⋙ κinv : iso_whisker_left _ (functor.associator _ _ _).symm
-  ... ≅ (N' ⋙ κinv') ⋙ (κ' ⋙ γ) ⋙ κinv : iso_whisker_left _ (iso_whisker_right _ _)
-  ... ≅ N' ⋙ (κinv' ⋙ κ') ⋙ (γ ⋙ κinv) : by refl
-  ... ≅ N' ⋙ 𝟭 _ ⋙ (γ ⋙ κinv) : iso_whisker_left _ (iso_whisker_right e'.counit_iso _)
-  ... ≅ N' ⋙ (γ ⋙ κinv) : iso_whisker_left _ (functor.left_unitor _)
-  ... ≅ (N' ⋙ γ) ⋙ κinv : (functor.associator _ _ _).symm
-  ... ≅ (𝟭 _ ⋙ κ) ⋙ κinv : iso_whisker_right (as_iso ΓN'_trans) _
-  ... ≅ 𝟭 _ ⋙ κ ⋙ κinv : functor.associator _ _ _
-  ... ≅ κ ⋙ κinv : functor.left_unitor _ 
-  ... ≅ 𝟭 _ : e.unit_iso.symm,
+  calc (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (N' ⋙ κinv') ⋙ (Γ ⋙ κ) : _
+  ... ≅ (N' ⋙ κinv') ⋙ (κ' ⋙ γ) : iso_whisker_left _ _
+  ... ≅ N' ⋙ (κinv' ⋙ κ') ⋙ γ : _
+  ... ≅ N' ⋙ 𝟭 _ ⋙ γ : iso_whisker_left _ (iso_whisker_right e'.counit_iso _)
+  ... ≅ (N' ⋙ γ) : by refl
+  ... ≅ κ : as_iso ΓN'_trans,
+  { by refl, },
   { apply eq_to_iso,
     symmetry,
     exact congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ', },
+  { by refl, },
+end
+
+def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) :=
+begin
+  calc N ⋙ Γ ≅ (N' ⋙ κinv' ⋙ Γ) ⋙ 𝟭 _ : (functor.right_unitor _).symm
+  ... ≅ (N' ⋙ κinv' ⋙ Γ) ⋙ (κ ⋙ κinv) : iso_whisker_left _ e.unit_iso
+  ... ≅ ((N' ⋙ κinv' ⋙ Γ) ⋙ κ) ⋙ κinv : by refl
+  ... ≅ κ ⋙ κinv : iso_whisker_right counit_var _
+  ... ≅ 𝟭 _ : e.unit_iso.symm,
 end
 
 def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
 begin
-  let κ' := to_karoubi (chain_complex C ℕ),
-  let κinv' := is_equivalence.inverse κ',
-  let e' := to_karoubi_is_equivalence (chain_complex C ℕ),
-  let γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
-  let ν : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) := algebraic_topology.dold_kan.N,
-  calc Γ ⋙ N ≅ Γ ⋙ (N' ⋙ κinv') : iso.refl _
-  ... ≅ (Γ ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
-  ... ≅ (κ' ⋙ γ ⋙ ν) ⋙ κinv' : iso_whisker_right _ _
-  ... ≅ κ' ⋙ κinv' : iso_whisker_right algebraic_topology.dold_kan.NΓ' _
+  calc Γ ⋙ N ≅ Γ' ⋙ N' ⋙ κinv' : by refl
+  ... ≅ (Γ' ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
+  ... ≅ κ' ⋙ κinv' : iso_whisker_right NΓ' _
   ... ≅ 𝟭 _ : e'.unit_iso.symm,
-  { apply eq_to_iso,
-    have h := congr_obj (functor_extension''_comp_whiskering_left_to_karoubi (chain_complex C ℕ) _) Γ',
-    have h' := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) _) N',
-    dsimp at h h',
-    conv { to_rhs, rw ← functor.assoc, congr, erw h, },
-    rw functor.assoc,
-    congr,
-    exact h'.symm, }
-end-/
-
-def N : simplicial_object C ⥤ chain_complex C ℕ :=
-N' ⋙ (to_karoubi_is_equivalence (chain_complex C ℕ)).inverse
-
-def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
-
-def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) := sorry
-
-def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := sorry
-
+end
 
 @[simps]
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=

@@ -10,6 +10,7 @@ import algebra.homology.homological_complex
 import algebraic_topology.simplicial_object
 import for_mathlib.alternating_face_map_complex
 import for_mathlib.simplex_category.simplex_category2
+import algebraic_topology.dold_kan.notations
 
 noncomputable theory
 
@@ -289,8 +290,6 @@ def Γ' : chain_complex C ℕ ⥤ simplicial_object C :=
     simp only [Γ'_functor.map_app, homological_complex.comp_f, discrete.nat_trans_app,
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
-
-notation `K[`X`]` := alternating_face_map_complex.obj X
 
 @[simp]
 def inclusion_Γ_summand (K : chain_complex C ℕ) {n : ℕ} (A : Γ_index_set [n]) :
