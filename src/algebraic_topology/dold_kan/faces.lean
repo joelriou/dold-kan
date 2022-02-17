@@ -185,8 +185,6 @@ begin
         zero_comp, zsmul_zero], }, },
 end
 
-lemma test (a j : ℕ) (h1 : ¬a=j) (h2 : a≤ j) : a< j := (ne.le_iff_lt h1).mp h2
-
 lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 { vanishing := begin

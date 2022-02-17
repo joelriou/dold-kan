@@ -180,7 +180,6 @@ def N'_equiv_karoubi_normalized :
     refl,
   end }
 
-
 end dold_kan
 
 end algebraic_topology

@@ -101,7 +101,7 @@ begin
   let Y₂ := Y.X,
   let Y₃ := (((whiskering _ _).obj (to_karoubi C)).obj Y.X),
   let Y₄ := (karoubi_functor_category_embedding _ _).obj ((to_karoubi _).obj Y.X),
-  let P₁ : K[Y₂] ⟶ _ := P_infty,
+  let P₁ : K[Y₁] ⟶ _ := P_infty,
   let P₂ : K[Y₂] ⟶ _ := P_infty,
   let P₃ : K[Y₃] ⟶ _ := P_infty,
   let P₄ : K[Y₄] ⟶ _ := P_infty,
