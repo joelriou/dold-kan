@@ -53,7 +53,7 @@ begin
     karoubi.id_eq, functor.comp_map, karoubi.comp, nat_trans.hcomp_id_app,
     homological_complex.comp_f, NΓ_inv_app_f_f, N_obj_p_f, N_map_f_f, Γ_map_f_app,
     ΓN_trans_app_f_app],
-  have eq₁ : P_infty.f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
+  have eq₁ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
   have eq₂ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
   { simpa only [nat_trans.comp_app] using congr_app P.idempotence (op [n]), },
   have eq₃ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
@@ -91,7 +91,7 @@ begin
   homological_complex.comp_f, NΓ_inv_app_f_f, N_map_f_f, Γ_map_f_app, ΓN'_trans_app_f_app, subtype.val_eq_coe,
   functor.map_comp, eq_to_hom_map],
   dsimp,
-  have eq₁ : P_infty.f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
+  have eq₁ : (P_infty : K[X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
   repeat { slice_lhs 2 3 { erw P_infty_eq_id_on_Γ_summand, }, },
   simp only [assoc],
   slice_lhs 2 3 { erw [ι_colim_map, discrete.nat_trans_app], },
