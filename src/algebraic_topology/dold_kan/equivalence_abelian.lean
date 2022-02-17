@@ -33,9 +33,6 @@ def Γ : chain_complex A ℕ ⥤ simplicial_object A := idempotents.dold_kan.Γ
 private def e' := to_karoubi_is_equivalence (chain_complex A ℕ)
 private def κ' := to_karoubi (chain_complex A ℕ)
 private def κinv' : _ ⥤ chain_complex A ℕ := e'.inverse
-private def e := to_karoubi_is_equivalence (simplicial_object A)
-private def κ := to_karoubi (simplicial_object A)
-private def κinv : _ ⥤ simplicial_object A := e.inverse
 
 lemma comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
 begin
@@ -46,28 +43,23 @@ begin
   ... ≅ idempotents.dold_kan.N : by refl,
 end
 
-def equivalence' : simplicial_object A ≌ chain_complex A ℕ := idempotents.dold_kan.equivalence
+def equivalence : simplicial_object A ≌ chain_complex A ℕ :=
+begin
+  let F : simplicial_object A ⥤ _ := idempotents.dold_kan.N,
+  let hF : is_equivalence F := is_equivalence.of_equivalence idempotents.dold_kan.equivalence,
+  letI : is_equivalence (N : simplicial_object A ⥤ _ ) :=
+    is_equivalence_of_iso comparison_N.symm hF,
+  exact N.as_equivalence,
+end
 
-#check equivalence'
+@[simp]
+lemma equivalence_functor : (equivalence : simplicial_object A ≌ _).functor = N := by refl
 
---@[simps]
-/-def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
-{ functor := N,
-  inverse := Γ,
-  unit_iso := ΓN.symm,
-  counit_iso := NΓ,
-  functor_unit_iso_comp' := λ X, begin
-    sorry,
-  end, }-/
+@[simp]
+lemma equivalence_inverse : (equivalence : simplicial_object A ≌ _).inverse = Γ := by refl
 
-end dold_kan
-
-end idempotents
-
-end category_theory
 end dold_kan
 
 end abelian
-#check
 
 end category_theory
