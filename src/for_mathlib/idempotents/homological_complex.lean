@@ -211,14 +211,67 @@ def karoubi_homological_complex_equivalence :
       karoubi.comp] using h,
   end }
 
+lemma functor.map_homological_complex_id {D : Type*} [category D] [preadditive D] :
+  functor.map_homological_complex (𝟭 D) c = 𝟭 _ :=
+begin
+  apply functor.ext,
+  { intros X Y f,
+    ext n,
+    dsimp,
+    simp only [homological_complex.eq_to_hom_f, eq_to_hom_refl],
+    erw [id_comp, comp_id], },
+  { intro X,
+    ext i j hij,
+    { erw [comp_id, id_comp],
+      refl, },
+    { refl, }, },
+end
+
 @[simps]
-def karoubi_chain_complex_equivalence (α : Type*) [add_right_cancel_semigroup α] [has_one α] :
+def nat_iso.map_homological_complex {D E : Type*} [category D] [category E] [preadditive D] [preadditive E]
+  {F G : D ⥤ E} [F.additive] [G.additive] (e : F ≅ G) :
+    functor.map_homological_complex F c ≅ functor.map_homological_complex G c :=
+{ hom := nat_trans.map_homological_complex e.hom c,
+  inv := nat_trans.map_homological_complex e.inv c,
+  hom_inv_id' := by simpa only [← nat_trans.map_homological_complex_comp, e.hom_inv_id],
+  inv_hom_id' := by simpa only [← nat_trans.map_homological_complex_comp, e.inv_hom_id], }
+
+def equivalence.map_homological_complex {D E : Type*} [category D] [category E] [preadditive D] [preadditive E]
+(e : D ≌ E) [e.functor.additive] : homological_complex D c ≌ homological_complex E c :=
+{ functor := functor.map_homological_complex e.functor c,
+  inverse := functor.map_homological_complex e.inverse c,
+  unit_iso := eq_to_iso (functor.map_homological_complex_id c).symm ≪≫
+      nat_iso.map_homological_complex c e.unit_iso,
+  counit_iso := nat_iso.map_homological_complex c e.counit_iso ≪≫
+      eq_to_iso (functor.map_homological_complex_id c),
+  functor_unit_iso_comp' := λ K, begin
+    ext n,
+    dsimp,
+    simp only [eq_to_hom_app, homological_complex.eq_to_hom_f, eq_to_hom_refl],
+    erw [id_comp, comp_id, e.functor_unit_iso_comp],
+  end, }
+
+instance [is_idempotent_complete C] : is_idempotent_complete (homological_complex C c) :=
+begin
+  haveI := (to_karoubi_is_equivalence C),
+  let e := (functor.as_equivalence (to_karoubi C)),
+  let h : (to_karoubi C).additive := by apply_instance,
+  haveI : e.functor.additive := h,
+  rw is_idempotent_complete_iff_of_equivalence (equivalence.map_homological_complex c e),
+  rw ← is_idempotent_complete_iff_of_equivalence (karoubi_homological_complex_equivalence C c),
+  apply_instance,
+end
+
+variables (α : Type*) [add_right_cancel_semigroup α] [has_one α]
+
+@[simps]
+def karoubi_chain_complex_equivalence :
   karoubi (chain_complex C α) ≌
     chain_complex (karoubi C) α :=
   karoubi_homological_complex_equivalence C (complex_shape.down α)
 
 @[simps]
-def karoubi_cochain_complex_equivalence (α : Type*) [add_right_cancel_semigroup α] [has_one α] :
+def karoubi_cochain_complex_equivalence :
   karoubi (cochain_complex C α) ≌
     cochain_complex (karoubi C) α :=
   karoubi_homological_complex_equivalence C (complex_shape.up α)

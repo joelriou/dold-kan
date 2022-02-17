@@ -5,6 +5,8 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.dold_kan.equivalence_additive
+import for_mathlib.idempotents.simplicial_object
+import for_mathlib.idempotents.homological_complex
 
 noncomputable theory
 
@@ -21,9 +23,6 @@ namespace idempotents
 namespace dold_kan
 
 open algebraic_topology.dold_kan
-
-instance : is_idempotent_complete (chain_complex C ℕ) := by sorry
-instance : is_idempotent_complete (simplicial_object C) := by sorry
 
 private def e' := to_karoubi_is_equivalence (chain_complex C ℕ)
 private def κ' := to_karoubi (chain_complex C ℕ)

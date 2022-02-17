@@ -23,7 +23,7 @@ namespace idempotents
 variables {J : Type*} [category J]
 variables {C : Type*} [category C]
 
-instance [is_idempotent_complete C] : is_idempotent_complete (J ⥤ C) :=
+instance functor_category_is_idempotent_complete [is_idempotent_complete C] : is_idempotent_complete (J ⥤ C) :=
 begin
 	refine ⟨_⟩,
 	intros F p hp,

@@ -170,7 +170,9 @@ homotopy_equiv (κ.obj (N.obj P))
     rw inclusion_N_comp_retraction_N,
     refl,
   end,
-  homotopy_inv_hom_id := sorry, }
+  homotopy_inv_hom_id := begin
+    sorry,
+  end }
 
 /-- the inclusion of the Moore complex in the alternating face map complex
 is an homotopy equivalence -/
@@ -184,7 +186,6 @@ def homotopy_equiv_inclusion_of_Moore_complex {A : Type*} [category A] [abelian 
   homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
   homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
       P_infty_is_homotopic_to_id, }
-
 
 end dold_kan
 
