@@ -52,7 +52,7 @@ begin
     exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
 end
 
-lemma P_infty_factors_thru_Moore_complex_degree_wise (n : ℕ) :
+lemma P_infty_factors_thru_Moore_complex_degreewise (n : ℕ) :
   subobject.factors (normalized_Moore_complex.obj_X X n) (P_infty.f n) :=
 begin
   rw [P_infty_degreewise],
@@ -69,7 +69,7 @@ end
 def P_infty_into_Moore_subcomplex (X : simplicial_object A) :
   (alternating_face_map_complex A).obj X ⟶ (normalized_Moore_complex A).obj X :=
 chain_complex.of_hom _ _ _ _ _ _
-  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degree_wise n))
+  (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degreewise n))
   (λ n,
     begin
       apply (cancel_mono (normalized_Moore_complex.obj_X X n).arrow).mp,
@@ -145,6 +145,22 @@ end
 lemma inclusion_of_Moore_complex_comp_P_infty_degreewise (X : simplicial_object A) (n : ℕ):
 ((inclusion_of_Moore_complex A).app X).f n ≫ P_infty.f n = ((inclusion_of_Moore_complex A).app X).f n :=
 homological_complex.congr_hom (inclusion_of_Moore_complex_comp_P_infty X) n
+
+lemma P_infty_is_a_retraction (Y : simplicial_object A) :
+  inclusion_of_Moore_complex_map Y ≫ P_infty_into_Moore_subcomplex Y = 𝟙 _ :=
+begin
+  ext n,
+  erw [assoc, factor_thru_arrow, id_comp, inclusion_of_Moore_complex_comp_P_infty_degreewise],
+  refl,
+end
+
+lemma factors_P_infty (Y : simplicial_object A) :
+  P_infty_into_Moore_subcomplex Y ≫ inclusion_of_Moore_complex_map Y = P_infty :=
+begin
+  ext n,
+  simp only [P_infty_into_Moore_subcomplex, chain_complex.of_hom,
+    factor_thru_arrow, homological_complex.comp_f, inclusion_of_Moore_complex_map_f],
+end
 
 @[simps]
 def to_karoubi_normalized_to_N' :
