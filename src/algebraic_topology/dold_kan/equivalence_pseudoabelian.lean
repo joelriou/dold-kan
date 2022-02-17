@@ -31,14 +31,12 @@ private def κinv' : _ ⥤ chain_complex C ℕ := e'.inverse
 private def e := to_karoubi_is_equivalence (simplicial_object C)
 private def κ := to_karoubi (simplicial_object C)
 private def κinv : _ ⥤ simplicial_object C := e.inverse
-private def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
+private def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ
 
 def N : simplicial_object C ⥤ chain_complex C ℕ :=
 N' ⋙ κinv'
 
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
-
-#check ΓN'_trans
 
 def counit_var : (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (κ : simplicial_object C ⥤ _) :=
 begin
