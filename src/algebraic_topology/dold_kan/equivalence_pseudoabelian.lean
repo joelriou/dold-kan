@@ -25,13 +25,13 @@ open algebraic_topology.dold_kan
 instance : is_idempotent_complete (chain_complex C ℕ) := by sorry
 instance : is_idempotent_complete (simplicial_object C) := by sorry
 
-def e' := to_karoubi_is_equivalence (chain_complex C ℕ)
-def κ' := to_karoubi (chain_complex C ℕ)
-def κinv' : _ ⥤ chain_complex C ℕ := e'.inverse
-def e := to_karoubi_is_equivalence (simplicial_object C)
-def κ := to_karoubi (simplicial_object C)
-def κinv : _ ⥤ simplicial_object C := e.inverse
-def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
+private def e' := to_karoubi_is_equivalence (chain_complex C ℕ)
+private def κ' := to_karoubi (chain_complex C ℕ)
+private def κinv' : _ ⥤ chain_complex C ℕ := e'.inverse
+private def e := to_karoubi_is_equivalence (simplicial_object C)
+private def κ := to_karoubi (simplicial_object C)
+private def κinv : _ ⥤ simplicial_object C := e.inverse
+private def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ,
 
 def N : simplicial_object C ⥤ chain_complex C ℕ :=
 N' ⋙ κinv'
