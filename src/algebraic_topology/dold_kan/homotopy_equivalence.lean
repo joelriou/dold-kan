@@ -7,6 +7,7 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.functor_n
 import algebraic_topology.dold_kan.normalized
+import algebraic_topology.dold_kan.n_reflects_iso -- change this...
 import for_mathlib.idempotents.homological_complex
 
 open category_theory
@@ -57,6 +58,8 @@ begin
   erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero],
 end
 
+variable (X)
+
 /-- Construction of the homotopy from `P_infty` to the identity using eventually
 (termwise) constant homotopies from `P q` to the identity for all q -/
 @[simps]
@@ -79,6 +82,7 @@ def P_infty_is_homotopic_to_id :
       rw homotopies_P_id_are_eventually_constant (lt_add_one (n+1)),
       rwa ← P_is_eventually_constant (rfl.ge : n+1 ≤ n+1), },
   end }
+
 
 @[simps]
 def inclusion_N : (N : karoubi (simplicial_object C) ⥤ _ ) ⟶
@@ -155,23 +159,68 @@ begin
   slice_lhs 1 2 { erw P_infty_degreewise_is_a_projector n, },
 end
 
-private def κ := (karoubi_chain_complex_equivalence C ℕ).functor
+private def τ' := (karoubi_chain_complex_equivalence C ℕ).functor
+private def τ : karoubi (simplicial_object C) ⥤ simplicial_object (karoubi C) :=
+  (karoubi_functor_category_embedding simplex_categoryᵒᵖ C)
+
+lemma karoubi_compatibility_K :
+  (functor_extension'' _ _).obj (alternating_face_map_complex C) ⋙ τ' =
+  τ ⋙ alternating_face_map_complex (karoubi C) :=
+begin
+  apply category_theory.functor.ext,
+  { intros X Y f,
+    ext n,
+    simpa only [functor.comp_map, karoubi.comp_p, karoubi.p_comp, alternating_face_map_complex.map,
+      alternating_face_map_complex_map, homological_complex.comp_f, homological_complex.eq_to_hom_f,
+      eq_to_hom_refl, karoubi.id_eq, chain_complex.of_hom_f, karoubi.comp], },
+  { intro P,
+    ext i j hij,
+    { have eq : j+1 = i := hij,
+      subst eq,
+      erw [comp_id, id_comp, karoubi_alternating_face_map_complex_d P j],
+      dsimp [τ', karoubi_chain_complex_equivalence],
+      erw [← ((alternating_face_map_complex C).map P.p).comm' (j+1) j hij, ← assoc],
+      congr',
+      exact congr_app P.idempotence.symm (op [j+1]), },
+    { refl, }, },
+end
+
+lemma karoubi_compatibility_P_infty (P : karoubi (simplicial_object C)) :
+  τ'.map (retraction_N.app P) ≫ τ'.map (inclusion_N.app P) =
+  eq_to_hom (by {exact congr_obj karoubi_compatibility_K P, }) ≫ P_infty ≫
+    eq_to_hom (congr_obj karoubi_compatibility_K P).symm :=
+begin
+  ext n,
+  rw ← τ'.map_comp,
+  dsimp [τ'],
+  simp only [retraction_N_app_f, alternating_face_map_complex.map, alternating_face_map_complex_map,
+    inclusion_N_app_f, assoc, karoubi.comp, homological_complex.comp_f, chain_complex.of_hom_f, karoubi.comp_p,
+    karoubi_chain_complex_equivalence_functor_obj_X_p, functor_extension''_obj_obj_p, homological_complex.eq_to_hom_f,
+    eq_to_hom_refl, karoubi.id_eq],
+  erw karoubi_P_infty_f,
+  slice_lhs 2 3 { erw ← P_infty_degreewise_naturality n P.p, },
+  slice_lhs 3 4 { erw P_infty_degreewise_is_a_projector, },
+end
 
 def homotopy_equiv_inclusion_N (P : karoubi (simplicial_object C)) :
-homotopy_equiv (κ.obj (N.obj P))
-(κ.obj (((functor_extension'' _ _).obj (alternating_face_map_complex C)).obj P)) :=
-{ hom := κ.map (inclusion_N.app P),
-  inv := κ.map (retraction_N.app P),
+homotopy_equiv (τ'.obj (N.obj P))
+(τ'.obj (((functor_extension'' _ _).obj (alternating_face_map_complex C)).obj P)) :=
+{ hom := τ'.map (inclusion_N.app P),
+  inv := τ'.map (retraction_N.app P),
   homotopy_hom_inv_id := begin
     convert homotopy.refl (𝟙 _),
-    rw ← κ.map_comp,
-    convert κ.map_id _,
+    rw ← τ'.map_comp,
+    convert τ'.map_id _,
     rw ← nat_trans.comp_app,
     rw inclusion_N_comp_retraction_N,
     refl,
   end,
   homotopy_inv_hom_id := begin
-    sorry,
+    erw karoubi_compatibility_P_infty P,
+    have eq : _ = K[_] := congr_obj karoubi_compatibility_K P,
+    convert homotopy.comp (homotopy.refl (eq_to_hom eq))
+      (homotopy.comp (P_infty_is_homotopic_to_id _) (homotopy.refl (eq_to_hom eq.symm))),
+    simpa only [id_comp, eq_to_hom_trans, eq_to_hom_refl],
   end }
 
 /-- the inclusion of the Moore complex in the alternating face map complex
@@ -185,7 +234,7 @@ def homotopy_equiv_inclusion_of_Moore_complex {A : Type*} [category A] [abelian 
   inv := P_infty_into_Moore_subcomplex Y,
   homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
   homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
-      P_infty_is_homotopic_to_id, }
+      (P_infty_is_homotopic_to_id Y), }
 
 end dold_kan
 
