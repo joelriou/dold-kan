@@ -115,6 +115,15 @@ begin
         ne.def, not_false_iff], }, }
 end
 
+lemma eq_d0_of_is_d0 {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d0 i) :
+  i = simplex_category.δ 0 :=
+begin
+  cases simplex_category.eq_δ_of_mono i with j h,
+  unfreezingI { subst h, },
+  rw is_d0_iff at hi,
+  rw hi,
+end
+
 def Γ_on_mono (K : chain_complex C ℕ) {Δ' Δ : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
   K.X Δ.len ⟶ K.X Δ'.len :=
 begin

@@ -28,15 +28,111 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i]
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
+  P_infty.f n ≫ X.map i.op = 0 := sorry
+
+lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
+  P_infty.f n ≫ X.map f = 0 :=
+P_infty_eq_zero_on X f.unop h₁ h₂
+
+lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category.{v}) ⟶ [n']) [mono i] :
+  Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n = P_infty.f n' ≫ X.map i.op :=
+begin
+  /- We start with the case `i` is an identity -/
+  by_cases n = n',
+  { unfreezingI { subst h, },
+    have h := simplex_category.eq_id_of_mono i,
+    unfreezingI { subst h, },
+    simp only [Γ_on_mono_on_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
+    erw [X.map_id, comp_id], },
+  by_cases hi : is_d0 i,
+  /- The case `i = δ 0` -/
+  { erw [Γ_on_mono_on_d0 _ i hi, ← P_infty.comm' n' n hi.left.symm],
+    have h' : n' = n+1 := hi.left,
+    unfreezingI { subst h', },
+    dsimp [alternating_face_map_complex.obj, chain_complex.of],
+    simp only [eq_self_iff_true, id_comp, if_true, preadditive.comp_sum],
+    rw finset.sum_eq_single (0 : fin (n+2)), rotate,
+    { intros b hb hb',
+      simp only [preadditive.comp_zsmul],
+      erw [P_infty_eq_zero_on X (simplex_category.δ b) h (by { rw is_d0_iff, exact hb', }), zsmul_zero], },
+    { simp only [finset.mem_univ, not_true, forall_false_left], },
+    { simpa only [eq_d0_of_is_d0 hi, fin.coe_zero, pow_zero, one_zsmul], }, },
+  /- The case `i ≠ δ 0` -/
+  { rw [Γ_on_mono_eq_zero _ i _ hi, zero_comp], swap,
+    { by_contradiction h',
+      exact h (congr_arg simplex_category.len h'.symm), },
+    rw P_infty_eq_zero_on',
+    { exact h, },
+    { by_contradiction h',
+      exact hi h', }, },
+end
+
+lemma simplex_rewrite (Δ : simplex_category) : ∃ (n : ℕ), Δ = [n] :=
+begin
+  use Δ.len,
+  ext,
+  simp only [simplex_category.mk_len],
+end
+
+lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
+  Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
+    X.map (eq_to_hom (by simp only [simplex_category.mk_len]) ≫ i.op ≫ eq_to_hom (by simp only [simplex_category.mk_len])) :=
+begin
+  cases simplex_rewrite Δ with n h,
+  cases simplex_rewrite Δ' with n' h',
+  unfreezingI { substs h h', },
+  simp only [eq_to_hom_refl, id_comp, comp_id],
+  apply Γ_on_mono_comp_P_infty',
+end
+
 @[simps]
 def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
     { app := λ Δ, sigma.desc (λ A,
         P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
-      naturality' := sorry, },
-    comm := sorry, },
-  naturality' := sorry }
+      naturality' := λ Δ Δ' θ, begin
+        ext A,
+        slice_rhs 1 2 { erw colimit.ι_desc, },
+        dsimp,
+        let em := image.mono_factorisation (θ.unop ≫ A.2.1),
+        haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+        slice_lhs 1 2 { erw [Γ_simplicial_on_summand _ A em.fac], },
+        slice_lhs 2 3 { erw colimit.ι_desc, },
+        dsimp,
+        slice_lhs 1 2 { erw Γ_on_mono_comp_P_infty, },
+        simp only [assoc, ← X.map_comp],
+        congr' 2,
+        simp only [id_comp, eq_to_hom_refl, eq_to_hom_trans_assoc],
+        congr' 1,
+        rw [← op_comp, em.fac, op_comp, quiver.hom.op_unop],
+        refl,
+      end },
+    comm := begin
+      ext Δ A,
+      dsimp,
+      simp only [colimit.ι_desc],
+      dsimp,
+      slice_rhs 1 2 { erw ι_colim_map, },
+      simp only [discrete.nat_trans_app, cofan.mk_ι_app, colimit.ι_desc,
+        eq_to_hom_map, assoc, comp_id, functor.map_comp],
+      slice_rhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+      simp only [assoc],
+    end },
+  naturality' := λ X Y f, begin
+    ext Δ A,
+    simp only [colimit.ι_desc, assoc, functor.map_comp, discrete.nat_trans_app, cofan.mk_ι_app, subtype.val_eq_coe,
+      functor.comp_map, N'_map, karoubi.comp, nat_trans.comp_app, Γ_map_f_app, N'_functor.map_f,
+      alternating_face_map_complex.map, alternating_face_map_complex_map, homological_complex.comp_f,
+      chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f, colimit.ι_desc_assoc, nat_trans.naturality],
+    slice_lhs 2 3 { erw P_infty_degreewise_naturality, },
+    slice_lhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+    slice_lhs 2 3 { erw ← f.naturality, },
+    simpa only [← assoc],
+  end }
 
 @[simps]
 def ΓN_trans : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ ⟶ 𝟭 _ :=
