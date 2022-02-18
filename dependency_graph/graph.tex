@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage[a4paper, vmargin=1cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{fit, arrows.meta, shapes.geometric, decorations.markings}
+\begin{document}
+
+\tikzstyle{every node}=[rectangle, minimum size=6mm, rounded corners=3mm,
+	very thick, draw = black!50, top color = white, bottom color =
+	black!20]
+
+\begin{center}
+\begin{tikzpicture}[->, >={Stealth[round]}]
+\node(notations) at (0,0) {notations.lean};
+\node(homotopies) at (0,-2) {homotopies.lean};
+\node(faces) at (0,-4) {faces.lean};
+\node(projectors) at (0,-6) {projectors.lean};
+\node(pinfty) at (0,-8) {p\_infty.lean};
+\node(functorgamma) at (-6,-8) {functor\_gamma.lean};
+\node(decomposition) at (-2,-10) {decomposition.lean};
+\node(degeneracies) at (-6,-11.5) {degeneracies.lean};
+\node(functorn) at (3,-11) {functor\_n.lean};
+\node(nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
+\node(gammacompn) at (0,-14) {gamma\_comp\_n.lean};
+\node(ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
+\node(equivalenceadditive) at (0,-18) {equivalence\_additive.lean};
+\node(equivalencepa) at (0,-20) {equivalence\_pseudoabelian.lean};
+\node(equivalenceabelian) at (0,-22) {equivalence.lean};
+\node(normalized) at (6,-15) {normalized.lean};
+\node(hoequiv) at (7,-19) {homotopy\_equivalence.lean};
+
+\path (notations) edge (homotopies);
+\path (notations) edge [bend right] (functorgamma);
+\path (functorgamma) edge (degeneracies);
+\path (decomposition) edge (degeneracies);
+\path (decomposition) edge (nreflectsiso);
+\path (nreflectsiso) edge [bend right] (ncompgamma);
+\path (gammacompn) edge (ncompgamma);
+\path (functorn) edge [bend left] (ncompgamma);
+\path (functorn) edge (gammacompn);
+\path (functorn) edge (nreflectsiso);
+\path (degeneracies) edge [bend right] (gammacompn);
+\path (homotopies) edge (faces);
+\path (faces) edge (projectors);
+\path (projectors) edge (pinfty);
+\path (pinfty) edge (decomposition);
+\path (pinfty) edge (functorn);
+\path (functorn) edge (normalized);
+\path (normalized) edge (hoequiv);
+\path (normalized) edge [bend left = 8mm] (equivalenceabelian);
+\path (ncompgamma) edge (equivalenceadditive);
+\path (equivalenceadditive) edge (equivalencepa);
+\path (equivalencepa) edge (equivalenceabelian);
+\end{tikzpicture}
+\end{center}
+
+\end{document}
