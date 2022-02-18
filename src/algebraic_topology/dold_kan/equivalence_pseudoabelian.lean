@@ -37,7 +37,7 @@ N' ⋙ κinv'
 
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
 
-def counit_var : (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (κ : simplicial_object C ⥤ _) :=
+def unit_inv : (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (κ : simplicial_object C ⥤ _) :=
 begin
   calc (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (N' ⋙ κinv') ⋙ (Γ ⋙ κ) : _
   ... ≅ (N' ⋙ κinv') ⋙ (κ' ⋙ γ) : iso_whisker_left _ _
@@ -57,7 +57,7 @@ begin
   calc N ⋙ Γ ≅ (N' ⋙ κinv' ⋙ Γ) ⋙ 𝟭 _ : (functor.right_unitor _).symm
   ... ≅ (N' ⋙ κinv' ⋙ Γ) ⋙ (κ ⋙ κinv) : iso_whisker_left _ e.unit_iso
   ... ≅ ((N' ⋙ κinv' ⋙ Γ) ⋙ κ) ⋙ κinv : by refl
-  ... ≅ κ ⋙ κinv : iso_whisker_right counit_var _
+  ... ≅ κ ⋙ κinv : iso_whisker_right unit_inv _
   ... ≅ 𝟭 _ : e.unit_iso.symm,
 end
 
@@ -76,6 +76,15 @@ def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
   unit_iso := ΓN.symm,
   counit_iso := NΓ,
   functor_unit_iso_comp' := λ X, begin
+    let α := ΓN.app X,
+    let β := NΓ.app (N.obj X),
+    have hα : N.map (ΓN.symm.hom.app X) = (N.map_iso α).inv := by refl,
+    have hβ : NΓ.hom.app (N.obj X) = β.hom := by refl,
+    rw [hα, hβ, iso.inv_comp_eq],
+    symmetry,
+    erw [comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
+    dsimp [α, β],
+    clear hα hβ α β,
     sorry,
   end, }
 
