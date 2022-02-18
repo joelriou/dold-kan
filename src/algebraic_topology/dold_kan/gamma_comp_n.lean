@@ -41,13 +41,56 @@ lemma d_on_KΓ (K : chain_complex C ℕ) (j : ℕ) :
   inclusion_Γ_summand K (Γ_index_id (j+1)) ≫ K[Γ'.obj K].d (j+1) j
     ≫ sigma.desc (NΓ'_map_termwise K j) = K.d (j+1) j :=
 begin
-  sorry,
+  erw chain_complex.of_d,
+  dsimp,
+  simp only [preadditive.sum_comp, preadditive.comp_sum, preadditive.zsmul_comp, preadditive.comp_zsmul, ← assoc],
+  erw finset.sum_eq_single (0 : fin (j+2)), rotate,
+  { intros b hb₀ hb,
+    let i := simplex_category.δ b,
+    erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+      (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+    erw Γ_on_mono_eq_zero K i (λ hj, by simpa only [simplex_category.len_mk, nat.succ_ne_self]
+      using congr_arg simplex_category.len hj) (by { rw is_d0_iff, exact hb, }),
+    simp only [smul_zero', zero_comp], },
+  { intro h, exfalso, simpa only [finset.mem_univ, not_true] using h, },
+  { simp only [fin.coe_zero, pow_zero, ← assoc, one_zsmul],
+    let i := simplex_category.δ (0 : fin (j+2)),
+    erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+      (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+    erw [Γ_on_mono_on_d0 K i (is_d0_iff.mpr rfl), assoc],
+    simp only [NΓ'_map_termwise, colimit.ι_desc, cofan.mk_ι_app, simplex_category.len_mk,
+      eq_self_iff_true, eq_to_hom_refl, dite_eq_ite, if_true],
+    erw comp_id,
+    refl, },
 end
 
 lemma d_on_KΓ' (K : chain_complex C ℕ) (j : ℕ) (A : Γ_index_set [j+1]) (hA : ¬A.fst.len = j+1) :
 inclusion_Γ_summand K A ≫ K[Γ'.obj K].d (j + 1) j ≫ sigma.desc (NΓ'_map_termwise K j) = 0 :=
 begin
-  sorry
+  erw chain_complex.of_d,
+  dsimp,
+  simp only [preadditive.sum_comp, preadditive.comp_sum, preadditive.zsmul_comp, preadditive.comp_zsmul, ← assoc],
+  by_cases hA' : A.1.len = j, swap,
+  { apply finset.sum_eq_zero,
+    intros i hi,
+    let em := image.mono_factorisation (simplex_category.δ i ≫ A.2.1),
+    haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
+    erw [Γ_simplicial_on_summand K A em.fac, assoc, colimit.ι_desc, cofan.mk_ι_app,
+      NΓ'_map_termwise],
+    split_ifs, swap,
+    { erw [comp_zero, smul_zero'], },
+    { exfalso,
+      simp only at h,
+      have hi' := simplex_category.len_le_of_mono em.m_mono,
+      rw h at hi',
+      cases nat.le.dest hi' with b hb,
+      have he := simplex_category.len_le_of_epi A.2.2,
+      simp only [simplex_category.len_mk] at he,
+      simp only [← hb, add_right_inj, add_le_add_iff_left] at hA he,
+      have hb' := nat.lt_one_iff.mp ((ne.le_iff_lt hA).mp he),
+      rw [← hb, hb'] at hA',
+      exact hA' rfl, }, },
+  { sorry, },
 end
 
 @[simps]
@@ -158,7 +201,6 @@ def NΓ' : Γ' ⋙ N' ≅ to_karoubi (chain_complex C ℕ) :=
     simpa only [NΓ'_map_termwise, homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
       simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc, Γ_index_id],
   end }
-
 
 variable (C)
 
