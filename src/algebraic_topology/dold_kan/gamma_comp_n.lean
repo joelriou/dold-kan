@@ -25,28 +25,78 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
+@[simp]
+def NΓ'_map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : Γ_index_set [n]) :
+Γ_summand K [n] A ⟶ ((to_karoubi (chain_complex C ℕ)).obj K).X.X n :=
+begin
+  by_cases A.1.len = n,
+  { apply eq_to_hom,
+    simp only [to_karoubi_obj_X],
+    unfold Γ_summand,
+    rw h, },
+  { exact 0, }
+end
 
---@[simps]
+lemma d_on_KΓ (K : chain_complex C ℕ) (j : ℕ) :
+  inclusion_Γ_summand K (Γ_index_id (j+1)) ≫ K[Γ'.obj K].d (j+1) j
+    ≫ sigma.desc (NΓ'_map_termwise K j) = K.d (j+1) j :=
+begin
+  sorry,
+end
+
+lemma d_on_KΓ' (K : chain_complex C ℕ) (j : ℕ) (A : Γ_index_set [j+1]) (hA : ¬A.fst.len = j+1) :
+inclusion_Γ_summand K A ≫ K[Γ'.obj K].d (j + 1) j ≫ sigma.desc (NΓ'_map_termwise K j) = 0 :=
+begin
+  sorry
+end
+
+@[simps]
 abbreviation NΓ'_hom : Γ' ⋙ N' ⟶ to_karoubi (chain_complex C ℕ) :=
 { app := λ K,
   { f :=
-    { f:= λ n, sigma.desc (λ A, begin
-        by_cases A.1.len = n,
-        { apply eq_to_hom,
-          simp only [to_karoubi_obj_X],
-          unfold Γ_summand,
-          rw h, },
-        { exact 0, }
-      end),
+    { f:= λ n, sigma.desc (NΓ'_map_termwise K n),
       comm' := λ i j hij, begin
+        have h : j+1 = i := hij,
+        subst h,
         ext A,
-        simp only [cofan.mk_ι_app, colimit.ι_desc_assoc],
+        simp only [cofan.mk_ι_app, colimit.ι_desc_assoc, NΓ'_map_termwise],
         split_ifs,
-        sorry,
-        sorry,
+        { have hA := eq_Γ_index_id h,
+          subst hA,
+          dsimp,
+          erw [id_comp, d_on_KΓ], },
+        { rw zero_comp,
+          dsimp,
+          exact (d_on_KΓ' K j A h).symm, },
       end },
-    comm := sorry, }, 
-  naturality' := sorry, }
+    comm := begin
+      ext n A,
+      simp only [to_karoubi_obj_p, homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc],
+      dsimp,
+      erw [comp_id],
+      split_ifs,
+      { have hA := eq_Γ_index_id h,
+        subst hA,
+        slice_rhs 1 2 { erw P_infty_eq_id_on_Γ_summand, },
+        simp only [NΓ'_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
+          Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
+      { erw [← assoc, P_infty_eq_zero_on_Γ_summand K h, zero_comp], },
+    end }, 
+  naturality' := λ K L f, begin
+    ext n A,
+    simp,
+    erw [← assoc],
+    split_ifs,
+    { have hA := eq_Γ_index_id h,
+      subst hA,
+      erw P_infty_eq_id_on_Γ_summand,
+      simp only [NΓ'_map_termwise, inclusion_Γ_summand, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
+        cofan.mk_ι_app, Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, eq_to_hom_refl,
+        dite_eq_ite, if_true],
+      erw [id_comp, comp_id],
+      refl, },
+    { erw [P_infty_eq_zero_on_Γ_summand K h, zero_comp, zero_comp], },
+  end, }
 
 @[simps]
 abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ' ⋙ N' :=
@@ -105,7 +155,7 @@ def NΓ' : Γ' ⋙ N' ≅ to_karoubi (chain_complex C ℕ) :=
   inv_hom_id' := begin
     ext K n,
     dsimp,
-    simpa only [homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
+    simpa only [NΓ'_map_termwise, homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
       simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc, Γ_index_id],
   end }
 
