@@ -24,9 +24,10 @@ namespace dold_kan
 
 open algebraic_topology.dold_kan
 
-private def e' := to_karoubi_is_equivalence (chain_complex C ℕ)
-private def κ' := to_karoubi (chain_complex C ℕ)
-private def κinv' : _ ⥤ chain_complex C ℕ := e'.inverse
+def κ' := to_karoubi (chain_complex C ℕ)
+instance e' : is_equivalence κ' := to_karoubi_is_equivalence (chain_complex C ℕ)
+def eq' : equivalence (chain_complex C ℕ) _ := functor.as_equivalence κ'
+def κinv' : _ ⥤ chain_complex C ℕ := eq'.inverse
 private def e := to_karoubi_is_equivalence (simplicial_object C)
 private def κ := to_karoubi (simplicial_object C)
 private def κinv : _ ⥤ simplicial_object C := e.inverse
@@ -42,7 +43,7 @@ begin
   calc (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (N' ⋙ κinv') ⋙ (Γ ⋙ κ) : _
   ... ≅ (N' ⋙ κinv') ⋙ (κ' ⋙ γ) : iso_whisker_left _ _
   ... ≅ N' ⋙ (κinv' ⋙ κ') ⋙ γ : _
-  ... ≅ N' ⋙ 𝟭 _ ⋙ γ : iso_whisker_left _ (iso_whisker_right e'.counit_iso _)
+  ... ≅ N' ⋙ 𝟭 _ ⋙ γ : iso_whisker_left _ (iso_whisker_right eq'.counit_iso _)
   ... ≅ (N' ⋙ γ) : by refl
   ... ≅ κ : as_iso ΓN'_trans,
   { by refl, },
@@ -66,13 +67,33 @@ begin
   calc Γ ⋙ N ≅ Γ' ⋙ N' ⋙ κinv' : by refl
   ... ≅ (Γ' ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
   ... ≅ κ' ⋙ κinv' : iso_whisker_right NΓ' _
-  ... ≅ 𝟭 _ : e'.unit_iso.symm,
+  ... ≅ 𝟭 _ : eq'.unit_iso.symm,
 end
 
+lemma NΓ_inv_objectwise (K : chain_complex C ℕ) :
+NΓ.inv.app K = eq'.unit_iso.hom.app K ≫ 
+κinv'.map (NΓ'.inv.app K) :=
+begin
+  dsimp only [NΓ, iso.refl, iso.trans],
+  erw [comp_id, comp_id],
+  refl,
+end
+
+@[simp]
 def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y := NΓ'.inv.app (κinv'.obj (N'.obj Y))
+
+@[simp]
 def ψ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y ⟶ N'.obj Y := N'.map (ΓN.hom.app Y)
 
-theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = e'.counit_iso.hom.app (N'.obj Y) := sorry
+
+theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = eq'.counit_iso.hom.app (N'.obj Y) :=
+begin
+  dsimp only [φ, ψ],
+  have foo := identity_N_objectwise (κ.obj Y),
+
+  sorry
+end
+
 
 @[simps]
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
@@ -90,11 +111,16 @@ def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
     erw [comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
     dsimp [α, β],
     clear hα hβ α β,
-
-    have h := congr_app identity_N' X,
-    simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app, eq_to_hom_app] at h,
-    erw [comp_id, id_comp, id_comp] at h,
-    sorry,
+    have h := congr_map κinv' (φ_comp_ψ X),
+    simp only [φ, ψ, κinv'.map_comp] at h,
+    have h' := congr_map κinv' (congr_app eq'.counit_iso.inv_hom_id (N'.obj X)),
+    erw [κinv'.map_comp, κinv'.map_id] at h',
+    erw [← h', ← h],
+    slice_rhs 1 2 { erw ← κinv'.map_comp, },
+    congr,
+    erw [κinv'.map_comp, NΓ_inv_objectwise],
+    congr,
+    exact equivalence.unit_app_inverse eq' (N'.obj X),
   end, }
 
 end dold_kan
