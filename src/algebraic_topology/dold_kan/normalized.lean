@@ -5,8 +5,6 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.dold_kan.functor_n
---import for_mathlib.idempotents.functor_categories
---import for_mathlib.idempotents.functor_extension
 
 open category_theory
 open category_theory.category

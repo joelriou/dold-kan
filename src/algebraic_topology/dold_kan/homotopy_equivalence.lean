@@ -4,8 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-
-import algebraic_topology.dold_kan.functor_n
 import algebraic_topology.dold_kan.normalized
 import algebraic_topology.dold_kan.n_reflects_iso -- change this...
 import for_mathlib.idempotents.homological_complex

@@ -53,7 +53,7 @@ begin
   apply fintype.of_injective
     ((λ A, ⟨⟨A.1.len,
       nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
-      Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin(Δ.len+1) → fin(k+1))))),
+      Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1))))),
   rintros ⟨Δ₁,α₁⟩ ⟨Δ₂,α₂⟩ h,
   simp only at h,
   cases h with h₁ h₂,

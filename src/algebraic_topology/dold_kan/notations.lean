@@ -12,11 +12,6 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-universe v
-
---variables {C : Type*} [category.{v} C] [preadditive C]
---variables {X : simplicial_object C}
-
 notation `K[`X`]` := alternating_face_map_complex.obj X
 
 end dold_kan

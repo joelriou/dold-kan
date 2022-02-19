@@ -6,7 +6,6 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.decomposition
 import algebraic_topology.dold_kan.functor_gamma
-import algebraic_topology.dold_kan.functor_n
 
 open category_theory
 open category_theory.category
