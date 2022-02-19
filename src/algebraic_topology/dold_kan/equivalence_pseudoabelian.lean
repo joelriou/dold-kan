@@ -85,6 +85,10 @@ def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
     erw [comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
     dsimp [α, β],
     clear hα hβ α β,
+
+    have h := congr_app identity_N' X,
+    simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app, eq_to_hom_app] at h,
+    erw [comp_id, id_comp, id_comp] at h,
     sorry,
   end, }
 

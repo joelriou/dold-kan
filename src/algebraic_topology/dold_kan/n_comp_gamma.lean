@@ -193,13 +193,12 @@ begin
   { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N' ⋙ Γ), },
 end
 
-lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤ _ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
+lemma identity_N_objectwise (P : karoubi (simplicial_object C)) :
+NΓ.inv.app (N.obj P) ≫ N.map (ΓN_trans.app P) = 𝟙 (N.obj P) :=
 begin
-  ext P n,
-  simp only [assoc, nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app,
-    karoubi.id_eq, functor.comp_map, karoubi.comp, nat_trans.hcomp_id_app,
-    homological_complex.comp_f, NΓ_inv_app_f_f, N_obj_p_f, N_map_f_f, Γ_map_f_app,
-    ΓN_trans_app_f_app],
+  ext n,
+  simp only [karoubi.comp, homological_complex.comp_f, NΓ_inv_app_f_f, N_obj_p_f, assoc,
+    N_map_f_f, ΓN_trans_app_f_app, karoubi.id_eq],
   have eq₁ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
   have eq₂ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
   { simpa only [nat_trans.comp_app] using congr_app P.idempotence (op [n]), },
@@ -223,6 +222,14 @@ begin
   slice_lhs 2 3 { erw eq₃, },
   slice_lhs 1 2 { erw eq₁, },
   slice_lhs 2 3 { erw eq₂, },
+end
+
+lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤ _ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
+begin
+  ext1, ext1 P,
+  dsimp,
+  erw [Γ.map_id, N.map_id, comp_id, id_comp],
+  exact identity_N_objectwise P,
 end
 
 lemma identity_N' :
@@ -263,10 +270,9 @@ begin
   intro P,
   haveI : is_iso (N.map (ΓN_trans.app P)), swap,
   { apply hN.reflects, },
-  have h := congr_app identity_N P,
-  simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app] at h,
-  erw [(Γ ⋙ N).map_id, comp_id, id_comp, hom_comp_eq_id] at h,
-  rw h,
+  have h' := identity_N_objectwise P,
+  erw [hom_comp_eq_id] at h',
+  rw h',
   apply_instance,
 end
 

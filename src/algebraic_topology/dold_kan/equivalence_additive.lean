@@ -32,17 +32,15 @@ def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ
   unit_iso := ΓN.symm,
   counit_iso := NΓ,
   functor_unit_iso_comp' := λ P, begin
-    have h := congr_app identity_N P,
-    simp only [nat_trans.comp_app, nat_trans.hcomp_app, nat_trans.id_app,
-      (Γ ⋙ N).map_id, comp_id] at h,
-    erw [id_comp] at h,
-    rw [← is_iso.inv_id],
-    simp only [← h, is_iso.inv_comp],
-    congr',
-    { rw ← functor.map_inv,
-      congr,
-      simpa only [← comp_hom_eq_id, nat_trans.comp_app] using congr_app ΓN.inv_hom_id P, },
-    { simpa only [← comp_hom_eq_id, nat_trans.comp_app] using congr_app NΓ.hom_inv_id (N.obj P), },
+    let α := ΓN.app P,
+    let β := NΓ.app (N.obj P),
+    have hα : N.map (ΓN.symm.hom.app P) = (N.map_iso α).inv := by refl,
+    have hβ : NΓ.hom.app (N.obj P) = β.hom := by refl,
+    rw [hα, hβ, iso.inv_comp_eq],
+    symmetry,
+    erw [comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
+    dsimp [α, β],
+    exact identity_N_objectwise P,
   end }
 
 end dold_kan
