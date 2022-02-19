@@ -69,6 +69,11 @@ begin
   ... ≅ 𝟭 _ : e'.unit_iso.symm,
 end
 
+def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y := NΓ'.inv.app (κinv'.obj (N'.obj Y))
+def ψ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y ⟶ N'.obj Y := N'.map (ΓN.hom.app Y)
+
+theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = e'.counit_iso.hom.app (N'.obj Y) := sorry
+
 @[simps]
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
 { functor := N,
