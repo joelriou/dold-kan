@@ -53,6 +53,16 @@ begin
   { by refl, },
 end
 
+lemma unit_inv_objectwise (X : simplicial_object C) :
+  unit_inv.hom.app X =
+  eq_to_hom ((congr_obj (congr_obj
+    (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ') ((N' ⋙ κinv').obj X)).symm) ≫
+  γ.map (eq'.counit_iso.hom.app (N'_functor.obj X)) ≫ ΓN'_trans.app X :=
+begin
+  dsimp [unit_inv, iso.refl, iso.trans],
+  simpa only [id_comp, comp_id, eq_to_hom_app, assoc],
+end
+
 def ΓN : N ⋙ Γ ≅ 𝟭 (simplicial_object C) :=
 begin
   calc N ⋙ Γ ≅ (N' ⋙ κinv' ⋙ Γ) ⋙ 𝟭 _ : (functor.right_unitor _).symm
@@ -61,6 +71,10 @@ begin
   ... ≅ κ ⋙ κinv : iso_whisker_right unit_inv _
   ... ≅ 𝟭 _ : e.unit_iso.symm,
 end
+
+lemma ΓN_hom_objectwise (X : simplicial_object C) :
+ΓN.hom.app X = e.unit_iso.hom.app _ ≫ κinv.map (unit_inv.hom.app X) ≫ e.unit_iso.inv.app X :=
+by { dsimp [ΓN], simpa only [id_comp, comp_id, assoc], }
 
 def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
 begin
@@ -71,13 +85,8 @@ begin
 end
 
 lemma NΓ_inv_objectwise (K : chain_complex C ℕ) :
-NΓ.inv.app K = eq'.unit_iso.hom.app K ≫ 
-κinv'.map (NΓ'.inv.app K) :=
-begin
-  dsimp only [NΓ, iso.refl, iso.trans],
-  erw [comp_id, comp_id],
-  refl,
-end
+NΓ.inv.app K = eq'.unit_iso.hom.app K ≫ κinv'.map (NΓ'.inv.app K) :=
+by { dsimp only [NΓ, iso.refl, iso.trans], erw [comp_id, comp_id], refl, }
 
 @[simp]
 def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y := NΓ'.inv.app (κinv'.obj (N'.obj Y))
