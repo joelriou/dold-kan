@@ -319,10 +319,6 @@ begin
 end
 
 variable {C}
-/-
-@[simps]
-def NΓ'' : to_karoubi (chain_complex C ℕ) ⋙ Γ ⋙ N ≅ to_karoubi _ :=
-(eq_to_iso (to_karoubi_comp_Γ_comp_N C)).trans NΓ'-/
 
 @[simps]
 def NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
@@ -342,8 +338,6 @@ begin
   simp only [nat_trans.comp_app, nat_trans.id_app, h, eq_to_hom_app, ← assoc, eq_to_hom_trans, eq_to_hom_refl],
   erw [comp_id, comp_id, id_comp],
 end
-
---(whiskering_left_to_karoubi_iso_equiv (Γ ⋙ N) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun NΓ'
 
 end dold_kan
 
