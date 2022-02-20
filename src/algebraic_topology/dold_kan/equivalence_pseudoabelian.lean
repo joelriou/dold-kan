@@ -85,15 +85,36 @@ def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κi
 @[simp]
 def ψ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y ⟶ N'.obj Y := N'.map (ΓN.hom.app Y)
 
+--lemma κ_comp_N : (κ : simplicial_object C ⥤ _) ⋙ algebraic_topology.dold_kan.N = N' :=
+--begin
+--  sorry
+--end
+
 
 theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = eq'.counit_iso.hom.app (N'.obj Y) :=
 begin
   dsimp only [φ, ψ],
-  have foo := identity_N_objectwise (κ.obj Y),
+  rw ← NΓ_compat_NΓ',
+  dsimp only [iso.trans, iso.refl, nat_iso.hcomp, nat_trans.hcomp, functor.right_unitor, eq_to_iso],
+  simp only [nat_trans.comp_app, nat_trans.id_app, eq_to_hom_app],
+  erw [id_comp, comp_id, assoc],
+  have eq : algebraic_topology.dold_kan.N.obj (κ.obj Y) = N'.obj Y :=
+    congr_obj (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) _) N') Y,
+  let τ : _ ⟶ (N' ⋙ κinv' ⋙ κ').obj Y := eq_to_hom eq ≫ eq'.counit_iso.symm.hom.app (N'.obj Y),
+  have h₁ := algebraic_topology.dold_kan.NΓ.inv.naturality τ,
+  have h₂ := congr_arg (category_struct.comp (inv τ)) h₁,
+  erw [← assoc, is_iso.inv_hom_id τ, id_comp] at h₂,
+  erw [h₂, assoc, is_iso.inv_comp_eq τ],
+  dsimp only [τ],
+  simp only [assoc],
+  have h₃ := congr_app eq'.counit_iso.inv_hom_id (N'.obj Y),
+  rw nat_trans.comp_app at h₃,
+  conv { to_rhs, erw [h₃, comp_id, ← id_comp (eq_to_hom eq), ← identity_N_objectwise (κ.obj Y), assoc], },
+  congr' 1,
+  clear h₃ h₂ h₁ τ,
 
   sorry
 end
-
 
 @[simps]
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
