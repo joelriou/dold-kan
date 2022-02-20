@@ -85,12 +85,6 @@ def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κi
 @[simp]
 def ψ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y ⟶ N'.obj Y := N'.map (ΓN.hom.app Y)
 
---lemma κ_comp_N : (κ : simplicial_object C ⥤ _) ⋙ algebraic_topology.dold_kan.N = N' :=
---begin
---  sorry
---end
-
-
 theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = eq'.counit_iso.hom.app (N'.obj Y) :=
 begin
   dsimp only [φ, ψ],
