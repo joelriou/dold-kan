@@ -60,6 +60,26 @@ begin
   simp only [category_theory.functor.map_id, comp_id, assoc],
 end
 
+@[simps]
+def equivalence₁_unit_iso :
+  𝟭 A ≅ F ⋙ (e'.inverse ⋙ eA.inverse) :=
+begin
+  calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
+  ... ≅ eA.functor ⋙ 𝟭 A' ⋙ eA.inverse : by refl
+  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right e'.unit_iso _)
+  ... ≅ (eA.functor ⋙ e'.functor) ⋙ (e'.inverse ⋙ eA.inverse) : by refl
+  ... ≅ F ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_right hF _,
+end
+
+lemma equivalence₁_unit_iso_eq : (equivalence₁ hF).unit_iso = equivalence₁_unit_iso hF :=
+begin
+  ext X,
+  dsimp [equivalence₀, equivalence₁, equivalence₁_unit_iso, nat_iso.hcomp,
+    is_equivalence.of_equivalence],
+  simp only [id_comp, comp_id],
+end
+
+
 include eB
 
 def equivalence₂ : A ≌ B := (equivalence₁ hF).trans eB.symm
@@ -86,6 +106,26 @@ begin
   erw equivalence₁_counit_iso_eq,
   dsimp [iso.refl],
   erw [nat_trans.id_app, id_comp, comp_id],
+end
+
+@[simps]
+def equivalence₂_unit_iso :
+  𝟭 A ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse ⋙ eA.inverse) :=
+begin
+  have foo := equivalence₁_unit_iso hF,
+  calc 𝟭 A ≅ F ⋙ e'.inverse ⋙ eA.inverse : equivalence₁_unit_iso hF
+  ... ≅ F ⋙ 𝟭 B' ⋙ (e'.inverse ⋙ eA.inverse) : by refl
+  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ e'.inverse ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
+  ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse ⋙ eA.inverse) : by refl,
+end
+
+lemma equivalence₂_unit_iso_eq :
+  (equivalence₂ eB hF).unit_iso = equivalence₂_unit_iso eB hF :=
+begin
+  ext X,
+  dsimp [equivalence₂, equivalence₂_unit_iso],
+  erw equivalence₁_unit_iso_eq,
+  simpa only [assoc, comp_id, nat_iso.cancel_nat_iso_hom_left],
 end
 
 variable {eB}
@@ -143,8 +183,7 @@ end
 lemma equivalence_counit_iso_eq :
   (equivalence hF hG).counit_iso = equivalence_counit_iso hη :=
 begin
-  ext1, apply nat_trans.ext,
-  ext Y,
+  ext1, apply nat_trans.ext, ext Y,
   dsimp [equivalence, equivalence_counit_iso, equivalence.inverse,
     is_equivalence.inverse, nat_iso.hcomp, is_equivalence.unit_iso, iso.refl, iso.trans],
   simp only [assoc, comp_id, functor.map_comp, id_comp],
@@ -159,8 +198,7 @@ begin
     rw ← equivalence₂_counit_iso_eq eB hF,
     refl, },
   { dsimp [equivalence₂, equivalence₁],
-    simp only [equivalence₂_counit_iso_hom_app],
-    simp only [← eB.inverse.map_comp, ← assoc],
+    simp only [equivalence₂_counit_iso_hom_app, ← eB.inverse.map_comp, ← assoc],
     congr' 2,
     erw [← τ₀_hom_app_eq hF hG Y, hη],
     dsimp [τ₁],
@@ -181,6 +219,75 @@ begin
     simp only [iso.inv_hom_id_app_assoc, iso.inv_hom_id_app],
     erw comp_id,
     exact eA.functor_unit_iso_comp (G.obj Y), },
+end
+
+omit hη hG eB
+
+variable (hF)
+
+def υ : F ⋙ e'.inverse ≅ eA.functor :=
+begin
+  calc F ⋙ e'.inverse ≅
+    (eA.functor ⋙ e'.functor) ⋙ e'.inverse : iso_whisker_right hF.symm _
+  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) : by refl
+  ... ≅ eA.functor ⋙ 𝟭 A' : iso_whisker_left _ e'.unit_iso.symm
+  ... ≅ eA.functor : functor.left_unitor _,
+end
+
+variables (ε : eA.functor ≅ F ⋙ e'.inverse) (hε : υ hF = ε.symm)
+
+include ε hG
+variables (hF) (hG)
+
+@[simps]
+def equivalence_unit_iso : 𝟭 A ≅ (F ⋙ eB.inverse) ⋙ G :=
+begin
+  calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
+  ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right ε _
+  ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl  
+  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
+  ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
+  ... ≅ (F ⋙ eB.inverse) ⋙ (G ⋙ eA.functor) ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right hG _)
+  ... ≅ (F ⋙ eB.inverse ⋙ G) ⋙ (eA.functor ⋙ eA.inverse) : by refl
+  ... ≅ (F ⋙ eB.inverse ⋙ G) ⋙ 𝟭 A : iso_whisker_left _ eA.unit_iso.symm
+  ... ≅ (F ⋙ eB.inverse) ⋙ G : by refl,
+end
+
+variables {ε}
+
+omit hG
+
+include hε
+
+def hε' (X : A) : e'.unit_iso.hom.app (eA.functor.obj X) ≫ e'.inverse.map (hF.hom.app X) = ε.hom.app X :=
+begin
+  have h := congr_arg (λ (φ : _ ≅ _), φ.inv) hε,
+  dsimp at h,
+  erw ← h,
+  unfold υ,
+  simp only [iso.trans_refl, iso.trans_inv, iso_whisker_left_inv, iso.symm_inv,
+    iso_whisker_right_inv, nat_trans.comp_app, functor.left_unitor_inv_app, whisker_left_app,
+    whisker_right_app, id_comp],
+end
+
+lemma equivalence_unit_iso_eq :
+  (equivalence hF hG).unit_iso = equivalence_unit_iso hF hG ε :=
+begin
+  ext1, apply nat_trans.ext, ext X,
+  dsimp [equivalence, iso.refl, nat_iso.hcomp, is_equivalence.inverse],
+  erw [nat_trans.id_app, id_comp, G.map_id, comp_id, comp_id],
+  suffices h : (equivalence₂_unit_iso eB hF).hom.app X ≫
+    eA.inverse.map (hG.hom.app ((equivalence₂ eB hF).functor.obj X)) ≫
+    eA.unit_iso.inv.app (G.obj ((equivalence₂ eB hF).functor.obj X)) = (equivalence_unit_iso hF hG ε).hom.app X,
+  { convert h,
+    erw ← equivalence₂_unit_iso_eq eB hF,
+    refl, },
+  { dsimp [equivalence₂, equivalence₁],
+    simp only [equivalence₂_unit_iso_hom_app],
+    simp only [assoc, equivalence_unit_iso_hom_app, nat_iso.cancel_nat_iso_hom_left],
+    simp only [← eA.inverse.map_comp, ← assoc],
+    congr,
+    exact hε' hF hε X, }
 end
 
 end compatibility

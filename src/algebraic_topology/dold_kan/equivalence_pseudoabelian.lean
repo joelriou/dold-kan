@@ -60,33 +60,13 @@ lemma hη : compatibility.τ₀ (eq_to_iso hN') (eq_to_iso hΓ) =
   compatibility.τ₁ (eq_to_iso hN') (eq_to_iso hΓ)
   (η' : _ ≅ (κequiv' : chain_complex C ℕ ≌ _ ).functor) := sorry
 
-
 def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso hη
-
 
 lemma equivalence_counit_iso_eq : dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) := 
   compatibility.equivalence_counit_iso_eq hη
 
-/-
-def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
-begin
-  calc Γ ⋙ N ≅ Γ' ⋙ N' ⋙ κinv' : by refl
-  ... ≅ (Γ' ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
-  ... ≅ κ' ⋙ κinv' : iso_whisker_right NΓ' _
-  ... ≅ 𝟭 _ : κequiv'.unit_iso.symm,
-end
 
-lemma NΓ_hom_app (K : chain_complex C ℕ) :
-NΓ.hom.app K = κinv'.map (NΓ'.hom.app K) ≫ κequiv'.unit_iso.inv.app K :=
-by { dsimp only [NΓ, iso.refl, iso.trans, functor.associator], erw [id_comp, id_comp], refl }
-
-lemma NΓ_inv_app (K : chain_complex C ℕ) :
-NΓ.inv.app K = κequiv'.unit_iso.hom.app K ≫ κinv'.map (NΓ'.inv.app K) :=
-by { dsimp only [NΓ, iso.refl, iso.trans], erw [comp_id, comp_id], refl, }
-
-lemma equivalence_counit_iso :
-  (dold_kan.equivalence.counit_iso : _ ≅ 𝟭 (chain_complex C ℕ)) = NΓ := sorry
--/
+--def ε' :
 
 end dold_kan
 
