@@ -54,6 +54,19 @@ compatibility.equivalence (eq_to_iso hN') (eq_to_iso hΓ)
 lemma equivalence_functor : (equivalence : simplicial_object C ≌ _ ).functor = N := by refl
 lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _ ).inverse = Γ := by refl
 
+def η' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N' ≅ κequiv'.functor := NΓ'
+
+lemma hη : compatibility.τ₀ (eq_to_iso hN') (eq_to_iso hΓ) =
+  compatibility.τ₁ (eq_to_iso hN') (eq_to_iso hΓ)
+  (η' : _ ≅ (κequiv' : chain_complex C ℕ ≌ _ ).functor) := sorry
+
+
+def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso hη
+
+
+lemma equivalence_counit_iso_eq : dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) := 
+  compatibility.equivalence_counit_iso_eq hη
+
 /-
 def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
 begin

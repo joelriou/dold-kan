@@ -132,6 +132,7 @@ variables {η : G ⋙ F ≅ eB.functor} (hη : τ₀ hF hG = τ₁ hF hG η)
 include hη
 variables {hF} {hG}
 
+@[simps]
 def equivalence_counit_iso : G ⋙ (F ⋙ eB.inverse) ≅ 𝟭 B :=
 begin
   calc G ⋙ (F ⋙ eB.inverse) ≅ (G ⋙ F) ⋙ eB.inverse : by refl

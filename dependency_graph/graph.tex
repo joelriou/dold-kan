@@ -22,6 +22,7 @@
 \node(nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
 \node(gammacompn) at (0,-14) {gamma\_comp\_n.lean};
 \node(ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
+\node(compatibility) at (-5,-18) {compatibility.lean};
 \node(equivalenceadditive) at (0,-18) {equivalence\_additive.lean};
 \node(equivalencepa) at (0,-20) {equivalence\_pseudoabelian.lean};
 \node(equivalenceabelian) at (0,-22) {equivalence.lean};
@@ -47,6 +48,7 @@
 \path (normalized) edge (hoequiv);
 \path (normalized) edge [bend left = 8mm] (equivalenceabelian);
 \path (ncompgamma) edge (equivalenceadditive);
+\path (compatibility) edge (equivalencepa);
 \path (equivalenceadditive) edge (equivalencepa);
 \path (equivalencepa) edge (equivalenceabelian);
 \end{tikzpicture}
