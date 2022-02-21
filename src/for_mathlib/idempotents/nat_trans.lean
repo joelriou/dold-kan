@@ -104,6 +104,11 @@ lemma karoubi_universal'_inverse_preimage_iso (F G : karoubi C ⥤ karoubi D)
   preimage_iso e = (whiskering_left_to_karoubi_iso_equiv F G).inv_fun e :=
 by { ext1, exact karoubi_universal'_inverse_preimage F G e.hom, }
 
+lemma whiskering_left_to_karoubi_hom_equiv_inv_fun_compat {F G : karoubi C ⥤ D}
+  (ψ : to_karoubi _ ⋙ F ⟶ to_karoubi _ ⋙ G) (X : C) :
+  ((whiskering_left_to_karoubi_hom_equiv _ _).inv_fun ψ).app ((to_karoubi _).obj X) = ψ.app X :=
+congr_app ((whiskering_left_to_karoubi_hom_equiv _ _).right_inv ψ) X
+
 end idempotents
 
 end category_theory

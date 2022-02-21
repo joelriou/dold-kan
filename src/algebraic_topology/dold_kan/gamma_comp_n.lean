@@ -330,13 +330,11 @@ eq_to_iso (to_karoubi_comp_Γ_comp_N C).symm ≪≫ nat_iso.hcomp (iso.refl (to_
     ≪≫ functor.right_unitor _ = NΓ' :=
 begin
   ext1, ext1, ext1 K,
-  have h := congr_app ((whiskering_left_to_karoubi_hom_equiv _ _).right_inv
-    (eq_to_hom (to_karoubi_comp_Γ_comp_N C) ≫ NΓ'.hom ≫ eq_to_hom (functor.comp_id _).symm)) K,
-  erw [whiskering_left_to_karoubi_hom_equiv_apply_app, comp_id] at h,
-  dsimp only [NΓ, nat_iso.hcomp, iso.refl, iso.trans, eq_to_iso, nat_iso.hcomp, functor.right_unitor, nat_trans.hcomp,
-    whiskering_left_to_karoubi_iso_equiv],
-  simp only [nat_trans.comp_app, nat_trans.id_app, h, eq_to_hom_app, ← assoc, eq_to_hom_trans, eq_to_hom_refl],
-  erw [comp_id, comp_id, id_comp],
+  dsimp only [NΓ, iso.trans, iso.refl, whiskering_left_to_karoubi_iso_equiv, nat_iso.hcomp,
+    nat_trans.hcomp, eq_to_iso, functor.right_unitor, functor.id],
+  simp only [functor.map_id, nat_trans.comp_app, whiskering_left_to_karoubi_hom_equiv_inv_fun_compat,
+    eq_to_hom_app, ← assoc, eq_to_hom_trans, eq_to_hom_refl],
+  erw [comp_id, id_comp, comp_id],
 end
 
 end dold_kan

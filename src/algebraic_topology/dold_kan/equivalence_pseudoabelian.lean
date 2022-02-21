@@ -24,20 +24,90 @@ namespace dold_kan
 
 open algebraic_topology.dold_kan
 
+def κ := to_karoubi (simplicial_object C)
+instance e : is_equivalence κ := to_karoubi_is_equivalence (simplicial_object C)
+def κequiv : equivalence (simplicial_object C) _ := functor.as_equivalence κ
+def κinv : _ ⥤ simplicial_object C := κequiv.inverse
+
 def κ' := to_karoubi (chain_complex C ℕ)
 instance e' : is_equivalence κ' := to_karoubi_is_equivalence (chain_complex C ℕ)
-def eq' : equivalence (chain_complex C ℕ) _ := functor.as_equivalence κ'
-def κinv' : _ ⥤ chain_complex C ℕ := eq'.inverse
-private def e := to_karoubi_is_equivalence (simplicial_object C)
-private def κ := to_karoubi (simplicial_object C)
-private def κinv : _ ⥤ simplicial_object C := e.inverse
-private def γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ
+def κequiv' : equivalence (chain_complex C ℕ) _ := functor.as_equivalence κ'
+def κinv' : _ ⥤ chain_complex C ℕ := κequiv'.inverse
 
 def N : simplicial_object C ⥤ chain_complex C ℕ :=
 N' ⋙ κinv'
 
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
 
+lemma Γ_comp_κ : (Γ : chain_complex C ℕ ⥤ _) ⋙ κ = κ' ⋙ preadditive.dold_kan.Γ :=
+congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _).symm Γ'
+
+def equivalence₀ : simplicial_object C ≌ karoubi (chain_complex C ℕ) :=
+κequiv.trans preadditive.dold_kan.equivalence
+
+lemma equivalence₀_functor : equivalence₀.functor = (N' : simplicial_object C ⥤ _) :=
+congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) N'
+
+lemma equivalence₀_inverse :
+  equivalence₀.inverse = (preadditive.dold_kan.Γ : karoubi (chain_complex C ℕ) ⥤ _) ⋙ κinv := by refl
+
+def equivalence₁ : simplicial_object C ≌ karoubi (chain_complex C ℕ) :=
+begin
+  let F := (preadditive.dold_kan.Γ : karoubi (chain_complex C ℕ) ⥤ _) ⋙ κinv,
+  let G := (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)),
+  letI : is_equivalence G := is_equivalence_of_iso (eq_to_iso equivalence₀_functor)
+    (is_equivalence.of_equivalence equivalence₀),
+  exact G.as_equivalence,
+end
+
+lemma equivalence₁_functor : equivalence₁.functor = (N' : simplicial_object C ⥤ _) := by refl
+lemma equivalence₁_inverse :
+  equivalence₀.inverse = (preadditive.dold_kan.Γ : karoubi (chain_complex C ℕ) ⥤ _) ⋙ κinv := by refl
+
+def equivalence₂ : simplicial_object C ≌ chain_complex C ℕ :=
+equivalence₁.trans κequiv'.symm
+
+lemma equivalence₂_functor : equivalence₂.functor = (N : simplicial_object C ⥤ _) := by refl
+lemma equivalence₂_inverse : equivalence₂.inverse = (κ' : chain_complex C ℕ ⥤ _) ⋙
+  preadditive.dold_kan.Γ ⋙ κinv := by refl
+
+lemma equivalence₂_inverse' : equivalence₂.inverse ≅ (Γ : chain_complex C ℕ ⥤  _) :=
+begin
+  calc equivalence₂.inverse ≅ ((κ' : chain_complex C ℕ ⥤ _) ⋙ preadditive.dold_kan.Γ) ⋙ κinv : by refl
+  ... ≅ (Γ' ⋙ κ) ⋙ κinv : iso_whisker_right (eq_to_iso (Γ_comp_κ.symm)) _
+  ... ≅ Γ' ⋙ (κ ⋙ κinv) : by refl
+  ... ≅ Γ' ⋙ 𝟭 _ : iso_whisker_left _ κequiv.unit_iso.symm
+  ... ≅ Γ : by refl,
+end
+
+def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
+begin
+  letI : is_equivalence (Γ : chain_complex C ℕ ⥤ _) :=
+    is_equivalence_of_iso equivalence₂_inverse' (is_equivalence.of_equivalence equivalence₂.symm),
+  exact Γ.as_equivalence.symm,
+end
+
+lemma equivalence_functor : (equivalence : simplicial_object C ≌ _ ).functor = N := by refl
+lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _ ).inverse = Γ := by refl
+
+def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
+begin
+  calc Γ ⋙ N ≅ Γ' ⋙ N' ⋙ κinv' : by refl
+  ... ≅ (Γ' ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
+  ... ≅ κ' ⋙ κinv' : iso_whisker_right NΓ' _
+  ... ≅ 𝟭 _ : κequiv'.unit_iso.symm,
+end
+
+lemma NΓ_inv_objectwise (K : chain_complex C ℕ) :
+NΓ.inv.app K = κequiv'.unit_iso.hom.app K ≫ κinv'.map (NΓ'.inv.app K) :=
+by { dsimp only [NΓ, iso.refl, iso.trans], erw [comp_id, comp_id], refl, }
+
+--lemma equivalence_unit_iso 
+
+
+
+
+#exit
 def unit_inv : (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (κ : simplicial_object C ⥤ _) :=
 begin
   calc (N' ⋙ κinv' ⋙ Γ) ⋙ κ ≅ (N' ⋙ κinv') ⋙ (Γ ⋙ κ) : _
@@ -76,17 +146,16 @@ lemma ΓN_hom_objectwise (X : simplicial_object C) :
 ΓN.hom.app X = e.unit_iso.hom.app _ ≫ κinv.map (unit_inv.hom.app X) ≫ e.unit_iso.inv.app X :=
 by { dsimp [ΓN], simpa only [id_comp, comp_id, assoc], }
 
-def NΓ : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) :=
+lemma ΓN_trans_compat (Y : simplicial_object C) : ΓN_trans.app (κ.obj Y) =
+  eq_to_hom
+    (by { dsimp only [functor.comp], congr' 1,
+      exact congr_obj (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) N') Y, }) ≫
+  ΓN'_trans.app Y :=
 begin
-  calc Γ ⋙ N ≅ Γ' ⋙ N' ⋙ κinv' : by refl
-  ... ≅ (Γ' ⋙ N') ⋙ κinv' : (functor.associator _ _ _).symm
-  ... ≅ κ' ⋙ κinv' : iso_whisker_right NΓ' _
-  ... ≅ 𝟭 _ : eq'.unit_iso.symm,
+  erw [whiskering_left_to_karoubi_hom_equiv_inv_fun_compat, nat_trans.comp_app, eq_to_hom_app],
+  refl,
 end
 
-lemma NΓ_inv_objectwise (K : chain_complex C ℕ) :
-NΓ.inv.app K = eq'.unit_iso.hom.app K ≫ κinv'.map (NΓ'.inv.app K) :=
-by { dsimp only [NΓ, iso.refl, iso.trans], erw [comp_id, comp_id], refl, }
 
 @[simp]
 def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y := NΓ'.inv.app (κinv'.obj (N'.obj Y))
@@ -94,58 +163,30 @@ def φ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ κ').obj Y ⟶ (N' ⋙ κi
 @[simp]
 def ψ (Y : simplicial_object C) : (N' ⋙ κinv' ⋙ Γ' ⋙ N').obj Y ⟶ N'.obj Y := N'.map (ΓN.hom.app Y)
 
-theorem φ_comp_ψ (Y : simplicial_object C) : φ Y ≫ ψ Y = eq'.counit_iso.hom.app (N'.obj Y) :=
+lemma compat {D E : Type*} [category D] [category E] (e : D ≌ E) {A : E} {B : D} (φ : A ⟶ e.functor.obj B) :
+  e.functor.map (e.inverse.map φ) ≫ e.functor.map (e.unit_iso.inv.app B) =
+  e.counit_iso.hom.app A ≫ φ :=
 begin
-  dsimp only [φ, ψ],
-  rw ← NΓ_compat_NΓ',
-  dsimp only [iso.trans, iso.refl, nat_iso.hcomp, nat_trans.hcomp, functor.right_unitor, eq_to_iso],
-  simp only [nat_trans.comp_app, nat_trans.id_app, eq_to_hom_app],
-  erw [id_comp, comp_id, assoc],
-  have eq : algebraic_topology.dold_kan.N.obj (κ.obj Y) = N'.obj Y :=
-    congr_obj (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) _) N') Y,
-  let τ : _ ⟶ (N' ⋙ κinv' ⋙ κ').obj Y := eq_to_hom eq ≫ eq'.counit_iso.symm.hom.app (N'.obj Y),
-  have h₁ := algebraic_topology.dold_kan.NΓ.inv.naturality τ,
-  have h₂ := congr_arg (category_struct.comp (inv τ)) h₁,
-  erw [← assoc, is_iso.inv_hom_id τ, id_comp] at h₂,
-  erw [h₂, assoc, is_iso.inv_comp_eq τ],
-  dsimp only [τ],
-  simp only [assoc],
-  have h₃ := congr_app eq'.counit_iso.inv_hom_id (N'.obj Y),
-  rw nat_trans.comp_app at h₃,
-  conv { to_rhs, erw [h₃, comp_id, ← id_comp (eq_to_hom eq), ← identity_N_objectwise (κ.obj Y), assoc], },
+  erw ← e.counit_iso.hom.naturality φ,
   congr' 1,
-  clear h₃ h₂ h₁ τ,
-
-  sorry
+  conv { to_lhs, rw ← comp_id (e.functor.map _), },
+  erw [← e.functor_unit_iso_comp, ← assoc, ← e.functor.map_comp, ← nat_trans.comp_app,
+    e.unit_iso.inv_hom_id, e.functor.map_id, id_comp],
+  refl,
 end
 
-@[simps]
-def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
-{ functor := N,
-  inverse := Γ,
-  unit_iso := ΓN.symm,
-  counit_iso := NΓ,
-  functor_unit_iso_comp' := λ X, begin
-    let α := ΓN.app X,
-    let β := NΓ.app (N.obj X),
-    have hα : N.map (ΓN.symm.hom.app X) = (N.map_iso α).inv := by refl,
-    have hβ : NΓ.hom.app (N.obj X) = β.hom := by refl,
-    rw [hα, hβ, iso.inv_comp_eq],
-    symmetry,
-    erw [comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
-    dsimp [α, β],
-    clear hα hβ α β,
-    have h := congr_map κinv' (φ_comp_ψ X),
-    simp only [φ, ψ, κinv'.map_comp] at h,
-    have h' := congr_map κinv' (congr_app eq'.counit_iso.inv_hom_id (N'.obj X)),
-    erw [κinv'.map_comp, κinv'.map_id] at h',
-    erw [← h', ← h],
-    slice_rhs 1 2 { erw ← κinv'.map_comp, },
-    congr,
-    erw [κinv'.map_comp, NΓ_inv_objectwise],
-    congr,
-    exact equivalence.unit_app_inverse eq' (N'.obj X),
-  end, }
+
+
+lemma conjugate_map_of_functor_eq {D E : Type*} [category D] [category E]
+  {F G : D ⥤ E} (h : F = G) {X Y : D} (f : X ⟶ Y) :
+  F.map f = eq_to_hom (by rw h) ≫ G.map f ≫ eq_to_hom (by rw h) :=
+by { subst h, simp only [eq_to_hom_refl, id_comp, comp_id], }
+
+lemma conjugate_app_of_obj_eq {D E : Type*} [category D] [category E]
+  {F G : D ⥤ E} (φ : F ⟶ G) {X Y : D} (h : X = Y) :
+  φ.app X = eq_to_hom (by rw h) ≫ φ.app Y ≫ eq_to_hom (by rw h) :=
+by { subst h, simp only [eq_to_hom_refl, id_comp, comp_id], }
+
 
 end dold_kan
 
