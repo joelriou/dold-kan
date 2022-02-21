@@ -73,6 +73,7 @@ end
 
 /-- When `F` and `G` are two isomorphic functors, then `F` is an equivalence iff
 `G` is. -/
+@[simps]
 def is_equivalence_equiv_of_iso {C D : Type*} [category C] [category D]
   {F G : C ⥤ D} (e : F ≅ G) : is_equivalence F ≃ is_equivalence G :=
 { to_fun := is_equivalence_of_iso e,
@@ -83,6 +84,7 @@ def is_equivalence_equiv_of_iso {C D : Type*} [category C] [category D]
     by rw [is_equivalence_of_iso_trans, iso.symm_self_id, is_equivalence_of_iso_refl], }
 
 /-- If `G` and `F ⋙ G` are equivalence of categories, then `F` is also an equivalence. -/
+@[simps]
 def is_equivalence_cancel_comp_right {C D E : Type*} [category C] [category D] [category E]
   (F : C ⥤ D) (G : D ⥤ E) (hG : is_equivalence G) (hGF : is_equivalence (F ⋙ G)) :
   is_equivalence F :=
@@ -94,6 +96,7 @@ begin
 end
 
 /-- If `F` and `F ⋙ G` are equivalence of categories, then `G` is also an equivalence. -/
+@[simps]
 def is_equivalence_cancel_comp_left {C D E : Type*} [category C] [category D] [category E]
   (F : C ⥤ D) (G : D ⥤ E) (hF : is_equivalence F) (hGF : is_equivalence (F ⋙ G)) :
   is_equivalence G :=
