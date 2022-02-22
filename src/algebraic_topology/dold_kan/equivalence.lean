@@ -34,7 +34,8 @@ private def e' := to_karoubi_is_equivalence (chain_complex A ℕ)
 private def κ' := to_karoubi (chain_complex A ℕ)
 private def κinv' : _ ⥤ chain_complex A ℕ := e'.inverse
 
-lemma comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
+@[simps]
+def comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
 begin
   calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
   ... ≅ N ⋙ (κ' ⋙ κinv') : iso_whisker_left _ e'.unit_iso

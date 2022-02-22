@@ -6,3 +6,4 @@ path = "src"
 
 [dependencies]
 mathlib = {"path"= "/home/joel/lean/mathlib_simplex_category_lemmas/"}
+
