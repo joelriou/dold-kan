@@ -65,20 +65,19 @@ open algebraic_topology.dold_kan
 def N : simplicial_object A ⥤ chain_complex A ℕ := algebraic_topology.normalized_Moore_complex A
 def Γ : chain_complex A ℕ ⥤ simplicial_object A := idempotents.dold_kan.Γ
 
-private def e' := to_karoubi_is_equivalence (chain_complex A ℕ)
-private def κ' := to_karoubi (chain_complex A ℕ)
-private def κinv' : _ ⥤ chain_complex A ℕ := e'.inverse
+def κequiv' := to_karoubi_equivalence (chain_complex A ℕ)
 
 @[simps]
 def comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
 begin
   calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
-  ... ≅ N ⋙ (κ' ⋙ κinv') : iso_whisker_left _ e'.unit_iso
-  ... ≅ (N ⋙ κ') ⋙ κinv' : by refl
-  ... ≅ N' ⋙ κinv' : iso_whisker_right (N'_equiv_karoubi_normalized A).symm _
+  ... ≅ N ⋙ (κequiv'.functor ⋙ κequiv'.inverse) : iso_whisker_left _ κequiv'.unit_iso
+  ... ≅ (N ⋙ κequiv'.functor) ⋙ κequiv'.inverse : by refl
+  ... ≅ N' ⋙ κequiv'.inverse : iso_whisker_right (N'_equiv_karoubi_normalized A).symm _
   ... ≅ idempotents.dold_kan.N : by refl,
 end
 
+@[simps]
 def equivalence : simplicial_object A ≌ chain_complex A ℕ :=
 begin
   let F : simplicial_object A ⥤ _ := idempotents.dold_kan.N,
