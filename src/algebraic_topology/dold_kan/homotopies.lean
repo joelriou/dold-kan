@@ -33,7 +33,8 @@ variables {X : simplicial_object C}
 def c := complex_shape.down ℕ
 def c_mk (i j : ℕ) (h : j+1 = i) : (complex_shape.down ℕ).rel i j := h
 lemma cs_down_succ (j : ℕ) : (complex_shape.down ℕ).rel (j+1) j := c_mk (j+1) j rfl
-lemma cs_down_0_not_rel_left (j : ℕ) : ¬(complex_shape.down ℕ).rel 0 j := homotopy.cs_down_0_not_rel_left j
+lemma cs_down_0_not_rel_left (j : ℕ) :
+  ¬(complex_shape.down ℕ).rel 0 j := homotopy.cs_down_0_not_rel_left j
 
 /-- the sequence of maps that provide the null homotopic map that is used in
 the inductive construction of projectors `P q` -/
@@ -69,11 +70,14 @@ end
 /-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
 def Hσ (q : ℕ) : K[X] ⟶ K[X] := homotopy.null_homotopic_map (hσ' q)
 
+variable (X)
+
 /-- `Hσ` is null homotopic -/
-def homotopy_Hσ_to_zero (q : ℕ) (X): homotopy (Hσ q :(alternating_face_map_complex C).obj X ⟶ _) 0 :=
+def homotopy_Hσ_to_zero (q : ℕ) : homotopy (Hσ q : K[X] ⟶ K[X]) 0 :=
 homotopy.null_homotopy (hσ' q)
 
-lemma Hσ_eq_zero (q : ℕ) : (Hσ q : K[X] ⟶ _).f 0 = 0  :=
+variable {X}
+lemma Hσ_eq_zero (q : ℕ) : (Hσ q : K[X] ⟶ K[X]).f 0 = 0  :=
 begin
   unfold Hσ,
   rw null_homotopic_map_f_of_not_rel_left (cs_down_succ 0) cs_down_0_not_rel_left,
@@ -136,6 +140,7 @@ begin
   { simpa only [eq_to_hom_map, functor.map_comp, functor.map_zsmul], },
 end
 
+/-- for alternating_face_map_complex.lean -/
 def map_alternating_face_map_complex {D : Type*} [category.{v} D] [preadditive D]
   (F : C ⥤ D) [F.additive] :
   alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =

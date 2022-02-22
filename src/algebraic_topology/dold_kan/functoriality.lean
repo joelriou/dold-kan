@@ -31,20 +31,23 @@ def functoriality_N : (simplicial_object.whiskering A B).obj F ⋙ N ≅
   N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :=
 begin
   calc (simplicial_object.whiskering A B).obj F ⋙ N
-    ≅ (simplicial_object.whiskering A B).obj F ⋙ idempotents.dold_kan.N : iso_whisker_left _ comparison_N
+    ≅ (simplicial_object.whiskering A B).obj F ⋙ idempotents.dold_kan.N :
+      iso_whisker_left _ comparison_N
   ... ≅ idempotents.dold_kan.N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :
     idempotents.dold_kan.functoriality_N F
-  ... ≅ N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) : iso_whisker_right comparison_N.symm _,
+  ... ≅ N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :
+    iso_whisker_right comparison_N.symm _,
 end
 
-/- TODO: In each degree, compare this isomorphism with the mostly obvious natural transformation that
-can be constructed from the original definition of the normalized Moore complex using kernels. 
+/- TODO: Compare this isomorphism with the mostly obvious natural transformation that
+can be constructed from the original definition of the normalized Moore complex using kernels.
 
-lemma compatibility_N_degreewise (X : simplicial_object A) (n : ℕ) :
-  ((functoriality_N F).inv.app X).f n ≫
-    ((inclusion_of_Moore_complex B).app (((simplicial_object.whiskering A B).obj F).obj X)).f n = 
-    F.map (((inclusion_of_Moore_complex A).app X).f n) := sorry
-
+lemma compatibility_N_degreewise (X : simplicial_object A) :
+  ((functoriality_N F).inv.app X) ≫
+    ((inclusion_of_Moore_complex B).app (((simplicial_object.whiskering A B).obj F).obj X)) =
+    (functor.map_homological_complex F (complex_shape.down ℕ)).map
+      ((inclusion_of_Moore_complex A).app X) ≫
+    eq_to_hom (congr_obj (map_alternating_face_map_complex F) X) := sorry
 -/
 
 end dold_kan

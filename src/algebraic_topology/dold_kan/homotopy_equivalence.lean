@@ -35,7 +35,7 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
 | (q+1) :=
   begin
     have h := homotopy.add (P_is_homotopic_to_id q)
-      (homotopy.comp_left (homotopy_Hσ_to_zero q X) (P q)),
+      (homotopy.comp_left (homotopy_Hσ_to_zero X q) (P q)),
     refine homotopy.trans (homotopy.of_eq _) (homotopy.trans h (homotopy.of_eq _)),
     { unfold P, simp only [comp_add, comp_id], },
     { simp only [add_zero, comp_zero], },
@@ -145,7 +145,7 @@ begin
   ext P n,
   simp only [inclusion_N_app_f, alternating_face_map_complex.map,
     alternating_face_map_complex_map, retraction_N_app_f, assoc,
-    nat_trans.comp_app, karoubi.comp, homological_complex.comp_f, 
+    nat_trans.comp_app, karoubi.comp, homological_complex.comp_f,
     chain_complex.of_hom_f, nat_trans.id_app, karoubi.id_eq, N_obj_p_f],
   have h := P_infty_degreewise_naturality n P.p,
   have h' := congr_app P.idempotence (op [n]),
