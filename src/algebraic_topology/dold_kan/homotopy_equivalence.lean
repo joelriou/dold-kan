@@ -6,7 +6,6 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.normalized
 import algebraic_topology.dold_kan.n_reflects_iso -- change this...
-import for_mathlib.idempotents.homological_complex
 
 open category_theory
 open category_theory.category

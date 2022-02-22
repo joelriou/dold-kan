@@ -4,9 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
-import for_mathlib.alternating_face_map_complex
 import for_mathlib.homotopy
-import for_mathlib.homological_complex_misc
 import for_mathlib.functor_misc
 import algebraic_topology.dold_kan.notations
 

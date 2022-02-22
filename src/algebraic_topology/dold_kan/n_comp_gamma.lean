@@ -6,7 +6,6 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.gamma_comp_n
 import algebraic_topology.dold_kan.n_reflects_iso
-import for_mathlib.idempotents.nat_trans
 
 noncomputable theory
 

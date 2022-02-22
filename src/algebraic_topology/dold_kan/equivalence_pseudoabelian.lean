@@ -7,7 +7,6 @@ Author: Joël Riou
 import algebraic_topology.dold_kan.equivalence_additive
 import algebraic_topology.dold_kan.compatibility
 import for_mathlib.idempotents.simplicial_object
-import for_mathlib.idempotents.homological_complex
 
 noncomputable theory
 
