@@ -5,32 +5,35 @@
 \begin{document}
 
 \tikzstyle{every node}=[rectangle, minimum size=6mm, rounded corners=3mm,
-	very thick, draw = black!50, top color = white, bottom color =
-	black!20]
+	very thick, draw = black!50, top color = white]
+
+\tikzstyle{red}=[bottom color = red]
+\tikzstyle{orange}=[bottom color = orange]
+\tikzstyle{green}=[bottom color = green]
 
 \begin{center}
 \begin{tikzpicture}[->, >={Stealth[round]}]
-\node(notations) at (0,0) {notations.lean};
-\node(homotopies) at (0,-2) {homotopies.lean};
-\node(faces) at (0,-4) {faces.lean};
-\node(projectors) at (0,-6) {projectors.lean};
-\node(pinfty) at (0,-8) {p\_infty.lean};
-\node(functorgamma) at (-6,-8) {functor\_gamma.lean};
-\node(decomposition) at (-2,-10) {decomposition.lean};
-\node(degeneracies) at (-6,-11.5) {degeneracies.lean};
-\node(functorn) at (3,-11) {functor\_n.lean};
-\node(nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
-\node(gammacompn) at (0,-14) {gamma\_comp\_n.lean};
-\node(ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
-\node(compatibility) at (3.5,-17) {compatibility.lean};
-\node(equivalenceadditive) at (0,-18) {equivalence\_additive.lean};
-\node(equivalencepa) at (0,-20) {equivalence\_pseudoabelian.lean};
-\node(equivalence) at (0,-22) {equivalence.lean};
-\node(functorialityadditive) at (-5,-19) {functoriality\_additive.lean};
-\node(functorialitypa) at (-5,-21) {functoriality\_pseudoabelian.lean};
-\node(functoriality) at (-5,-23) {functoriality.lean};
-\node(normalized) at (6,-15) {normalized.lean};
-\node(hoequiv) at (7,-19) {homotopy\_equivalence.lean};
+\node[red](notations) at (0,0) {notations.lean};
+\node[red](homotopies) at (0,-2) {homotopies.lean};
+\node[red](faces) at (0,-4) {faces.lean};
+\node[red](projectors) at (0,-6) {projectors.lean};
+\node[red](pinfty) at (0,-8) {p\_infty.lean};
+\node[red](functorgamma) at (-6,-8) {functor\_gamma.lean};
+\node[red](decomposition) at (-2,-10) {decomposition.lean};
+\node[red](degeneracies) at (-6,-11.5) {degeneracies.lean};
+\node[red](functorn) at (3,-11) {functor\_n.lean};
+\node[red](nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
+\node[red](gammacompn) at (0,-14) {gamma\_comp\_n.lean};
+\node[red](ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
+\node[red](compatibility) at (3.5,-17) {compatibility.lean};
+\node[red](equivalenceadditive) at (0,-18) {equivalence\_additive.lean};
+\node[red](equivalencepa) at (0,-20) {equivalence\_pseudoabelian.lean};
+\node[red](equivalence) at (0,-22) {equivalence.lean};
+\node[red](functorialityadditive) at (-5,-19) {functoriality\_additive.lean};
+\node[red](functorialitypa) at (-5,-21) {functoriality\_pseudoabelian.lean};
+\node[red](functoriality) at (-5,-23) {functoriality.lean};
+\node[red](normalized) at (6,-15) {normalized.lean};
+\node[red](hoequiv) at (7,-19) {homotopy\_equivalence.lean};
 
 \path (notations) edge (homotopies);
 \path (notations) edge [bend right] (functorgamma);
