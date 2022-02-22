@@ -56,7 +56,8 @@ lemma hη : compatibility.τ₀ (eq_to_iso hN') (eq_to_iso hΓ) =
   (η' : _ ≅ (κequiv' : chain_complex C ℕ ≌ _ ).functor) :=
 begin
   ext1, ext1, ext1 K,
-  dsimp [compatibility.τ₀, compatibility.τ₁],
+  rw compatibility.τ₀_hom_app_eq,
+  dsimp [compatibility.τ₁],
   simp only [id_comp, comp_id, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans],
   apply NΓ_karoubi_compat,
 end
@@ -64,11 +65,13 @@ end
 @[simps]
 def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso hη
 
-lemma equivalence_counit_iso : dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) := 
+lemma equivalence_counit_iso :
+  dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) :=
 compatibility.equivalence_counit_iso_eq hη
 
 @[simps]
-def ε' : κequiv.functor ≅ (N' : simplicial_object C ⥤ _) ⋙ preadditive.dold_kan.equivalence.inverse :=
+def ε' : κequiv.functor ≅
+  (N' : simplicial_object C ⥤ _) ⋙ preadditive.dold_kan.equivalence.inverse :=
 (as_iso ΓN'_trans).symm
 
 lemma hε : compatibility.υ (eq_to_iso hN') =
@@ -86,7 +89,8 @@ end
 def ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ :=
 compatibility.equivalence_unit_iso (eq_to_iso hN') (eq_to_iso hΓ) ε'
 
-lemma equivalence_unit_iso : dold_kan.equivalence.unit_iso = (ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ) := 
+lemma equivalence_unit_iso : dold_kan.equivalence.unit_iso =
+  (ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ) :=
 compatibility.equivalence_unit_iso_eq (eq_to_iso hN') (eq_to_iso hΓ) hε
 
 end dold_kan

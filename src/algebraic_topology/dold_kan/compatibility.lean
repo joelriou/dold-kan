@@ -33,7 +33,8 @@ variables {eA} {e'}
 
 def equivalence₁ : A ≌ B' :=
 begin
-  letI : is_equivalence F := is_equivalence_of_iso hF (is_equivalence.of_equivalence (equivalence₀ eA e')),
+  letI : is_equivalence F := is_equivalence_of_iso hF
+    (is_equivalence.of_equivalence (equivalence₀ eA e')),
   exact F.as_equivalence,
 end
 
@@ -44,8 +45,8 @@ lemma equivalence₁_inverse : (equivalence₁ hF).inverse = e'.inverse ⋙ eA.i
 def equivalence₁_counit_iso :
   (e'.inverse ⋙ eA.inverse) ⋙ F ≅ 𝟭 B' :=
 begin
-  calc (e'.inverse ⋙ eA.inverse) ⋙ F ≅ (e'.inverse ⋙ eA.inverse) ⋙ (eA.functor ⋙ e'.functor) :
-    iso_whisker_left _ hF.symm
+  calc (e'.inverse ⋙ eA.inverse) ⋙ F
+    ≅ (e'.inverse ⋙ eA.inverse) ⋙ (eA.functor ⋙ e'.functor) : iso_whisker_left _ hF.symm
   ... ≅ e'.inverse ⋙ (eA.inverse ⋙ eA.functor) ⋙ e'.functor : by refl
   ... ≅ e'.inverse ⋙ 𝟭 _ ⋙ e'.functor : iso_whisker_left _ (iso_whisker_right eA.counit_iso _)
   ... ≅ e'.inverse ⋙ e'.functor : by refl
@@ -66,7 +67,8 @@ def equivalence₁_unit_iso :
 begin
   calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
   ... ≅ eA.functor ⋙ 𝟭 A' ⋙ eA.inverse : by refl
-  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right e'.unit_iso _)
+  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) ⋙ eA.inverse :
+    iso_whisker_left _ (iso_whisker_right e'.unit_iso _)
   ... ≅ (eA.functor ⋙ e'.functor) ⋙ (e'.inverse ⋙ eA.inverse) : by refl
   ... ≅ F ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_right hF _,
 end
@@ -85,15 +87,17 @@ include eB
 def equivalence₂ : A ≌ B := (equivalence₁ hF).trans eB.symm
 
 lemma equivalence₂_functor : (equivalence₂ eB hF).functor = F ⋙ eB.inverse := by refl
-lemma equivalence₂_inverse : (equivalence₂ eB hF).inverse = eB.functor ⋙ e'.inverse ⋙ eA.inverse := by refl
+lemma equivalence₂_inverse : (equivalence₂ eB hF).inverse =
+  eB.functor ⋙ e'.inverse ⋙ eA.inverse := by refl
 
 @[simps]
 def equivalence₂_counit_iso :
   (eB.functor ⋙ e'.inverse ⋙ eA.inverse) ⋙ (F ⋙ eB.inverse) ≅ 𝟭 B :=
 begin
-  calc (eB.functor ⋙ e'.inverse ⋙ eA.inverse) ⋙ (F ⋙ eB.inverse) ≅
-    eB.functor ⋙ (e'.inverse ⋙ eA.inverse ⋙ F) ⋙ eB.inverse : by refl
-  ... ≅ eB.functor ⋙ 𝟭 _ ⋙ eB.inverse : iso_whisker_left _ (iso_whisker_right (equivalence₁_counit_iso hF) _)
+  calc (eB.functor ⋙ e'.inverse ⋙ eA.inverse) ⋙ (F ⋙ eB.inverse)
+    ≅ eB.functor ⋙ (e'.inverse ⋙ eA.inverse ⋙ F) ⋙ eB.inverse : by refl
+  ... ≅ eB.functor ⋙ 𝟭 _ ⋙ eB.inverse :
+    iso_whisker_left _ (iso_whisker_right (equivalence₁_counit_iso hF) _)
   ... ≅ eB.functor ⋙ eB.inverse : by refl
   ... ≅ 𝟭 B : eB.unit_iso.symm,
 end
@@ -115,7 +119,8 @@ begin
   have foo := equivalence₁_unit_iso hF,
   calc 𝟭 A ≅ F ⋙ e'.inverse ⋙ eA.inverse : equivalence₁_unit_iso hF
   ... ≅ F ⋙ 𝟭 B' ⋙ (e'.inverse ⋙ eA.inverse) : by refl
-  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ e'.inverse ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
+  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ e'.inverse ⋙ eA.inverse :
+    iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
   ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse ⋙ eA.inverse) : by refl,
 end
 
@@ -135,7 +140,8 @@ def equivalence : A ≌ B :=
 begin
   letI : is_equivalence G := begin
     refine is_equivalence_of_iso _ (is_equivalence.of_equivalence (equivalence₂ eB hF).symm),
-    calc eB.functor ⋙ e'.inverse ⋙ eA.inverse ≅ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
+    calc eB.functor ⋙ e'.inverse ⋙ eA.inverse
+      ≅ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
     ... ≅ (G ⋙ eA.functor) ⋙ eA.inverse : iso_whisker_right hG _
     ... ≅ G ⋙ 𝟭 A : iso_whisker_left _ eA.unit_iso.symm
     ... ≅ G : functor.right_unitor G,
@@ -176,7 +182,7 @@ variables {hF} {hG}
 def equivalence_counit_iso : G ⋙ (F ⋙ eB.inverse) ≅ 𝟭 B :=
 begin
   calc G ⋙ (F ⋙ eB.inverse) ≅ (G ⋙ F) ⋙ eB.inverse : by refl
-  ... ≅ eB.functor ⋙ eB.inverse : iso_whisker_right η _ 
+  ... ≅ eB.functor ⋙ eB.inverse : iso_whisker_right η _
   ... ≅ 𝟭 B : eB.unit_iso.symm,
 end
 
@@ -239,7 +245,7 @@ def equivalence_unit_iso : 𝟭 A ≅ (F ⋙ eB.inverse) ⋙ G :=
 begin
   calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
   ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right ε _
-  ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl  
+  ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl
   ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
   ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
   ... ≅ (F ⋙ eB.inverse) ⋙ (G ⋙ eA.functor) ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right hG _)
