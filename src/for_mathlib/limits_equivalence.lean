@@ -4,23 +4,26 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import category_theory.pseudoabelian.nat_trans
 import category_theory.limits.creates
-import category_theory.functor_ext
+import category_theory.limits.shapes.kernels
+import category_theory.limits.shapes.zero
+import category_theory.preadditive.additive_functor
+import for_mathlib.functor_misc
 
 open category_theory
 open category_theory.category
 open category_theory.limits
-open category_theory.pseudoabelian.karoubi
 
+noncomputable theory
+open classical
 
 universes w' w v₁ v₂ u₁ u₂
 namespace category_theory
 
 namespace pseudoabelian
 
-variables {C : Type u₁} [category.{v₁} C] [preadditive C]
-variables {D : Type u₂} [category.{v₂} D] [preadditive D]
+variables {C : Type u₁} [category.{v₁} C]
+variables {D : Type u₂} [category.{v₂} D]
 
 def preserves_limit_of_equivalence {J : Type w} [category.{w'} J] (K : J ⥤ C) (e : C ≌ D) :
   limits.preserves_limit K e.functor := ⟨λ c hc,
@@ -86,7 +89,8 @@ open limits.walking_parallel_pair_hom
 def walking_parallel_pair_change_universes_functor :
   walking_parallel_pair.{v₁} ⥤ walking_parallel_pair.{v₂} :=
 { obj := λ x, by { cases x, exacts [zero, one], },
-  map := λ i j f, by { cases f, exacts [left, right, 𝟙 _], } }
+  map := λ i j f, by { cases f, exacts [left, right, 𝟙 _], },
+  map_comp' := by { rintros (_|_) (_|_) (_|_) (_|_|_) (_|_|_); refl, }, }
 
 def walking_parallel_pair_change_universes_equivalence :
   walking_parallel_pair.{v₁} ≌ walking_parallel_pair.{v₂} :=
@@ -96,13 +100,13 @@ def walking_parallel_pair_change_universes_equivalence :
     apply eq_to_iso,
     apply functor.ext,
     { intros i j f, cases f, tidy, },
-    { tidy, }
+    { rintros (_|_);refl, }
   end,
   counit_iso := begin
     apply eq_to_iso,
     apply functor.ext,
     { intros i j f, cases f, tidy, },
-    { tidy, }
+    { rintros (_|_); refl, }
   end, }
 
 lemma has_equalizer_of_equivalence (e : C ≌ D) {X Y : C} (f g : X ⟶ Y)
@@ -121,12 +125,17 @@ begin
   exact (has_limit_iff_of_equivalence e φ).mp hfg,
 end
 
-lemma has_kernel_of_equivalence (e : C ≌ D) {X Y : C} (f : X ⟶ Y)
+lemma has_kernel_of_equivalence [preadditive C] [preadditive D]
+  (e : C ≌ D) [functor.additive e.functor] {X Y : C} (f : X ⟶ Y)
   (hf : has_kernel f) : has_kernel (e.functor.map f) :=
-by simpa [is_equivalence_preserves_zero_morphisms] using
-    (has_equalizer_of_equivalence e f 0) hf
+begin
+  have h : functor.preserves_zero_morphisms e.functor := infer_instance,
+  simpa only [h.map_zero'] using (has_equalizer_of_equivalence e f 0) hf,
+end
 
-lemma has_kernel_iff_of_equivalence (e : C ≌ D) {X Y : C} (f : X ⟶ Y) :
+lemma has_kernel_iff_of_equivalence [preadditive C] [preadditive D]
+  (e : C ≌ D) [functor.additive e.functor] [functor.additive e.inverse]
+  {X Y : C} (f : X ⟶ Y) :
   has_kernel f ↔ has_kernel (e.functor.map f) :=
 begin
   split,
@@ -138,31 +147,13 @@ begin
     rw [nat_trans.id_app, nat_trans.comp_app] at hY,
     erw [← hY, ← assoc, F],
     dsimp,
+    haveI : functor.additive e.symm.functor := (infer_instance : functor.additive e.inverse),
     haveI : has_kernel (e.inverse.map (e.functor.map f)) :=
       has_kernel_of_equivalence e.symm (e.functor.map f) hf',
     haveI : has_kernel (e.unit_iso.hom.app X ≫ e.inverse.map (e.functor.map f))
       := limits.has_kernel_iso_comp _ _,
     apply limits.has_kernel_comp_mono, },
 end
-
-lemma equivalence_preserves_is_pseudoabelian (e : C ≌ D) (hC : is_pseudoabelian C) :
-  is_pseudoabelian D :=
-⟨λ P, begin
-  rw has_kernel_iff_of_equivalence e.symm P.p,
-  simpa only using is_pseudoabelian.idempotents_have_kernels ((functor_extension e.inverse).obj P),
-end⟩
-
-lemma is_pseudoabelian_iff_of_equivalence (e : C ≌ D) :
-  is_pseudoabelian C ↔ is_pseudoabelian D :=
-begin
-  split,
-  { exact equivalence_preserves_is_pseudoabelian e, },
-  { exact equivalence_preserves_is_pseudoabelian e.symm, },
-end
-
-lemma is_pseudoabelian_iff_of_is_equivalence (F : C ⥤ D) [is_equivalence F] :
-  is_pseudoabelian C ↔ is_pseudoabelian D :=
-is_pseudoabelian_iff_of_equivalence (functor.as_equivalence F)
 
 end pseudoabelian
 

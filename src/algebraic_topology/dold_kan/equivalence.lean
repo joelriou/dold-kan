@@ -7,6 +7,41 @@ Author: Joël Riou
 import algebraic_topology.dold_kan.equivalence_pseudoabelian
 import algebraic_topology.dold_kan.normalized
 
+/-!
+
+# The Dold-Kan correspondence
+
+The Dold-Kan correspondance states that for any abelian category `A`, there is
+an equivalence between the category of simplicial objects in `A` and the
+category of chain complexes in `A` (with degrees indexed by `ℕ` and the
+homological convention that the degree is decreased by the differentials).
+
+More generally, this results holds for pseudo-abelian categories. Taking this
+into consideration, the strategy of proof that is used here is to state and
+prove most of the technical results without referring to notions of kernel,
+images, etc. The core of the arguments shall be constructing morphisms and
+check equalities between morphisms. The applications to abelian categories
+are handled at the very end of the proof.
+
+The overall plan is as follows:
+
+* show that the normalized Moore complex is an homotopy equivalent direct factor of
+the alternating face map complex, see `P_infty`
+and `homotopy_equiv_inclusion_of_Moore_complex`
+* show that a morphism of simplicial objects is an isomorphisms if and only if it
+induces an isomorphism on normalized Moore complexes
+* construct the inverse functor from chain complexes to simplicial objects
+* check that this gives the expected equivalence of categories
+
+## References
+* Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
+Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
+* Paul G. Goerss, John F. Jardine, Simplical Homotopy Theory, Modern Birkhäuser Classics,
+Reprint of the 1999 edition.
+
+-/
+
+
 noncomputable theory
 
 open category_theory
