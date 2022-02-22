@@ -5,5 +5,4 @@ lean_version = "leanprover-community/lean:3.39.2"
 path = "src"
 
 [dependencies]
-mathlib = {"path"= "/home/joel/lean/mathlib_simplex_category_lemmas/"}
-
+mathlib = {git = "https://github.com/leanprover-community/mathlib", branch = "simplex_category_lemmas", rev = "4fbebb90fe711889a1ba77330c80fe76550b87a8"}
