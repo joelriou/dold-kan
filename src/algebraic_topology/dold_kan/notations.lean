@@ -6,14 +6,4 @@ Author: Joël Riou
 
 import for_mathlib.alternating_face_map_complex
 
-open category_theory
-
-namespace algebraic_topology
-
-namespace dold_kan
-
-notation `K[`X`]` := alternating_face_map_complex.obj X
-
-end dold_kan
-
-end algebraic_topology
+localized "notation `K[`X`]` := algebraic_topology.alternating_face_map_complex.obj X" in dold_kan

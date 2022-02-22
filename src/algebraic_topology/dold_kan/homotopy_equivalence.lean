@@ -15,7 +15,7 @@ open category_theory.idempotents
 --open category_theory.simplicial_object
 --open homotopy
 open opposite
-open_locale simplicial
+open_locale simplicial dold_kan
 
 noncomputable theory
 

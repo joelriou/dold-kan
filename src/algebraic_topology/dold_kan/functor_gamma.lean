@@ -18,7 +18,7 @@ open category_theory.category
 open category_theory.limits
 open category_theory.idempotents
 open opposite
-open_locale simplicial
+open_locale simplicial dold_kan
 
 universe v
 

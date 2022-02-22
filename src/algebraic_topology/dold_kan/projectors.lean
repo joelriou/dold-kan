@@ -13,7 +13,7 @@ open category_theory.preadditive
 open category_theory.simplicial_object
 open simplex_category
 open opposite
-open_locale simplicial
+open_locale simplicial dold_kan
 
 noncomputable theory
 

@@ -16,7 +16,7 @@ open category_theory.simplicial_object
 open category_theory.idempotents
 open simplex_category
 open opposite
-open_locale simplicial
+open_locale simplicial dold_kan
 
 noncomputable theory
 
