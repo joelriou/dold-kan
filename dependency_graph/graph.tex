@@ -22,10 +22,13 @@
 \node(nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
 \node(gammacompn) at (0,-14) {gamma\_comp\_n.lean};
 \node(ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
-\node(compatibility) at (-5,-18) {compatibility.lean};
+\node(compatibility) at (3.5,-17) {compatibility.lean};
 \node(equivalenceadditive) at (0,-18) {equivalence\_additive.lean};
 \node(equivalencepa) at (0,-20) {equivalence\_pseudoabelian.lean};
-\node(equivalenceabelian) at (0,-22) {equivalence.lean};
+\node(equivalence) at (0,-22) {equivalence.lean};
+\node(functorialityadditive) at (-5,-19) {functoriality\_additive.lean};
+\node(functorialitypa) at (-5,-21) {functoriality\_pseudoabelian.lean};
+\node(functoriality) at (-5,-23) {functoriality.lean};
 \node(normalized) at (6,-15) {normalized.lean};
 \node(hoequiv) at (7,-19) {homotopy\_equivalence.lean};
 
@@ -46,11 +49,16 @@
 \path (pinfty) edge (functorn);
 \path (functorn) edge (normalized);
 \path (normalized) edge (hoequiv);
-\path (normalized) edge [bend left = 8mm] (equivalenceabelian);
+\path (normalized) edge [bend left = 8mm] (equivalence);
 \path (ncompgamma) edge (equivalenceadditive);
-\path (compatibility) edge (equivalencepa);
+\path (compatibility) edge [bend left] (equivalencepa);
 \path (equivalenceadditive) edge (equivalencepa);
-\path (equivalencepa) edge (equivalenceabelian);
+\path (equivalencepa) edge (equivalence);
+\path (equivalenceadditive) edge (functorialityadditive);
+\path (equivalencepa) edge (functorialitypa);
+\path (equivalence) edge (functoriality);
+\path (functorialityadditive) edge (functorialitypa);
+\path (functorialitypa) edge (functoriality);
 \end{tikzpicture}
 \end{center}
 

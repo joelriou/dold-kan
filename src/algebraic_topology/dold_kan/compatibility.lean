@@ -185,41 +185,36 @@ lemma equivalence_counit_iso_eq :
 begin
   ext1, apply nat_trans.ext, ext Y,
   dsimp [equivalence, equivalence_counit_iso, equivalence.inverse,
-    is_equivalence.inverse, nat_iso.hcomp, is_equivalence.unit_iso, iso.refl, iso.trans],
-  simp only [assoc, comp_id, functor.map_comp, id_comp],
+    is_equivalence.inverse, nat_iso.hcomp, is_equivalence.unit_iso, iso.refl, iso.trans,
+    is_equivalence.of_equivalence],
+  simp only [assoc, comp_id, functor.map_comp, id_comp, equivalence₂_counit_iso_eq eB hF],
   erw [nat_trans.id_app, nat_trans.id_app, (equivalence₂ eB hF).functor.map_id],
-  conv { to_lhs, congr, skip, congr, skip, erw id_comp, },
+  simp only [id_comp],
   conv { to_rhs, erw id_comp, },
-  suffices h : (equivalence₂ eB hF).functor.map (eA.unit_iso.hom.app (G.obj Y)) ≫
-    (equivalence₂ eB hF).functor.map (eA.inverse.map (hG.inv.app Y)) ≫
-    (equivalence₂_counit_iso eB hF).hom.app Y =
-    eB.inverse.map (η.hom.app Y) ≫ eB.unit_iso.inv.app Y,
-  { convert h,
-    rw ← equivalence₂_counit_iso_eq eB hF,
-    refl, },
-  { dsimp [equivalence₂, equivalence₁],
-    simp only [equivalence₂_counit_iso_hom_app, ← eB.inverse.map_comp, ← assoc],
-    congr' 2,
-    erw [← τ₀_hom_app_eq hF hG Y, hη],
-    dsimp [τ₁],
-    erw [id_comp, comp_id],
-    conv { to_rhs, erw ← id_comp (η.hom.app Y), },
-    simp only [← assoc],
-    congr' 1,
-    simp only [assoc, nat_trans.naturality, functor.comp_map, equivalence.fun_inv_map, functor.map_comp, nat_trans.naturality_assoc],
-    have h := congr_app hF.inv_hom_id (G.obj Y),
-    rw [nat_trans.comp_app, nat_trans.id_app] at h,
-    conv { to_rhs, erw ← h, congr, skip, erw ← id_comp (hF.hom.app (G.obj Y)), },
-    congr' 1,
-    simp only [← assoc],
-    congr' 1,
-    simp only [assoc, ← e'.functor.map_comp],
-    conv { to_rhs, erw ← e'.functor.map_id _, },
-    congr' 1,
-    simp only [iso.inv_hom_id_app_assoc, iso.inv_hom_id_app],
-    erw comp_id,
-    exact eA.functor_unit_iso_comp (G.obj Y), },
+  dsimp [equivalence₂, equivalence₁],
+  simp only [equivalence₂_counit_iso_hom_app, ← eB.inverse.map_comp, ← assoc],
+  congr' 2,
+  erw [← τ₀_hom_app_eq hF hG Y, hη],
+  dsimp [τ₁],
+  erw [id_comp, comp_id],
+  conv { to_rhs, erw ← id_comp (η.hom.app Y), },
+  simp only [← assoc],
+  congr' 1,
+  simp only [assoc, nat_trans.naturality, functor.comp_map, equivalence.fun_inv_map, functor.map_comp, nat_trans.naturality_assoc],
+  have h := congr_app hF.inv_hom_id (G.obj Y),
+  rw [nat_trans.comp_app, nat_trans.id_app] at h,
+  conv { to_rhs, erw ← h, congr, skip, erw ← id_comp (hF.hom.app (G.obj Y)), },
+  congr' 1,
+  simp only [← assoc],
+  congr' 1,
+  simp only [assoc, ← e'.functor.map_comp],
+  conv { to_rhs, erw ← e'.functor.map_id _, },
+  congr' 1,
+  simp only [iso.inv_hom_id_app_assoc, iso.inv_hom_id_app],
+  erw comp_id,
+  exact eA.functor_unit_iso_comp (G.obj Y),
 end
+
 
 omit hη hG eB
 
@@ -274,20 +269,15 @@ lemma equivalence_unit_iso_eq :
   (equivalence hF hG).unit_iso = equivalence_unit_iso hF hG ε :=
 begin
   ext1, apply nat_trans.ext, ext X,
-  dsimp [equivalence, iso.refl, nat_iso.hcomp, is_equivalence.inverse],
+  dsimp [equivalence, iso.refl, nat_iso.hcomp, is_equivalence.inverse,
+    is_equivalence.of_equivalence],
   erw [nat_trans.id_app, id_comp, G.map_id, comp_id, comp_id],
-  suffices h : (equivalence₂_unit_iso eB hF).hom.app X ≫
-    eA.inverse.map (hG.hom.app ((equivalence₂ eB hF).functor.obj X)) ≫
-    eA.unit_iso.inv.app (G.obj ((equivalence₂ eB hF).functor.obj X)) = (equivalence_unit_iso hF hG ε).hom.app X,
-  { convert h,
-    erw ← equivalence₂_unit_iso_eq eB hF,
-    refl, },
-  { dsimp [equivalence₂, equivalence₁],
-    simp only [equivalence₂_unit_iso_hom_app],
-    simp only [assoc, equivalence_unit_iso_hom_app, nat_iso.cancel_nat_iso_hom_left],
-    simp only [← eA.inverse.map_comp, ← assoc],
-    congr,
-    exact hε' hF hε X, }
+  simp only [equivalence₂_unit_iso_eq eB hF, equivalence₂_unit_iso_hom_app],
+  dsimp [equivalence₂, equivalence₁],
+  simp only [assoc, equivalence_unit_iso_hom_app, nat_iso.cancel_nat_iso_hom_left],
+  simp only [← eA.inverse.map_comp, ← assoc],
+  congr,
+  exact hε' hF hε X,
 end
 
 end compatibility

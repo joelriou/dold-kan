@@ -217,6 +217,13 @@ def to_karoubi_is_equivalence [is_idempotent_complete C] :
   is_equivalence (to_karoubi C) :=
 equivalence.of_fully_faithfully_ess_surj (to_karoubi C)
 
+@[simps]
+def to_karoubi_equivalence [is_idempotent_complete C] : C ≌ karoubi C :=
+begin
+  haveI := to_karoubi_is_equivalence C,
+  exact functor.as_equivalence (to_karoubi C),
+end
+
 namespace karoubi
 
 variables {C}

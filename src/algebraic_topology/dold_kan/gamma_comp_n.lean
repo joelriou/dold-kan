@@ -308,7 +308,6 @@ def NΓ' : Γ' ⋙ N' ≅ to_karoubi (chain_complex C ℕ) :=
       simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc, Γ_index_id],
   end }
 
-variable (C)
 
 def to_karoubi_comp_Γ_comp_N : to_karoubi (chain_complex C ℕ) ⋙ Γ ⋙ N = Γ' ⋙ N' :=
 begin
@@ -318,24 +317,21 @@ begin
   erw [← functor.assoc, h, functor.assoc, h'],
 end
 
-variable {C}
-
 @[simps]
 def NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
 (whiskering_left_to_karoubi_iso_equiv (Γ ⋙ N) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
-((eq_to_iso (to_karoubi_comp_Γ_comp_N C)).trans NΓ')
+((eq_to_iso to_karoubi_comp_Γ_comp_N).trans NΓ')
 
-lemma NΓ_compat_NΓ' : 
-eq_to_iso (to_karoubi_comp_Γ_comp_N C).symm ≪≫ nat_iso.hcomp (iso.refl (to_karoubi (chain_complex C ℕ))) NΓ
-    ≪≫ functor.right_unitor _ = NΓ' :=
+lemma NΓ_karoubi_compat (K: chain_complex C ℕ) :
+  NΓ.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact congr_obj to_karoubi_comp_Γ_comp_N K, })
+    ≫ NΓ'.hom.app K :=
 begin
-  ext1, ext1, ext1 K,
-  dsimp only [NΓ, iso.trans, iso.refl, whiskering_left_to_karoubi_iso_equiv, nat_iso.hcomp,
-    nat_trans.hcomp, eq_to_iso, functor.right_unitor, functor.id],
-  simp only [functor.map_id, nat_trans.comp_app, whiskering_left_to_karoubi_hom_equiv_inv_fun_compat,
-    eq_to_hom_app, ← assoc, eq_to_hom_trans, eq_to_hom_refl],
-  erw [comp_id, id_comp, comp_id],
+  dsimp only [NΓ, whiskering_left_to_karoubi_iso_equiv],
+  erw [whiskering_left_to_karoubi_hom_equiv_inv_fun_compat],
+  dsimp only [iso.trans, eq_to_iso],
+  simp only [nat_trans.comp_app, eq_to_hom_app],
 end
+
 
 end dold_kan
 
