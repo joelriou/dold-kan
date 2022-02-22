@@ -28,8 +28,10 @@ open algebraic_topology.dold_kan
 def κequiv := to_karoubi_equivalence (simplicial_object C)
 def κequiv' := to_karoubi_equivalence (chain_complex C ℕ)
 
+@[simps]
 def N : simplicial_object C ⥤ chain_complex C ℕ := N' ⋙ κequiv'.inverse
 
+@[simps]
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
 
 lemma hN' : κequiv.functor ⋙ preadditive.dold_kan.equivalence.functor =
