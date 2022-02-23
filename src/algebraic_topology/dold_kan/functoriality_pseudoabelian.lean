@@ -69,11 +69,11 @@ def functoriality_N : (simplicial_object.whiskering C D).obj F ⋙ N ≅
   N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :=
 begin
   calc (simplicial_object.whiskering C D).obj F ⋙ N
-    ≅ (dold_kan.N' ⋙ preadditive.dold_kan.functor_karoubi_homological_complex_obj F) ⋙
-      κequiv'.inverse : iso_whisker_right (eq_to_iso (preadditive.dold_kan.functoriality_N' F)) _
-  ... ≅ dold_kan.N' ⋙ (preadditive.dold_kan.functor_karoubi_homological_complex_obj F ⋙
+    ≅ (dold_kan.N₁ ⋙ preadditive.dold_kan.functor_karoubi_homological_complex_obj F) ⋙
+      κequiv'.inverse : iso_whisker_right (eq_to_iso (preadditive.dold_kan.functoriality_N₁ F)) _
+  ... ≅ dold_kan.N₁ ⋙ (preadditive.dold_kan.functor_karoubi_homological_complex_obj F ⋙
         κequiv'.inverse) : by refl
-  ... ≅ dold_kan.N' ⋙ (κequiv'.inverse ⋙
+  ... ≅ dold_kan.N₁ ⋙ (κequiv'.inverse ⋙
     functor.map_homological_complex F (complex_shape.down ℕ)) :
         iso_whisker_left _ (functoriality_κinv' F)
   ... ≅ N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) : by refl,

@@ -200,7 +200,7 @@ begin
 end
 
 @[simps]
-abbreviation NΓ'_hom : Γ₀ ⋙ N' ⟶ to_karoubi (chain_complex C ℕ) :=
+abbreviation NΓ'_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
 { app := λ K,
   { f :=
     { f:= λ n, sigma.desc (NΓ'_map_termwise K n),
@@ -248,7 +248,7 @@ abbreviation NΓ'_hom : Γ₀ ⋙ N' ⟶ to_karoubi (chain_complex C ℕ) :=
   end, }
 
 @[simps]
-abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N' :=
+abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
 { app := λ K,
   { f :=
     { f := λ n, sigma.ι (Γ_summand K [n]) (Γ_index_id n),
@@ -287,7 +287,7 @@ abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N' :=
   end }
 
 @[simps]
-def NΓ' : Γ₀ ⋙ N' ≅ to_karoubi (chain_complex C ℕ) :=
+def NΓ' : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
 { hom := NΓ'_hom,
   inv := NΓ'_inv,
   hom_inv_id' := begin
@@ -309,17 +309,17 @@ def NΓ' : Γ₀ ⋙ N' ≅ to_karoubi (chain_complex C ℕ) :=
   end }
 
 
-def to_karoubi_comp_Γ_comp_N : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N = Γ₀ ⋙ N' :=
+def to_karoubi_comp_Γ_comp_N : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
 begin
   have h := congr_obj (functor_extension''_comp_whiskering_left_to_karoubi (chain_complex C ℕ) (simplicial_object C)) Γ₀,
-  have h' := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N',
+  have h' := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N₁,
   dsimp at h h',
   erw [← functor.assoc, h, functor.assoc, h'],
 end
 
 @[simps]
-def NΓ : Γ₂ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
-(whiskering_left_to_karoubi_iso_equiv (Γ₂ ⋙ N) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
+def NΓ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
+(whiskering_left_to_karoubi_iso_equiv (Γ₂ ⋙ N₂) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
 ((eq_to_iso to_karoubi_comp_Γ_comp_N).trans NΓ')
 
 lemma NΓ_karoubi_compat (K: chain_complex C ℕ) :

@@ -18,7 +18,7 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-namespace N'_functor
+namespace N₁_functor
 
 @[simps]
 def obj (X : simplicial_object C) : karoubi (chain_complex C ℕ) :=
@@ -37,24 +37,24 @@ begin
   rw assoc,
 end⟩
 
-end N'_functor
+end N₁_functor
 
 @[simps]
-def N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
-{ obj := N'_functor.obj,
-  map := λ X Y f, N'_functor.map f,
+def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
+{ obj := N₁_functor.obj,
+  map := λ X Y f, N₁_functor.map f,
   map_id' := λ X, begin
     ext n,
     simp only [homological_complex.comp_f, chain_complex.of_hom_f,
       nat_trans.id_app, alternating_face_map_complex_map,
-      alternating_face_map_complex.map, karoubi.id_eq, N'_functor.map_f, N'_functor.obj_p],
+      alternating_face_map_complex.map, karoubi.id_eq, N₁_functor.map_f, N₁_functor.obj_p],
     erw comp_id,
   end,
   map_comp' := λ X Y Z f g, begin
     ext n,
     simp only [homological_complex.comp_f, karoubi.comp,
       alternating_face_map_complex.map, alternating_face_map_complex_map,
-      chain_complex.of_hom_f, nat_trans.comp_app, P_infty, N'_functor.map_f],
+      chain_complex.of_hom_f, nat_trans.comp_app, P_infty, N₁_functor.map_f],
       slice_rhs 2 3 { erw P_degreewise_naturality, },
       slice_rhs 1 2 { rw [← homological_complex.comp_f,
         P_is_a_projector], },
@@ -62,8 +62,8 @@ def N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
   end }
 
 @[simps]
-def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
-(functor_extension' _ _).obj N'
+def N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
+(functor_extension' _ _).obj N₁
 
 end dold_kan
 

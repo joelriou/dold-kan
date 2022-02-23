@@ -41,17 +41,17 @@ def κequiv' := to_karoubi_equivalence (chain_complex C ℕ)
 `N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)` and the inverse
 of the equivalence `chain_complex C ℕ ≌ karoubi (chain_complex C ℕ)`. -/
 @[simps]
-def N : simplicial_object C ⥤ chain_complex C ℕ := N' ⋙ κequiv'.inverse
+def N : simplicial_object C ⥤ chain_complex C ℕ := N₁ ⋙ κequiv'.inverse
 
 /-- The functor `Γ` for the equivalence is `Γ'`. -/
 @[simps, nolint unused_arguments]
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ₀
 
-lemma hN' : κequiv.functor ⋙ preadditive.dold_kan.equivalence.functor =
-  (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
-congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) N'
+lemma hN₁ : κequiv.functor ⋙ preadditive.dold_kan.equivalence.functor =
+  (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
+congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) N₁
 
-lemma hΓ : κequiv'.functor ⋙ preadditive.dold_kan.equivalence.inverse =
+lemma hΓ₀ : κequiv'.functor ⋙ preadditive.dold_kan.equivalence.inverse =
     (Γ : chain_complex C ℕ ⥤ _) ⋙ κequiv.functor  :=
 congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ₀
 
@@ -59,7 +59,7 @@ congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ₀
 by the functors `N` and `Γ`. It is obtained by applying the results in
 `compatibility.lean` to the equivalence `preadditive.dold_kan.equivalence`. -/
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
-compatibility.equivalence (eq_to_iso hN') (eq_to_iso hΓ)
+compatibility.equivalence (eq_to_iso hN₁) (eq_to_iso hΓ₀)
 
 lemma equivalence_functor : (equivalence : simplicial_object C ≌ _ ).functor = N := by refl
 lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _ ).inverse = Γ := by refl
@@ -67,8 +67,8 @@ lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _ ).inverse =
 /-- The natural isomorphism `NΓ' satisfies the compatibility that is needed
 for the construction of our counit isomorphism `η` -/
 lemma hη : compatibility.τ₀ =
-  compatibility.τ₁ (eq_to_iso hN') (eq_to_iso hΓ)
-  (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N' ≅ κequiv'.functor) :=
+  compatibility.τ₁ (eq_to_iso hN₁) (eq_to_iso hΓ₀)
+  (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ κequiv'.functor) :=
 begin
   ext1, ext1, ext1 K,
   rw compatibility.τ₀_hom_app_eq,
@@ -80,28 +80,28 @@ end
 /-- The counit isomorphism induced by `NΓ'` -/
 @[simps]
 def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso
-  (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N' ≅ κequiv'.functor)
+  (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ κequiv'.functor)
 
 lemma equivalence_counit_iso :
   dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) :=
 compatibility.equivalence_counit_iso_eq hη
 
-lemma hεinv : compatibility.υ (eq_to_iso hN') =
-  as_iso (ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙
-  preadditive.dold_kan.equivalence.inverse ⟶ κequiv.functor) :=
+lemma hεinv : compatibility.υ (eq_to_iso hN₁) =
+  (Γ₂N₁ : (N₁ : simplicial_object C ⥤ _) ⋙
+  preadditive.dold_kan.equivalence.inverse ≅ κequiv.functor) :=
 begin
   symmetry,
   ext1, apply nat_trans.ext, ext1 X,
-  dsimp [compatibility.υ, ΓN],
+  dsimp [compatibility.υ],
   erw [comp_id, comp_id],
   simp only [eq_to_hom_app, eq_to_hom_map],
-  apply ΓN_trans_karoubi_compat,
+  apply Γ₂N₁_Γ₂N₂_compatibility,
 end
 
-/-- The unit isomorphism induced by `ΓN'_trans` -/
+/-- The unit isomorphism induced by `Γ₂N₁` -/
 @[simps]
 def ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ :=
-compatibility.equivalence_unit_iso (eq_to_iso hΓ) (as_iso ΓN'_trans)
+compatibility.equivalence_unit_iso (eq_to_iso hΓ₀) Γ₂N₁
 
 lemma equivalence_unit_iso : dold_kan.equivalence.unit_iso =
   (ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ) :=

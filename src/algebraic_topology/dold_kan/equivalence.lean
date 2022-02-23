@@ -51,27 +51,29 @@ aspect of the proof in the file `homotopies.lean`.
 When the alternating face map complex `K[X]` is equipped with the idempotent
 endomorphism `P_infty`, it becomes an object in `karoubi (chain_complex C ℕ)`
 which is the pseudoabelianisation of the category `chain_complex C ℕ`. In `functor_n.lean`,
-we obtain this functor `N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`,
+we obtain this functor `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`,
 which is formally extended as
-`N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`.
+`N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`. (Here, some functors
+have an index which is the number of occurrences of `karoubi` at the source or the
+target.)
 
 In `functor_gamma.lean`, assuming that the category `C` is additive,
 we define the functor in the other direction
-`Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C)` as the formal
-extension of a functor `Γ' : chain_complex C ℕ ⥤ simplicial_object C` which is
+`Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C)` as the formal
+extension of a functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C` which is
 defined similarly as in *Simplicial Homotopy Theory* by Goerrs-Jardine.
 In `degeneracies.lean`, we show that `P_infty` vanishes in the image of degeneracy
 operators, which is one of the key properties that makes possible to contruct
-the isomorphism `NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ))`.
+the isomorphism `N₂Γ₂ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ))`.
 
 The rest of the proof follows the strategy in the original paper by Dold. We show
-that the functor `N` reflects isomorphisms in `n_reflects_iso.lean`: this relies on a
+that the functor `N₂` reflects isomorphisms in `n_reflects_iso.lean`: this relies on a
 decomposition of the identity of `X _[n]` using `P_infty.f n` and degeneracies obtained in
 `decomposition.lean`. Then, in `n_comp_gamma.lean`, we construct a natural transformation
-`ΓN_trans : N ⋙ Γ ⟶ 𝟭 (karoubi (simplicial_object C))`. It shown that it is an
+`Γ₂N₂_trans : N₂ ⋙ Γ₂ ⟶ 𝟭 (karoubi (simplicial_object C))`. It shown that it is an
 isomorphism using the fact thet `N` reflects isomorphisms, and because we can show
-that the composition `N ⟶ N ⋙ Γ ⋙ N ⟶ N` is the identity (see `identity_N`). The fact
-that `N` is defined as a formal direct factor makes the proof easier because we only
+that the composition `N₂ ⟶ N₂ ⋙ Γ₂ ⋙ N₂ ⟶ N₂` is the identity (see `identity_N`). The fact
+that `N₂` is defined as a formal direct factor makes the proof easier because we only
 have to compare endomorphisms of an alternating face map complex `K[X]` and we do not
 have to worry with inclusions of kernel subobjects.
 
@@ -86,7 +88,7 @@ obtained by composing the previous equivalence with the equivalences
 `simplicial_object C ≌ karoubi (simplicial_object C)` and
 `karoubi (chain_complex C ℕ) ≌ chain_complex C ℕ`. Instead, we polish this construction
 in `compatibility.lean` by ensuring good definitional properties of the equivalence (e.g.
-the inverse functor is exactly `Γ' : chain_complex C ℕ ⥤ simplicial_object C`) and
+the inverse functor is exactly `Γ₀' : chain_complex C ℕ ⥤ simplicial_object C`) and
 showing compatibilities for the unit and counit isomorphisms.
 
 In this file `equivalence.lean`, assuming the category `A` is abelian, we obtain
@@ -150,7 +152,7 @@ begin
   calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
   ... ≅ N ⋙ (κequiv'.functor ⋙ κequiv'.inverse) : iso_whisker_left _ κequiv'.unit_iso
   ... ≅ (N ⋙ κequiv'.functor) ⋙ κequiv'.inverse : by refl
-  ... ≅ N' ⋙ κequiv'.inverse : iso_whisker_right (N'_equiv_karoubi_normalized A).symm _
+  ... ≅ N₁ ⋙ κequiv'.inverse : iso_whisker_right (N'_equiv_karoubi_normalized A).symm _
   ... ≅ idempotents.dold_kan.N : by refl,
 end
 

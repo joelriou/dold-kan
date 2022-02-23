@@ -142,7 +142,7 @@ begin
   { simpa only [eq_to_hom_map, functor.map_comp, functor.map_zsmul], },
 end
 
-/-- for alternating_face_map_complex.lean -/
+/-- for alternating_face_map_complex.lean
 def map_alternating_face_map_complex {D : Type*} [category.{v} D] [preadditive D]
   (F : C ⥤ D) [F.additive] :
   alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =
@@ -164,7 +164,7 @@ begin
     congr,
     ext,
     simpa only [functor.map_zsmul], },
-end
+end-/
 
 lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)

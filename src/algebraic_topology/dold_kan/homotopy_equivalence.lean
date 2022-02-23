@@ -82,7 +82,7 @@ def P_infty_is_homotopic_to_id :
 
 
 @[simps]
-def inclusion_N : (N : karoubi (simplicial_object C) ⥤ _ ) ⟶
+def inclusion_N₂ : (N₂ : karoubi (simplicial_object C) ⥤ _ ) ⟶
   (functor_extension'' _ _).obj (alternating_face_map_complex C) :=
 { app := λ X,
   { f := (alternating_face_map_complex C).map X.p ≫ P_infty,
@@ -90,7 +90,7 @@ def inclusion_N : (N : karoubi (simplicial_object C) ⥤ _ ) ⟶
       ext n,
       simp only [alternating_face_map_complex.map, alternating_face_map_complex_map,
         homological_complex.comp_f, chain_complex.of_hom_f,
-        functor_extension''_obj_obj_p, assoc, N_obj_p_f],
+        functor_extension''_obj_obj_p, assoc, N₂_obj_p_f],
       have h := P_infty_degreewise_naturality n X.p,
       have h' := congr_app X.idempotence (op [n]),
       simp only [nat_trans.comp_app] at h',
@@ -104,7 +104,7 @@ def inclusion_N : (N : karoubi (simplicial_object C) ⥤ _ ) ⟶
     ext n,
     simp only [alternating_face_map_complex.map, alternating_face_map_complex_map,
       homological_complex.comp_f, chain_complex.of_hom_f, assoc, karoubi.comp,
-      N_map_f_f, functor_extension''_obj_map_f],
+      N₂_map_f_f, functor_extension''_obj_map_f],
     slice_lhs 3 4 { rw P_infty_degreewise_naturality n Y.p, },
     slice_lhs 2 3 { rw P_infty_degreewise_naturality n f.f, },
     slice_lhs 1 2 { erw P_infty_degreewise_is_a_projector n, },
@@ -113,15 +113,15 @@ def inclusion_N : (N : karoubi (simplicial_object C) ⥤ _ ) ⟶
   end }
 
 @[simps]
-def retraction_N : (functor_extension'' _ _).obj (alternating_face_map_complex C)
-  ⟶ (N : karoubi (simplicial_object C) ⥤ _ ) :=
+def retraction_N₂ : (functor_extension'' _ _).obj (alternating_face_map_complex C)
+  ⟶ (N₂ : karoubi (simplicial_object C) ⥤ _ ) :=
 { app := λ X,
   { f := (alternating_face_map_complex C).map X.p ≫ P_infty,
     comm := begin
       ext n,
       simp only [alternating_face_map_complex.map, alternating_face_map_complex_map,
         homological_complex.comp_f, chain_complex.of_hom_f, functor_extension''_obj_obj_p,
-        assoc, N_obj_p_f],
+        assoc, N₂_obj_p_f],
       have h := P_infty_degreewise_naturality n X.p,
       have h' := congr_app X.idempotence (op [n]),
       simp only [nat_trans.comp_app] at h',
@@ -133,20 +133,20 @@ def retraction_N : (functor_extension'' _ _).obj (alternating_face_map_complex C
     ext n,
     simp only [alternating_face_map_complex.map, alternating_face_map_complex_map,
       homological_complex.comp_f, chain_complex.of_hom_f, assoc,
-      functor_extension''_obj_map_f, karoubi.comp, N_map_f_f],
+      functor_extension''_obj_map_f, karoubi.comp, N₂_map_f_f],
     slice_rhs 2 3 { erw P_infty_degreewise_is_a_projector n, },
     slice_rhs 2 3 { erw ← P_infty_degreewise_naturality n f.f, },
     simp only [← assoc, ← nat_trans.comp_app, karoubi.p_comm f],
   end }
 
-def inclusion_N_comp_retraction_N : inclusion_N ≫ retraction_N =
-  𝟙 (N : karoubi (simplicial_object C) ⥤ _) :=
+def inclusion_N_comp_retraction_N : inclusion_N₂ ≫ retraction_N₂ =
+  𝟙 (N₂ : karoubi (simplicial_object C) ⥤ _) :=
 begin
   ext P n,
-  simp only [inclusion_N_app_f, alternating_face_map_complex.map,
-    alternating_face_map_complex_map, retraction_N_app_f, assoc,
+  simp only [inclusion_N₂_app_f, alternating_face_map_complex.map,
+    alternating_face_map_complex_map, retraction_N₂_app_f, assoc,
     nat_trans.comp_app, karoubi.comp, homological_complex.comp_f,
-    chain_complex.of_hom_f, nat_trans.id_app, karoubi.id_eq, N_obj_p_f],
+    chain_complex.of_hom_f, nat_trans.id_app, karoubi.id_eq, N₂_obj_p_f],
   have h := P_infty_degreewise_naturality n P.p,
   have h' := congr_app P.idempotence (op [n]),
   simp only [nat_trans.comp_app] at h',
@@ -183,27 +183,28 @@ begin
 end
 
 lemma karoubi_compatibility_P_infty (P : karoubi (simplicial_object C)) :
-  τ'.map (retraction_N.app P) ≫ τ'.map (inclusion_N.app P) =
+  τ'.map (retraction_N₂.app P) ≫ τ'.map (inclusion_N₂.app P) =
   eq_to_hom (by {exact congr_obj karoubi_compatibility_K P, }) ≫ P_infty ≫
     eq_to_hom (congr_obj karoubi_compatibility_K P).symm :=
 begin
   ext n,
   rw ← τ'.map_comp,
   dsimp [τ'],
-  simp only [retraction_N_app_f, alternating_face_map_complex.map, alternating_face_map_complex_map,
-    inclusion_N_app_f, assoc, karoubi.comp, homological_complex.comp_f, chain_complex.of_hom_f, karoubi.comp_p,
-    karoubi_chain_complex_equivalence_functor_obj_X_p, functor_extension''_obj_obj_p, homological_complex.eq_to_hom_f,
-    eq_to_hom_refl, karoubi.id_eq],
+  simp only [retraction_N₂_app_f, alternating_face_map_complex.map,
+    alternating_face_map_complex_map, inclusion_N₂_app_f, assoc, karoubi.comp,
+    homological_complex.comp_f, chain_complex.of_hom_f, karoubi.comp_p,
+    karoubi_chain_complex_equivalence_functor_obj_X_p, functor_extension''_obj_obj_p,
+    homological_complex.eq_to_hom_f, eq_to_hom_refl, karoubi.id_eq],
   erw karoubi_P_infty_f,
   slice_lhs 2 3 { erw ← P_infty_degreewise_naturality n P.p, },
   slice_lhs 3 4 { erw P_infty_degreewise_is_a_projector, },
 end
 
 def homotopy_equiv_inclusion_N (P : karoubi (simplicial_object C)) :
-homotopy_equiv (τ'.obj (N.obj P))
+homotopy_equiv (τ'.obj (N₂.obj P))
 (τ'.obj (((functor_extension'' _ _).obj (alternating_face_map_complex C)).obj P)) :=
-{ hom := τ'.map (inclusion_N.app P),
-  inv := τ'.map (retraction_N.app P),
+{ hom := τ'.map (inclusion_N₂.app P),
+  inv := τ'.map (retraction_N₂.app P),
   homotopy_hom_inv_id := begin
     convert homotopy.refl (𝟙 _),
     rw ← τ'.map_comp,
@@ -222,7 +223,7 @@ homotopy_equiv (τ'.obj (N.obj P))
 
 /-- the inclusion of the Moore complex in the alternating face map complex
 is an homotopy equivalence -/
-@[ext]
+@[simps]
 def homotopy_equiv_inclusion_of_Moore_complex {A : Type*} [category A] [abelian A]
   {Y : simplicial_object A}:
   homotopy_equiv ((normalized_Moore_complex A).obj Y)

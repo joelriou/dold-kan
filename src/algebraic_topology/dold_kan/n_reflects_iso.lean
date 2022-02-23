@@ -24,7 +24,7 @@ namespace dold_kan
 variables {C : Type*} [category C] [preadditive C]
 
 instance : reflects_isomorphisms
-  (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
+  (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
 begin
   refine ⟨_⟩,
   intros X Y f,
@@ -37,16 +37,16 @@ begin
   rw [show Δ = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
   generalize : m = n, clear m Δ,
   /- rewriting some assumptions in a more practical form -/
-  have h  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N'.map f))),
-  have h' := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N'.map f))),
-  simp only [N'_map, homological_complex.comp_f, chain_complex.of_hom_f, assoc,
+  have h  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
+  have h' := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
+  simp only [N₁_map, homological_complex.comp_f, chain_complex.of_hom_f, assoc,
     karoubi.id_eq, karoubi.comp, alternating_face_map_complex_map,
     alternating_face_map_complex.map] at h h',
   dsimp at h h',
   /- we have to construct an inverse to f in degree n, by induction on n -/
   induction n with n hn,
   /- degree 0 -/
-  { use (inv (N'.map f)).f.f 0,
+  { use (inv (N₁.map f)).f.f 0,
     split,
     have eq := h 0, swap,
     have eq := h' 0,
@@ -57,7 +57,7 @@ begin
   /- isomorphism in degree n+1 of an isomorphism in degree n -/
   { haveI := hn,
     use F
-      { a := P_infty.f (n+1) ≫ (inv (N'.map f)).f.f (n+1),
+      { a := P_infty.f (n+1) ≫ (inv (N₁.map f)).f.f (n+1),
         b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
     split,
     { rw [← F_id, ← comp_F],
@@ -71,8 +71,8 @@ begin
     { rw [← F_id, ← F_comp],
       simp only [morph_components_comp, morph_components_id],
       congr' 2,
-      { have eq := homological_complex.congr_hom (karoubi.p_comp (inv (N'.map f))) (n+1),
-        have eq' := homological_complex.congr_hom (karoubi.comp_p (inv (N'.map f))) (n+1),
+      { have eq := homological_complex.congr_hom (karoubi.p_comp (inv (N₁.map f))) (n+1),
+        have eq' := homological_complex.congr_hom (karoubi.comp_p (inv (N₁.map f))) (n+1),
         simp only [homological_complex.comp_f] at eq eq',
         erw [eq, ← eq', assoc],
         exact h' (n+1), },
@@ -110,7 +110,7 @@ begin
 end
 
 instance : reflects_isomorphisms
-  (N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
+  (N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
 begin
   refine ⟨_⟩,
   intros X Y f,
@@ -119,7 +119,7 @@ begin
   -- it suffices to show that `f` become an isomorphism after
   -- applying `F1 ⋙ F2 ⋙ F3 ⋙ F4`
   let F1 := karoubi_functor_category_embedding simplex_categoryᵒᵖ C,
-  let F2 : simplicial_object (karoubi C) ⥤ _ := N',
+  let F2 : simplicial_object (karoubi C) ⥤ _ := N₁,
   let F3 := (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor,
   let F4 := functor.map_homological_complex (karoubi_karoubi.equivalence C).inverse
     (complex_shape.down ℕ),
@@ -128,10 +128,10 @@ begin
   -- `f` becomes an isomorphism after the application of `N ⋙ F5`, so that
   -- it suffices to show the equality of functors `F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5`
   let F5 := (karoubi_chain_complex_equivalence C ℕ).functor,
-  have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5, swap,
+  have eq : F1 ⋙ F2 ⋙ F3 ⋙ F4 = N₂ ⋙ F5, swap,
   { rw eq,
     simp only [functor.comp_map],
-    exact functor.map_is_iso F5 (N.map f), },
+    exact functor.map_is_iso F5 (N₂.map f), },
   -- proof of the equality of functors `F1 ⋙ F2 ⋙ F3 ⋙ F4 = N ⋙ F5`
   apply category_theory.functor.ext,
   { intros P Q f,
@@ -149,12 +149,12 @@ begin
         karoubi_karoubi.inverse_map_f, karoubi_karoubi.inverse_obj_p,
         karoubi_chain_complex_equivalence_functor_obj_d_f,
         karoubi_chain_complex_equivalence_functor_obj_X_p, comp_id, assoc],
-      have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N'_functor.obj
+      have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N₁_functor.obj
         ((karoubi_functor_category_embedding _ _).obj P)).idempotence j),
       simp only [homological_complex.comp_f, karoubi.comp] at h,
       conv { to_lhs, congr, skip, erw h, },
-      dsimp only [N'_functor.obj_X, N'_functor.obj_p],
-      simp only [N_obj_p_f],
+      dsimp only [N₁_functor.obj_X, N₁_functor.obj_p],
+      simp only [N₂_obj_p_f],
       have h : j+1=i := hij,
       subst h,
       erw karoubi_alternating_face_map_complex_d P j,
