@@ -8,6 +8,8 @@ import for_mathlib.homotopy
 import for_mathlib.functor_misc
 import algebraic_topology.dold_kan.notations
 
+/- TODO doc : provide some details about the operators `P q` -/
+
 open category_theory
 open category_theory.category
 open category_theory.limits

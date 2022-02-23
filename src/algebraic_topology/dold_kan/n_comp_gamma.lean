@@ -198,32 +198,33 @@ begin
   ext n,
   simp only [karoubi.comp, homological_complex.comp_f, NΓ_inv_app_f_f, N_obj_p_f, assoc,
     N_map_f_f, ΓN_trans_app_f_app, karoubi.id_eq],
-  have eq₁ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
-  have eq₂ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
-  { simpa only [nat_trans.comp_app] using congr_app P.idempotence (op [n]), },
-  have eq₃ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
+  have eq₁ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
     P_infty_degreewise_naturality _ _,
+  have eq₂ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n := P_infty_degreewise_is_a_projector n,
+  have eq₃ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
+  { simpa only [nat_trans.comp_app] using congr_app P.idempotence (op [n]), },
   slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
   repeat
   { slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
     slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-    slice_lhs 2 3 { erw eq₃, },
-    slice_lhs 1 2 { erw eq₁, },
-    slice_lhs 2 3 { erw eq₂, }, },
+    slice_lhs 2 3 { erw eq₁, },
+    slice_lhs 1 2 { erw eq₂, },
+    slice_lhs 2 3 { erw eq₃, }, },
   slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-  slice_lhs 2 3 { erw eq₃, },
-  slice_lhs 1 2 { erw eq₁, },
+  slice_lhs 2 3 { erw eq₁, },
+  slice_lhs 1 2 { erw eq₂, },
   slice_lhs 2 3 { erw comp_id, },
   slice_lhs 3 4 { erw colimit.ι_desc, },
   dsimp only [cofan.mk],
   slice_lhs 3 4 { erw comp_id, },
   slice_lhs 3 4 { erw [P.X.map_id, comp_id], },
+  slice_lhs 2 3 { erw eq₁, },
+  slice_lhs 1 2 { erw eq₂, },
   slice_lhs 2 3 { erw eq₃, },
-  slice_lhs 1 2 { erw eq₁, },
-  slice_lhs 2 3 { erw eq₂, },
 end
 
-lemma identity_N : ((𝟙 (N : karoubi (simplicial_object C) ⥤ _ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
+lemma identity_N :
+  ((𝟙 (N : karoubi (simplicial_object C) ⥤ _ ) ◫ NΓ.inv) ≫ (ΓN_trans ◫ 𝟙 N) : N ⟶ N) = 𝟙 N :=
 begin
   ext1, ext1 P,
   dsimp,
@@ -246,7 +247,7 @@ begin
 end
 
 lemma ΓN_trans_karoubi_compat (X : simplicial_object C) :
-  ΓN'_trans.app X = 
+  ΓN'_trans.app X =
   eq_to_hom begin
     ext Δ j,
     { simp only [eq_to_hom_refl, comp_id, id_comp], congr' 1, dsimp, congr, ext A, erw comp_id, },

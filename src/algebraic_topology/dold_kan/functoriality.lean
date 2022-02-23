@@ -18,8 +18,6 @@ universes v
 variables {A : Type*} [category.{v} A] [abelian A]
 variables {B : Type*} [category.{v} B] [abelian B]
 
-variables (F : A ⥤ B) [functor.additive F]
-
 namespace category_theory
 
 namespace abelian
@@ -27,7 +25,8 @@ namespace abelian
 namespace dold_kan
 
 @[simps]
-def functoriality_N : (simplicial_object.whiskering A B).obj F ⋙ N ≅
+def functoriality_N (F : A ⥤ B) [functor.additive F]:
+  (simplicial_object.whiskering A B).obj F ⋙ N ≅
   N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :=
 begin
   calc (simplicial_object.whiskering A B).obj F ⋙ N

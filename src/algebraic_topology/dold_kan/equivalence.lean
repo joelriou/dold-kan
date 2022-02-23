@@ -16,22 +16,93 @@ an equivalence between the category of simplicial objects in `A` and the
 category of chain complexes in `A` (with degrees indexed by `ℕ` and the
 homological convention that the degree is decreased by the differentials).
 
-More generally, this results holds for pseudo-abelian categories. Taking this
-into consideration, the strategy of proof that is used here is to state and
-prove most of the technical results without referring to notions of kernel,
-images, etc. The core of the arguments shall be constructing morphisms and
-check equalities between morphisms. The applications to abelian categories
-are handled at the very end of the proof.
+In this file, we finish the construction of this equivalence by providing
+`category_theory.abelian.dold_kan.equivalence` which is of type
+`simplicial_object A ≌ chain_complex A ℕ` for any abelian category `A`.
+The functor `simplicial_object A ⥤ chain_complex A ℕ` of this equivalence is
+definitionally equal to `normalized_Moore_complex A`.
 
-The overall plan is as follows:
+## Overall strategy of the proof of the correspondence
 
-* show that the normalized Moore complex is an homotopy equivalent direct factor of
-the alternating face map complex, see `P_infty`
-and `homotopy_equiv_inclusion_of_Moore_complex`
-* show that a morphism of simplicial objects is an isomorphisms if and only if it
-induces an isomorphism on normalized Moore complexes
-* construct the inverse functor from chain complexes to simplicial objects
-* check that this gives the expected equivalence of categories
+Before starting the implementation of the proof in Lean, the author noticed
+that the Dold-Kan equivalence not only applies to abelian categories, but
+should also hold generally for any pseudoabelian category `C`
+(i.e. a category with instances `[additive_category C]` and
+`[is_idempotent_complete C]`): this is
+`category_theory.idempotents.dold_kan.equivalence`.
+
+When the alternating face map complex `K[X]` of a simplicial object `X` in an
+abelian is studied, it is shown that it decomposes as a direct sum of the
+normalized subcomplex and of the degenerate subcomplex. The crucial observation
+is that in this decomposition, the projection on the normalized subcomplex can
+be defined in each degree using simplicial operators. Then, the definition
+of this projector `P_infty : K[X] ⟶ K[X]` can be carried for any
+`(X : simplicial_object C)` when `C` is a preadditive category.
+
+The construction of the endomorphism `P_infty` is done in the files
+`homotopies.lean`, `faces.lean`, `projectors.lean` and `p_infty.lean`.
+Eventually, as we would also like to show that the inclusion of the normalized
+Moore complex is an homotopy equivalence (cf. file `homotopy_equivalence.lean`),
+this projector `P_infty` needs to be homotopic to the identity. In our
+construction, we get this for free because `P_infty` is obtained by altering
+the identity endomorphism by null homotopic maps. More details about this
+aspect of the proof in the file `homotopies.lean`.
+
+When the alternating face map complex `K[X]` is equipped with the idempotent
+endomorphism `P_infty`, it becomes an object in `karoubi (chain_complex C ℕ)`
+which is the pseudoabelianisation of the category `chain_complex C ℕ`. In `functor_n.lean`,
+we obtain this functor `N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`,
+which is formally extended as
+`N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`.
+
+In `functor_gamma.lean`, assuming that the category `C` is additive,
+we define the functor in the other direction
+`Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C)` as the formal
+extension of a functor `Γ' : chain_complex C ℕ ⥤ simplicial_object C` which is
+defined similarly as in *Simplicial Homotopy Theory* by Goerrs-Jardine.
+In `degeneracies.lean`, we show that `P_infty` vanishes in the image of degeneracy
+operators, which is one of the key properties that makes possible to contruct
+the isomorphism `NΓ : Γ ⋙ N ≅ 𝟭 (karoubi (chain_complex C ℕ))`.
+
+The rest of the proof follows the strategy in the original paper by Dold. We show
+that the functor `N` reflects isomorphisms in `n_reflects_iso.lean`: this relies on a
+decomposition of the identity of `X _[n]` using `P_infty.f n` and degeneracies obtained in
+`decomposition.lean`. Then, in `n_comp_gamma.lean`, we construct a natural transformation
+`ΓN_trans : N ⋙ Γ ⟶ 𝟭 (karoubi (simplicial_object C))`. It shown that it is an
+isomorphism using the fact thet `N` reflects isomorphisms, and because we can show
+that the composition `N ⟶ N ⋙ Γ ⋙ N ⟶ N` is the identity (see `identity_N`). The fact
+that `N` is defined as a formal direct factor makes the proof easier because we only
+have to compare endomorphisms of an alternating face map complex `K[X]` and we do not
+have to worry with inclusions of kernel subobjects.
+
+In `equivalence_additive.lean`, we obtain
+the equivalence `equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)`,
+with the functors `N` and `Γ`, all in the namespace `category_theory.preadditive.dold_kan`.
+
+In `equivalence_pseudoabelian.lean`, assuming `C` is idempotent complete,
+we obtain `equivalence : simplicial_object C ≌ chain_complex C ℕ`
+in the namespace `category_theory.idempotents.dold_kan`. This could be roughly
+obtained by composing the previous equivalence with the equivalences
+`simplicial_object C ≌ karoubi (simplicial_object C)` and
+`karoubi (chain_complex C ℕ) ≌ chain_complex C ℕ`. Instead, we polish this construction
+in `compatibility.lean` by ensuring good definitional properties of the equivalence (e.g.
+the inverse functor is exactly `Γ' : chain_complex C ℕ ⥤ simplicial_object C`) and
+showing compatibilities for the unit and counit isomorphisms.
+
+In this file `equivalence.lean`, assuming the category `A` is abelian, we obtain
+`equivalence : simplicial_object A ≌ chain_complex A ℕ` in the namespace
+`category_theory.abelian.dold_kan`. This is obtained by replacing the functor
+`category_theory.idempotents.dold_kan.N` with the isomorphic functor
+`normalized_Moore_complex A` thanks to the isomorphism obtained in `normalized.lean`.
+
+Finally, we show functoriality properties of the three equivalences above in
+`functoriality_additive.lean`, `functoriality_pseudoabelian.lean` and
+`functoriality.lean`. More precisely, for example in the case of abelian
+categories `A` and `B`, if `F : A ⥤ B` is an additive functor,
+we show that the functor `N` for `A` and `B` are compatible with the functors
+`simplicial_object A ⥤ simplicial_object B` and
+`chain_complex A ℕ ⥤ chain_complex B ℕ` induced by `F`. (Note that this does not
+require that `F` is an exact functor!)
 
 ## References
 * Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
@@ -40,7 +111,6 @@ Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
 Reprint of the 1999 edition.
 
 -/
-
 
 noncomputable theory
 
