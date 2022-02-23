@@ -64,10 +64,9 @@ compatibility.equivalence (eq_to_iso hN') (eq_to_iso hΓ)
 lemma equivalence_functor : (equivalence : simplicial_object C ≌ _ ).functor = N := by refl
 lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _ ).inverse = Γ := by refl
 
-
 /-- The natural isomorphism `NΓ' satisfies the compatibility that is needed
-for the construction of our counit isomorphis `η` -/
-lemma hη : compatibility.τ₀ (eq_to_iso hN') (eq_to_iso hΓ) =
+for the construction of our counit isomorphism `η` -/
+lemma hη : compatibility.τ₀ =
   compatibility.τ₁ (eq_to_iso hN') (eq_to_iso hΓ)
   (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N' ≅ κequiv'.functor) :=
 begin
@@ -80,7 +79,8 @@ end
 
 /-- The counit isomorphism induced by `NΓ'` -/
 @[simps]
-def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso hη
+def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso
+  (NΓ' : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N' ≅ κequiv'.functor)
 
 lemma equivalence_counit_iso :
   dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) :=
@@ -105,7 +105,7 @@ compatibility.equivalence_unit_iso (eq_to_iso hΓ) (as_iso ΓN'_trans)
 
 lemma equivalence_unit_iso : dold_kan.equivalence.unit_iso =
   (ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ) :=
-compatibility.equivalence_unit_iso_eq (eq_to_iso hN') (eq_to_iso hΓ) hεinv
+compatibility.equivalence_unit_iso_eq hεinv
 
 end dold_kan
 

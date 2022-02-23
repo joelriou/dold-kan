@@ -33,8 +33,8 @@ variables {eA} {e'}
 
 def equivalence₁ : A ≌ B' :=
 begin
-  letI : is_equivalence F := is_equivalence_of_iso hF
-    (is_equivalence.of_equivalence (equivalence₀ eA e')),
+  letI : is_equivalence F :=
+    is_equivalence_of_iso hF (is_equivalence.of_equivalence (equivalence₀ eA e')),
   exact F.as_equivalence,
 end
 
@@ -80,7 +80,6 @@ begin
     is_equivalence.of_equivalence],
   simp only [id_comp, comp_id],
 end
-
 
 include eB
 
@@ -152,6 +151,8 @@ end
 lemma equivalence_functor : (equivalence hF hG).functor = F ⋙ eB.inverse := by refl
 lemma equivalence_inverse : (equivalence hF hG).inverse = G := by refl
 
+omit hG hF
+
 def τ₀ : eB.functor ⋙ e'.inverse ⋙ e'.functor ≅ eB.functor :=
 begin
   calc eB.functor ⋙ e'.inverse ⋙ e'.functor
@@ -159,11 +160,14 @@ begin
   ... ≅ eB.functor : functor.right_unitor _,
 end
 
-lemma τ₀_hom_app_eq (Y : B) : (τ₀ hF hG).hom.app Y = e'.counit_iso.hom.app (eB.functor.obj Y) :=
+lemma τ₀_hom_app_eq (Y : B) :
+  τ₀.hom.app Y = e'.counit_iso.hom.app (eB.functor.obj Y) :=
 by { dsimp [τ₀], erw comp_id, }
 
-def τ₁ (η : G ⋙ F ≅ eB.functor) : eB.functor ⋙ e'.inverse ⋙ e'.functor ≅
-  eB.functor :=
+include hF hG
+
+def τ₁ (η : G ⋙ F ≅ eB.functor) :
+  eB.functor ⋙ e'.inverse ⋙ e'.functor ≅ eB.functor :=
 begin
   calc eB.functor ⋙ e'.inverse ⋙ e'.functor
     ≅ (eB.functor ⋙ e'.inverse) ⋙ e'.functor : by refl
@@ -173,10 +177,10 @@ begin
   ... ≅ eB.functor : η,
 end
 
-variables {η : G ⋙ F ≅ eB.functor} (hη : τ₀ hF hG = τ₁ hF hG η)
+variables (η : G ⋙ F ≅ eB.functor) (hη : τ₀ = τ₁ hF hG η)
 
-include hη
-variables {hF} {hG}
+omit hF hG
+include η
 
 @[simps]
 def equivalence_counit_iso : G ⋙ (F ⋙ eB.inverse) ≅ 𝟭 B :=
@@ -186,8 +190,11 @@ begin
   ... ≅ 𝟭 B : eB.unit_iso.symm,
 end
 
+variables {η hF hG}
+include hη
+
 lemma equivalence_counit_iso_eq :
-  (equivalence hF hG).counit_iso = equivalence_counit_iso hη :=
+  (equivalence hF hG).counit_iso = equivalence_counit_iso η :=
 begin
   ext1, apply nat_trans.ext, ext Y,
   dsimp [equivalence, equivalence_counit_iso, equivalence.inverse,
@@ -200,13 +207,14 @@ begin
   dsimp [equivalence₂, equivalence₁],
   simp only [equivalence₂_counit_iso_hom_app, ← eB.inverse.map_comp, ← assoc],
   congr' 2,
-  erw [← τ₀_hom_app_eq hF hG Y, hη],
+  erw [← τ₀_hom_app_eq, hη],
   dsimp [τ₁],
   erw [id_comp, comp_id],
   conv { to_rhs, erw ← id_comp (η.hom.app Y), },
   simp only [← assoc],
   congr' 1,
-  simp only [assoc, nat_trans.naturality, functor.comp_map, equivalence.fun_inv_map, functor.map_comp, nat_trans.naturality_assoc],
+  simp only [assoc, nat_trans.naturality, functor.comp_map, equivalence.fun_inv_map,
+    functor.map_comp, nat_trans.naturality_assoc],
   have h := congr_app hF.inv_hom_id (G.obj Y),
   rw [nat_trans.comp_app, nat_trans.id_app] at h,
   conv { to_rhs, erw ← h, congr, skip, erw ← id_comp (hF.hom.app (G.obj Y)), },
@@ -221,7 +229,8 @@ begin
   exact eA.functor_unit_iso_comp (G.obj Y),
 end
 
-omit hη hG eB
+omit hη η eB
+include hF
 
 variable (hF)
 
@@ -238,6 +247,7 @@ variables (εinv : F ⋙ e'.inverse ≅ eA.functor) (hεinv : υ hF = εinv)
 
 include εinv hG
 omit hF
+
 variable (hG)
 
 @[simps]
@@ -246,16 +256,18 @@ begin
   calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
   ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right εinv.symm _
   ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl
-  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
+  ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) :
+        iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
   ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
-  ... ≅ (F ⋙ eB.inverse) ⋙ (G ⋙ eA.functor) ⋙ eA.inverse : iso_whisker_left _ (iso_whisker_right hG _)
+  ... ≅ (F ⋙ eB.inverse) ⋙ (G ⋙ eA.functor) ⋙ eA.inverse :
+        iso_whisker_left _ (iso_whisker_right hG _)
   ... ≅ (F ⋙ eB.inverse ⋙ G) ⋙ (eA.functor ⋙ eA.inverse) : by refl
   ... ≅ (F ⋙ eB.inverse ⋙ G) ⋙ 𝟭 A : iso_whisker_left _ eA.unit_iso.symm
   ... ≅ (F ⋙ eB.inverse) ⋙ G : by refl,
 end
 
 include hεinv
-variable {εinv}
+variables {εinv hF hG}
 
 lemma equivalence_unit_iso_eq :
   (equivalence hF hG).unit_iso = equivalence_unit_iso hG εinv :=
