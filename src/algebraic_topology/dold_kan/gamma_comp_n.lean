@@ -230,7 +230,7 @@ abbreviation NΓ'_hom : Γ' ⋙ N' ⟶ to_karoubi (chain_complex C ℕ) :=
         simp only [NΓ'_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
           Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
       { erw [← assoc, P_infty_eq_zero_on_Γ_summand K h, zero_comp], },
-    end }, 
+    end },
   naturality' := λ K L f, begin
     ext n A,
     simp,
@@ -336,4 +336,3 @@ end
 end dold_kan
 
 end algebraic_topology
-
