@@ -39,7 +39,7 @@ begin
   /- rewriting some assumptions in a more practical form -/
   have h  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
   have h' := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
-  simp only [N₁_map, homological_complex.comp_f, chain_complex.of_hom_f, assoc,
+  simp only [N₁_obj_p, N₁_map_f, homological_complex.comp_f, chain_complex.of_hom_f,
     karoubi.id_eq, karoubi.comp, alternating_face_map_complex_map,
     alternating_face_map_complex.map] at h h',
   dsimp at h h',
@@ -149,11 +149,11 @@ begin
         karoubi_karoubi.inverse_map_f, karoubi_karoubi.inverse_obj_p,
         karoubi_chain_complex_equivalence_functor_obj_d_f,
         karoubi_chain_complex_equivalence_functor_obj_X_p, comp_id, assoc],
-      have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N₁_functor.obj
+      have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N₁.obj
         ((karoubi_functor_category_embedding _ _).obj P)).idempotence j),
       simp only [homological_complex.comp_f, karoubi.comp] at h,
       conv { to_lhs, congr, skip, erw h, },
-      dsimp only [N₁_functor.obj_X, N₁_functor.obj_p],
+      dsimp only [N₁],
       simp only [N₂_obj_p_f],
       have h : j+1=i := hij,
       subst h,

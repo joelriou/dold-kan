@@ -18,47 +18,33 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-namespace N₁_functor
-
-@[simps]
-def obj (X : simplicial_object C) : karoubi (chain_complex C ℕ) :=
-  ⟨(alternating_face_map_complex C).obj X, P_infty, P_infty_is_a_projector⟩
-
-@[simps]
-def map {X Y : simplicial_object C} (f : X ⟶ Y) : obj X ⟶ obj Y :=
-  ⟨P_infty ≫ (alternating_face_map_complex C).map f,
-begin
-  ext n,
-  dsimp [P_infty],
-  conv { to_lhs, congr, rw [← P_is_a_projector, homological_complex.comp_f], },
-  slice_lhs 2 3 { rw ← P_degreewise_naturality, },
-  slice_rhs 1 2 { rw [← homological_complex.comp_f,
-    P_is_a_projector], },
-  rw assoc,
-end⟩
-
-end N₁_functor
-
 @[simps]
 def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
-{ obj := N₁_functor.obj,
-  map := λ X Y f, N₁_functor.map f,
+{ obj := λ X,
+  { X := alternating_face_map_complex.obj X,
+    p := P_infty,
+    idempotence := P_infty_is_a_projector, },
+  map := λ X Y f,
+  { f := P_infty ≫ alternating_face_map_complex.map f,
+    comm := begin
+      ext n,
+      simp only [homological_complex.comp_f, alternating_face_map_complex.map,
+        chain_complex.of_hom_f],
+      slice_rhs 3 4 { erw P_infty_degreewise_naturality, },
+      simp only [← assoc, P_infty_degreewise_is_a_projector],
+    end, },
   map_id' := λ X, begin
     ext n,
-    simp only [homological_complex.comp_f, chain_complex.of_hom_f,
-      nat_trans.id_app, alternating_face_map_complex_map,
-      alternating_face_map_complex.map, karoubi.id_eq, N₁_functor.map_f, N₁_functor.obj_p],
-    erw comp_id,
+    simpa only [homological_complex.comp_f, nat_trans.id_app, karoubi.id_eq,
+      alternating_face_map_complex.map, chain_complex.of_hom_f] using comp_id _,
   end,
   map_comp' := λ X Y Z f g, begin
     ext n,
-    simp only [homological_complex.comp_f, karoubi.comp,
-      alternating_face_map_complex.map, alternating_face_map_complex_map,
-      chain_complex.of_hom_f, nat_trans.comp_app, P_infty, N₁_functor.map_f],
-      slice_rhs 2 3 { erw P_degreewise_naturality, },
-      slice_rhs 1 2 { rw [← homological_complex.comp_f,
-        P_is_a_projector], },
-      rw assoc,
+    simp only [karoubi.comp, homological_complex.comp_f, nat_trans.comp_app,
+      alternating_face_map_complex.map, chain_complex.of_hom_f],
+    slice_rhs 2 3 { erw P_infty_degreewise_naturality, },
+    slice_rhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+    rw assoc,
   end }
 
 @[simps]

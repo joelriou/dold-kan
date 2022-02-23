@@ -16,6 +16,7 @@ open category_theory.idempotents
 --open simplex_category
 --open opposite
 --open_locale simplicial
+open_locale dold_kan
 
 noncomputable theory
 
@@ -65,7 +66,7 @@ end
 /-- P_infty factors through the normalized_Moore_complex -/
 @[simps]
 def P_infty_into_Moore_subcomplex (X : simplicial_object A) :
-  (alternating_face_map_complex A).obj X ⟶ (normalized_Moore_complex A).obj X :=
+  K[X] ⟶ (normalized_Moore_complex A).obj X :=
 chain_complex.of_hom _ _ _ _ _ _
   (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degreewise n))
   (λ n,
@@ -99,7 +100,7 @@ begin
 end
 
 lemma P_infty_into_Moore_subcomplex_degreewise_naturality {X Y : simplicial_object A} (f : X ⟶ Y) (n : ℕ) :
-((alternating_face_map_complex A).map f).f n ≫ (P_infty_into_Moore_subcomplex Y).f n =
+(alternating_face_map_complex.map f).f n ≫ (P_infty_into_Moore_subcomplex Y).f n =
 (P_infty_into_Moore_subcomplex X).f n ≫ ((normalized_Moore_complex A).map f).f n :=
 begin
   ext1 n,
@@ -109,8 +110,8 @@ begin
 end
 
 lemma P_infty_into_Moore_subcomplex_naturality {X Y : simplicial_object A} (f : X ⟶ Y) :
-((alternating_face_map_complex A).map f) ≫ (P_infty_into_Moore_subcomplex Y) =
-P_infty_into_Moore_subcomplex X ≫ (normalized_Moore_complex A).map f :=
+alternating_face_map_complex.map f ≫ P_infty_into_Moore_subcomplex Y =
+P_infty_into_Moore_subcomplex X ≫ normalized_Moore_complex.map f :=
 begin
   ext1, ext1 n,
   simp only [homological_complex.comp_f],
@@ -125,9 +126,10 @@ def N₁_to_karoubi_normalized :
     comm := by erw [comp_id, P_infty_comp_P_infty_into_Moore_subcomplex X] },
   naturality' := λ X Y f, begin
     ext1,
-    simp only [karoubi.comp, N₁_map, N₁_functor.map_f, assoc,
-      P_infty_into_Moore_subcomplex_naturality],
-    simpa only [← assoc, P_infty_comp_P_infty_into_Moore_subcomplex],
+    simp only [karoubi.comp, N₁_map_f, assoc],
+    erw [P_infty_into_Moore_subcomplex_naturality, ← assoc,
+      P_infty_comp_P_infty_into_Moore_subcomplex],
+    refl,
   end }
 
 lemma inclusion_of_Moore_complex_comp_P_infty (X : simplicial_object A) :
@@ -170,6 +172,7 @@ def to_karoubi_normalized_to_N₁ :
     ext1,
     simp only [karoubi.comp],
     erw [(inclusion_of_Moore_complex A).naturality f, ← assoc, inclusion_of_Moore_complex_comp_P_infty X],
+    refl,
   end }
 
 variable (A)

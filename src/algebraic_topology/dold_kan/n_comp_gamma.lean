@@ -175,7 +175,7 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
   naturality' := λ X Y f, begin
     ext Δ A,
     simp only [colimit.ι_desc, assoc, functor.map_comp, discrete.nat_trans_app, cofan.mk_ι_app, subtype.val_eq_coe,
-      functor.comp_map, N₁_map, karoubi.comp, nat_trans.comp_app, Γ₂_map_f_app, N₁_functor.map_f,
+      functor.comp_map, karoubi.comp, nat_trans.comp_app, Γ₂_map_f_app, N₁_map_f,
       alternating_face_map_complex.map, alternating_face_map_complex_map, homological_complex.comp_f,
       chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f, colimit.ι_desc_assoc, nat_trans.naturality],
     slice_lhs 2 3 { erw P_infty_degreewise_naturality, },
