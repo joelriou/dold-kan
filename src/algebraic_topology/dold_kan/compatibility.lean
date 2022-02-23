@@ -235,25 +235,16 @@ begin
 end
 
 variables (εinv : F ⋙ e'.inverse ≅ eA.functor) (hεinv : υ hF = εinv)
+
+include εinv hG
 omit hF
-
-abbreviation ε := εinv.symm
-
-include hεinv
-variables {hF} {εinv}
-def hε : υ hF = (ε εinv).symm := begin
-  simp only [hεinv, iso.symm_symm_eq],
-end
-
-omit hεinv
-include hG εinv
-variables (hF) (hG) (εinv)
+variable (hG)
 
 @[simps]
 def equivalence_unit_iso : 𝟭 A ≅ (F ⋙ eB.inverse) ⋙ G :=
 begin
   calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
-  ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right (ε εinv) _
+  ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right εinv.symm _
   ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl
   ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) : iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
   ... ≅ (F ⋙ eB.inverse) ⋙ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
@@ -263,22 +254,8 @@ begin
   ... ≅ (F ⋙ eB.inverse) ⋙ G : by refl,
 end
 
-variables {εinv}
-
-omit hG
-
 include hεinv
-
-def hε' (X : A) : e'.unit_iso.hom.app (eA.functor.obj X) ≫ e'.inverse.map (hF.hom.app X) = (ε εinv).hom.app X :=
-begin
-  have h := congr_arg (λ (φ : _ ≅ _), φ.inv) (hε hεinv),
-  dsimp only [iso.symm] at h,
-  erw ← h,
-  unfold υ,
-  simp only [iso.trans_refl, iso.trans_inv, iso_whisker_left_inv, iso.symm_inv,
-    iso_whisker_right_inv, nat_trans.comp_app, functor.left_unitor_inv_app, whisker_left_app,
-    whisker_right_app, id_comp],
-end
+variable {εinv}
 
 lemma equivalence_unit_iso_eq :
   (equivalence hF hG).unit_iso = equivalence_unit_iso hG εinv :=
@@ -292,7 +269,9 @@ begin
   simp only [assoc, equivalence_unit_iso_hom_app, nat_iso.cancel_nat_iso_hom_left],
   simp only [← eA.inverse.map_comp, ← assoc],
   congr,
-  exact hε' hF (by simpa only [iso.symm_symm_eq] using hε hεinv) X,
+  rw ← hεinv,
+  dsimp [υ],
+  erw [id_comp, id_comp],
 end
 
 end compatibility
