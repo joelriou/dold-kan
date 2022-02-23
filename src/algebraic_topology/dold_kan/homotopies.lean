@@ -142,30 +142,6 @@ begin
   { simpa only [eq_to_hom_map, functor.map_comp, functor.map_zsmul], },
 end
 
-/-- for alternating_face_map_complex.lean
-def map_alternating_face_map_complex {D : Type*} [category.{v} D] [preadditive D]
-  (F : C ⥤ D) [F.additive] :
-  alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =
-  (simplicial_object.whiskering C D).obj F ⋙ alternating_face_map_complex D :=
-begin
-  apply category_theory.functor.ext,
-  { intros X Y f,
-    ext n,
-    dsimp,
-    simp only [homological_complex.eq_to_hom_f, eq_to_hom_refl],
-    erw [category.comp_id, category.id_comp], },
-  { intro X,
-    dsimp [alternating_face_map_complex.obj],
-    erw chain_complex.map_of,
-    congr,
-    ext n,
-    dsimp,
-    simp only [functor.map_sum],
-    congr,
-    ext,
-    simpa only [functor.map_zsmul], },
-end-/
-
 lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ)
   : (Hσ q : K[((whiskering C D).obj G).obj X] ⟶ _).f n =

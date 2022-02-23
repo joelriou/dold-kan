@@ -26,7 +26,7 @@ namespace dold_kan
 variables {C : Type*} [category.{v} C] [additive_category C]
 
 @[simp]
-def NΓ'_map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : Γ_index_set [n]) :
+def N₁Γ₀_map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : Γ_index_set [n]) :
 Γ_summand K [n] A ⟶ ((to_karoubi (chain_complex C ℕ)).obj K).X.X n :=
 begin
   by_cases A.1.len = n,
@@ -39,7 +39,7 @@ end
 
 lemma d_on_KΓ (K : chain_complex C ℕ) (j : ℕ) :
   inclusion_Γ_summand K (Γ_index_id (j+1)) ≫ K[Γ₀.obj K].d (j+1) j
-    ≫ sigma.desc (NΓ'_map_termwise K j) = K.d (j+1) j :=
+    ≫ sigma.desc (N₁Γ₀_map_termwise K j) = K.d (j+1) j :=
 begin
   erw chain_complex.of_d,
   dsimp,
@@ -58,7 +58,7 @@ begin
     erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
       (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
     erw [Γ_on_mono_on_d0 K i (is_d0_iff.mpr rfl), assoc],
-    simp only [NΓ'_map_termwise, colimit.ι_desc, cofan.mk_ι_app, simplex_category.len_mk,
+    simp only [N₁Γ₀_map_termwise, colimit.ι_desc, cofan.mk_ι_app, simplex_category.len_mk,
       eq_self_iff_true, eq_to_hom_refl, dite_eq_ite, if_true],
     erw comp_id,
     refl, },
@@ -79,7 +79,7 @@ begin
 end
 
 lemma d_on_KΓ' (K : chain_complex C ℕ) (j : ℕ) (A : Γ_index_set [j+1]) (hA : ¬A.fst.len = j+1) :
-inclusion_Γ_summand K A ≫ K[Γ₀.obj K].d (j + 1) j ≫ sigma.desc (NΓ'_map_termwise K j) = 0 :=
+inclusion_Γ_summand K A ≫ K[Γ₀.obj K].d (j + 1) j ≫ sigma.desc (N₁Γ₀_map_termwise K j) = 0 :=
 begin
   erw chain_complex.of_d,
   dsimp,
@@ -90,7 +90,7 @@ begin
     let em := image.mono_factorisation (simplex_category.δ i ≫ A.2.1),
     haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
     erw [Γ_simplicial_on_summand K A em.fac, assoc, colimit.ι_desc, cofan.mk_ι_app,
-      NΓ'_map_termwise],
+      N₁Γ₀_map_termwise],
     split_ifs, swap,
     { erw [comp_zero, smul_zero'], },
     { exfalso,
@@ -118,7 +118,7 @@ begin
       let em := image.mono_factorisation (simplex_category.δ k ≫ A'.2.1),
       haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
       erw [Γ_simplicial_on_summand K A' em.fac],
-      simp only [cofan.mk_ι_app, image.as_ι, colimit.ι_desc, assoc, NΓ'_map_termwise],
+      simp only [cofan.mk_ι_app, image.as_ι, colimit.ι_desc, assoc, N₁Γ₀_map_termwise],
       have hI : em.I.len ≠ j,
       { by_contradiction hj,
         unfreezingI { dsimp only [A'] at em, },
@@ -200,15 +200,15 @@ begin
 end
 
 @[simps]
-abbreviation NΓ'_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
+abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
 { app := λ K,
   { f :=
-    { f:= λ n, sigma.desc (NΓ'_map_termwise K n),
+    { f:= λ n, sigma.desc (N₁Γ₀_map_termwise K n),
       comm' := λ i j hij, begin
         have h : j+1 = i := hij,
         subst h,
         ext A,
-        simp only [cofan.mk_ι_app, colimit.ι_desc_assoc, NΓ'_map_termwise],
+        simp only [cofan.mk_ι_app, colimit.ι_desc_assoc, N₁Γ₀_map_termwise],
         split_ifs,
         { have hA := eq_Γ_index_id h,
           subst hA,
@@ -227,7 +227,7 @@ abbreviation NΓ'_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
       { have hA := eq_Γ_index_id h,
         subst hA,
         slice_rhs 1 2 { erw P_infty_eq_id_on_Γ_summand, },
-        simp only [NΓ'_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
+        simp only [N₁Γ₀_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
           Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
       { erw [← assoc, P_infty_eq_zero_on_Γ_summand K h, zero_comp], },
     end },
@@ -239,7 +239,7 @@ abbreviation NΓ'_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
     { have hA := eq_Γ_index_id h,
       subst hA,
       erw P_infty_eq_id_on_Γ_summand,
-      simp only [NΓ'_map_termwise, inclusion_Γ_summand, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
+      simp only [N₁Γ₀_map_termwise, inclusion_Γ_summand, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
         cofan.mk_ι_app, Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, eq_to_hom_refl,
         dite_eq_ite, if_true],
       erw [id_comp, comp_id],
@@ -248,7 +248,7 @@ abbreviation NΓ'_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
   end, }
 
 @[simps]
-abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
+abbreviation N₁Γ₀_iso_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
 { app := λ K,
   { f :=
     { f := λ n, sigma.ι (Γ_summand K [n]) (Γ_index_id n),
@@ -287,9 +287,9 @@ abbreviation NΓ'_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
   end }
 
 @[simps]
-def NΓ' : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
-{ hom := NΓ'_hom,
-  inv := NΓ'_inv,
+def N₁Γ₀_iso : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
+{ hom := N₁Γ₀_iso_hom,
+  inv := N₁Γ₀_iso_inv,
   hom_inv_id' := begin
     ext K n A,
     simp only [homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc_assoc,
@@ -304,7 +304,7 @@ def NΓ' : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
   inv_hom_id' := begin
     ext K n,
     dsimp,
-    simpa only [NΓ'_map_termwise, homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
+    simpa only [N₁Γ₀_map_termwise, homological_complex.comp_f, cofan.mk_ι_app, karoubi.comp,
       simplex_category.len_mk, eq_self_iff_true, colimit.ι_desc, Γ_index_id],
   end }
 
@@ -318,20 +318,19 @@ begin
 end
 
 @[simps]
-def NΓ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
+def N₂Γ₂_iso : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
 (whiskering_left_to_karoubi_iso_equiv (Γ₂ ⋙ N₂) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
-((eq_to_iso to_karoubi_comp_Γ_comp_N).trans NΓ')
+((eq_to_iso to_karoubi_comp_Γ_comp_N).trans N₁Γ₀_iso)
 
-lemma NΓ_karoubi_compat (K: chain_complex C ℕ) :
-  NΓ.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact congr_obj to_karoubi_comp_Γ_comp_N K, })
-    ≫ NΓ'.hom.app K :=
+lemma N₂Γ₂_iso_compatible_with_N₁Γ₀_iso (K: chain_complex C ℕ) :
+  N₂Γ₂_iso.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact congr_obj to_karoubi_comp_Γ_comp_N K, })
+    ≫ N₁Γ₀_iso.hom.app K :=
 begin
-  dsimp only [NΓ, whiskering_left_to_karoubi_iso_equiv],
+  dsimp only [N₂Γ₂_iso, whiskering_left_to_karoubi_iso_equiv],
   erw [whiskering_left_to_karoubi_hom_equiv_inv_fun_compat],
   dsimp only [iso.trans, eq_to_iso],
   simp only [nat_trans.comp_app, eq_to_hom_app],
 end
-
 
 end dold_kan
 
