@@ -47,7 +47,7 @@ begin
     exact h2, },
 end
 
-lemma fintype_Γ_index_set (Δ : simplex_category.{v}) : fintype (Γ_index_set Δ) :=
+instance {Δ : simplex_category} : fintype (Γ_index_set Δ) :=
 begin
   apply fintype.of_injective
     ((λ A, ⟨⟨A.1.len,
@@ -65,8 +65,6 @@ begin
     assumption, },
   { refl, }
 end
-
-instance {Δ : simplex_category} : fintype (Γ_index_set Δ) := fintype_Γ_index_set Δ
 
 @[simps]
 def Γ_index_id (n : ℕ) : Γ_index_set [n] := ⟨[n], ⟨𝟙 _, by apply_instance,⟩⟩
@@ -86,7 +84,6 @@ begin
     exact simplex_category.eq_id_of_epi f, },
   { refl, }
 end
-
 
 def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category.{v})
   (A : Γ_index_set Δ) : C := K.X A.1.len
