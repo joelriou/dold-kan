@@ -118,6 +118,7 @@ open category_theory
 open category_theory.category
 open category_theory.idempotents
 
+@[priority 100]
 instance additive_of_abelian {D : Type*} [category D] [abelian D] : additive_category D :=
 { to_preadditive := infer_instance,
   to_has_finite_biproducts := infer_instance }
@@ -132,11 +133,17 @@ namespace dold_kan
 
 open algebraic_topology.dold_kan
 
+/-- The functor `N` for the equivalence is `normalized_Moore_complex A` -/
 def N : simplicial_object A ⥤ chain_complex A ℕ := algebraic_topology.normalized_Moore_complex A
+
+/-- The functor `Γ` for the equivalence is the same as in the pseudoabelian case. -/
 def Γ : chain_complex A ℕ ⥤ simplicial_object A := idempotents.dold_kan.Γ
 
+/-- The equivalence `chain_complex A ℕ ≌ karoubi (chain_complex A ℕ) ` -/
 def κequiv' := to_karoubi_equivalence (chain_complex A ℕ)
 
+/-- The comparison isomorphism between `normalized_Moore_complex A` and
+the functor `idempotents.dold_kan.N` from the pseudoabelian case -/
 @[simps]
 def comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
 begin
@@ -147,6 +154,7 @@ begin
   ... ≅ idempotents.dold_kan.N : by refl,
 end
 
+/-- The Dold-Kan equivalence for abelian categories -/
 @[simps]
 def equivalence : simplicial_object A ≌ chain_complex A ℕ :=
 begin
@@ -157,10 +165,8 @@ begin
   exact N.as_equivalence,
 end
 
-@[simp]
 lemma equivalence_functor : (equivalence : simplicial_object A ≌ _).functor = N := by refl
 
-@[simp]
 lemma equivalence_inverse : (equivalence : simplicial_object A ≌ _).inverse = Γ := by refl
 
 end dold_kan
