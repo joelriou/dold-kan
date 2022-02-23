@@ -2,14 +2,23 @@
 \usepackage[a4paper, vmargin=1cm]{geometry}
 \usepackage{tikz}
 \usetikzlibrary{fit, arrows.meta, shapes.geometric, decorations.markings}
+
 \begin{document}
 
+\thispagestyle{empty}
 \tikzstyle{every node}=[rectangle, minimum size=6mm, rounded corners=3mm,
 	very thick, draw = black!50, top color = white]
 
 \tikzstyle{red}=[bottom color = red]
 \tikzstyle{orange}=[bottom color = orange]
 \tikzstyle{green}=[bottom color = green]
+
+Colours :
+\begin{itemize}
+\item \emph{red} : code need tidying, doc missing
+\item \emph{orange} : code ok, doc missing
+\item \emph{green} : almost PR ready, doc ready, passes \#lint
+\end{itemize}
 
 \begin{center}
 \begin{tikzpicture}[->, >={Stealth[round]}]
