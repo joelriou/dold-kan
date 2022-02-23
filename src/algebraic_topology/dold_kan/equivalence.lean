@@ -70,16 +70,17 @@ The rest of the proof follows the strategy in the original paper by Dold. We sho
 that the functor `N₂` reflects isomorphisms in `n_reflects_iso.lean`: this relies on a
 decomposition of the identity of `X _[n]` using `P_infty.f n` and degeneracies obtained in
 `decomposition.lean`. Then, in `n_comp_gamma.lean`, we construct a natural transformation
-`Γ₂N₂_trans : N₂ ⋙ Γ₂ ⟶ 𝟭 (karoubi (simplicial_object C))`. It shown that it is an
-isomorphism using the fact thet `N` reflects isomorphisms, and because we can show
-that the composition `N₂ ⟶ N₂ ⋙ Γ₂ ⋙ N₂ ⟶ N₂` is the identity (see `identity_N`). The fact
+`Γ₂N₂_trans : N₂ ⋙ Γ₂ ⟶ 𝟭 (karoubi (simplicial_object C))`. It is shown that it is an
+isomorphism using the fact thet `N₂` reflects isomorphisms, and because we can show
+that the composition `N₂ ⟶ N₂ ⋙ Γ₂ ⋙ N₂ ⟶ N₂` is the identity (see `identity_N₂`). The fact
 that `N₂` is defined as a formal direct factor makes the proof easier because we only
 have to compare endomorphisms of an alternating face map complex `K[X]` and we do not
 have to worry with inclusions of kernel subobjects.
 
 In `equivalence_additive.lean`, we obtain
-the equivalence `equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)`,
-with the functors `N` and `Γ`, all in the namespace `category_theory.preadditive.dold_kan`.
+the equivalence `equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)`.
+It is in the namespace `category_theory.preadditive.dold_kan`. The functors in this
+equivalence are named `N` and `Γ`: by definition, they are `N₂` and `Γ₂`.
 
 In `equivalence_pseudoabelian.lean`, assuming `C` is idempotent complete,
 we obtain `equivalence : simplicial_object C ≌ chain_complex C ℕ`
@@ -88,14 +89,16 @@ obtained by composing the previous equivalence with the equivalences
 `simplicial_object C ≌ karoubi (simplicial_object C)` and
 `karoubi (chain_complex C ℕ) ≌ chain_complex C ℕ`. Instead, we polish this construction
 in `compatibility.lean` by ensuring good definitional properties of the equivalence (e.g.
-the inverse functor is exactly `Γ₀' : chain_complex C ℕ ⥤ simplicial_object C`) and
+the inverse functor is definitioannallly equal to
+`Γ₀' : chain_complex C ℕ ⥤ simplicial_object C`) and
 showing compatibilities for the unit and counit isomorphisms.
 
 In this file `equivalence.lean`, assuming the category `A` is abelian, we obtain
 `equivalence : simplicial_object A ≌ chain_complex A ℕ` in the namespace
 `category_theory.abelian.dold_kan`. This is obtained by replacing the functor
-`category_theory.idempotents.dold_kan.N` with the isomorphic functor
-`normalized_Moore_complex A` thanks to the isomorphism obtained in `normalized.lean`.
+`category_theory.idempotents.dold_kan.N` of the equivalence in the pseudoabelian case
+with the isomorphic functor `normalized_Moore_complex A` thanks to the isomorphism
+obtained in `normalized.lean`.
 
 Finally, we show functoriality properties of the three equivalences above in
 `functoriality_additive.lean`, `functoriality_pseudoabelian.lean` and
