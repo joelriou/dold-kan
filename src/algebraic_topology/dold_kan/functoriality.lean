@@ -7,6 +7,13 @@ Author: Joël Riou
 import algebraic_topology.dold_kan.functoriality_pseudoabelian
 import algebraic_topology.dold_kan.equivalence
 
+/-!
+
+# Functoriality of the Dold-Kan correspondance for abelian categories
+
+-/
+
+
 noncomputable theory
 
 open category_theory
@@ -24,6 +31,9 @@ namespace abelian
 
 namespace dold_kan
 
+/-- Given an additive functor `F : A ⥤ B`, this is functoriality isomorphism
+between the two functors `simplicial_object A ⥤ chain_complex B ℕ` obtained by
+using the functors induces by `F` and the functor `N` in `A` or in `B`. -/
 @[simps]
 def functoriality_N (F : A ⥤ B) [functor.additive F]:
   (simplicial_object.whiskering A B).obj F ⋙ N ≅
