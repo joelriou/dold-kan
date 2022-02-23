@@ -45,7 +45,7 @@ def N : simplicial_object C ⥤ chain_complex C ℕ := N' ⋙ κequiv'.inverse
 
 /-- The functor `Γ` for the equivalence is `Γ'`. -/
 @[simps, nolint unused_arguments]
-def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ'
+def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ₀
 
 lemma hN' : κequiv.functor ⋙ preadditive.dold_kan.equivalence.functor =
   (N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
@@ -53,7 +53,7 @@ congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) N'
 
 lemma hΓ : κequiv'.functor ⋙ preadditive.dold_kan.equivalence.inverse =
     (Γ : chain_complex C ℕ ⥤ _) ⋙ κequiv.functor  :=
-congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ'
+congr_obj (functor_extension''_comp_whiskering_left_to_karoubi _ _) Γ₀
 
 /-- The Dold-Kan equivalence for pseudoabelian categories given
 by the functors `N` and `Γ`. It is obtained by applying the results in

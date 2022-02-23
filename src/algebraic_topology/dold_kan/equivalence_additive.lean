@@ -21,10 +21,12 @@ namespace preadditive
 namespace dold_kan
 
 @[simps]
-def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) := algebraic_topology.dold_kan.N
+def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
+algebraic_topology.dold_kan.N
 
 @[simps]
-def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := algebraic_topology.dold_kan.Γ
+def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
+algebraic_topology.dold_kan.Γ₂
 
 @[simps]
 def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ) :=

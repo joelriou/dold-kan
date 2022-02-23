@@ -37,7 +37,7 @@ begin
     let i := simplex_category.δ j.succ,
     erw Γ_simplicial_on_summand K (Γ_index_id (n+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
     rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
-    { intro h, 
+    { intro h,
       apply nat.succ_ne_self n,
       simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
     { rintro ⟨h₁, h₂⟩,
@@ -227,8 +227,8 @@ begin
       (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
   haveI : epi A.2.1 := A.2.2,
   rw [show A = ⟨A.1,⟨A.2.1,A.2.2⟩⟩, by { ext1, { simp only [eq_to_hom_refl, comp_id], }, refl, }],
-  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },  
-  rw [assoc, show Γ_simplicial K A.2.1 = (Γ'.obj K).map A.2.1.op, by refl],
+  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },
+  rw [assoc, show Γ_simplicial K A.2.1 = (Γ₀.obj K).map A.2.1.op, by refl],
   slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
   erw comp_zero,
 end
@@ -236,4 +236,3 @@ end
 end dold_kan
 
 end algebraic_topology
-

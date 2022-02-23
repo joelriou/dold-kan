@@ -139,7 +139,7 @@ begin
 end
 
 @[simps]
-def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ ⟶ to_karoubi _ :=
+def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
     { app := λ Δ, sigma.desc (λ A,
@@ -175,7 +175,7 @@ def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ ⟶ to_karoubi _ :=
   naturality' := λ X Y f, begin
     ext Δ A,
     simp only [colimit.ι_desc, assoc, functor.map_comp, discrete.nat_trans_app, cofan.mk_ι_app, subtype.val_eq_coe,
-      functor.comp_map, N'_map, karoubi.comp, nat_trans.comp_app, Γ_map_f_app, N'_functor.map_f,
+      functor.comp_map, N'_map, karoubi.comp, nat_trans.comp_app, Γ₂_map_f_app, N'_functor.map_f,
       alternating_face_map_complex.map, alternating_face_map_complex_map, homological_complex.comp_f,
       chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f, colimit.ι_desc_assoc, nat_trans.naturality],
     slice_lhs 2 3 { erw P_infty_degreewise_naturality, },
@@ -185,11 +185,11 @@ def ΓN'_trans : (N' : simplicial_object C ⥤ _) ⋙ Γ ⟶ to_karoubi _ :=
   end }
 
 @[simps]
-def ΓN_trans : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ ⟶ 𝟭 _ :=
+def ΓN_trans : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 _ :=
 begin
-  apply (whiskering_left_to_karoubi_hom_equiv (N ⋙ Γ) (𝟭 _)).inv_fun,
+  apply (whiskering_left_to_karoubi_hom_equiv (N ⋙ Γ₂) (𝟭 _)).inv_fun,
   refine eq_to_hom _ ≫ ΓN'_trans,
-  { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N' ⋙ Γ), },
+  { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N' ⋙ Γ₂), },
 end
 
 lemma identity_N_objectwise (P : karoubi (simplicial_object C)) :
@@ -228,7 +228,7 @@ lemma identity_N :
 begin
   ext1, ext1 P,
   dsimp,
-  erw [Γ.map_id, N.map_id, comp_id, id_comp],
+  erw [Γ₂.map_id, N.map_id, comp_id, id_comp],
   exact identity_N_objectwise P,
 end
 
@@ -258,8 +258,8 @@ begin
   simp only [karoubi.comp, eq_to_hom_refl, comp_id, karoubi.eq_to_hom_f],
   dsimp [ΓN_trans, ΓN'_trans],
   simp only [functor.map_comp, eq_to_hom_map, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id, karoubi.decomp_id_p_f,
-    to_karoubi_obj_p, assoc, eq_to_hom_app, karoubi.comp, nat_trans.comp_app, Γ_map_f_app, N_map_f_f,
-    karoubi.decomp_id_i_f, Γ_obj_p_app, N_obj_p_f, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
+    to_karoubi_obj_p, assoc, eq_to_hom_app, karoubi.comp, nat_trans.comp_app, Γ₂_map_f_app, N_map_f_f,
+    karoubi.decomp_id_i_f, Γ₂_obj_p_app, N_obj_p_f, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
   cofan.mk_ι_app],
   erw [nat_trans.id_app, nat_trans.id_app, id_comp, id_comp, comp_id, colimit.ι_desc, cofan.mk_ι_app],
   repeat { slice_rhs 1 2 { erw P_infty_degreewise_is_a_projector, }, },
@@ -276,7 +276,7 @@ begin
 end
 
 @[simps]
-def ΓN : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ ≅ 𝟭 _ := as_iso (ΓN_trans)
+def ΓN : (N : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ≅ 𝟭 _ := as_iso (ΓN_trans)
 
 end dold_kan
 

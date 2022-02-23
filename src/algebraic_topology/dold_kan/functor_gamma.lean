@@ -236,7 +236,7 @@ lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_
 by { simp only [Γ_simplicial, cofan.mk_ι_app, colimit.ι_desc],
   congr'; rw simplex_category.mono_factorisation_eq e i h, }
 
-namespace Γ'_functor
+namespace Γ₀_functor
 
 @[simps]
 def obj (K : chain_complex C ℕ) : simplicial_object C :=
@@ -281,32 +281,32 @@ def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
     rw [assoc],
   end, }
 
-end Γ'_functor
+end Γ₀_functor
 
 @[simps]
-def Γ' : chain_complex C ℕ ⥤ simplicial_object C :=
-{ obj := Γ'_functor.obj,
-  map := λ _ _, Γ'_functor.map,
+def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
+{ obj := Γ₀_functor.obj,
+  map := λ _ _, Γ₀_functor.map,
   map_id' := λ K, begin
     ext Δ A,
-    simp only [Γ'_functor.map_app, discrete.nat_trans_app, ι_colim_map, nat_trans.id_app,
+    simp only [Γ₀_functor.map_app, discrete.nat_trans_app, ι_colim_map, nat_trans.id_app,
       homological_complex.id_f],
     erw [id_comp, comp_id],
   end,
   map_comp' := λ K K' K'' f f', begin
     ext Δ A,
-    simp only [Γ'_functor.map_app, homological_complex.comp_f, discrete.nat_trans_app,
+    simp only [Γ₀_functor.map_app, homological_complex.comp_f, discrete.nat_trans_app,
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
 
 @[simp]
 def inclusion_Γ_summand (K : chain_complex C ℕ) {n : ℕ} (A : Γ_index_set [n]) :
-  Γ_summand K [n] A ⟶ K[Γ'.obj K].X n :=
+  Γ_summand K [n] A ⟶ K[Γ₀.obj K].X n :=
 sigma.ι (Γ_summand K [n]) A
 
 @[simps]
-def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
-(category_theory.idempotents.functor_extension'' _ _).obj Γ'
+def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
+(category_theory.idempotents.functor_extension'' _ _).obj Γ₀
 
 end dold_kan
 
