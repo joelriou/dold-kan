@@ -234,18 +234,18 @@ include hF
 
 variable (hF)
 
-def υ : F ⋙ e'.inverse ≅ eA.functor :=
+def υ : eA.functor ≅ F ⋙ e'.inverse :=
 begin
-  calc F ⋙ e'.inverse ≅
-    (eA.functor ⋙ e'.functor) ⋙ e'.inverse : iso_whisker_right hF.symm _
-  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) : by refl
-  ... ≅ eA.functor ⋙ 𝟭 A' : iso_whisker_left _ e'.unit_iso.symm
-  ... ≅ eA.functor : functor.left_unitor _,
+  calc eA.functor
+    ≅ eA.functor ⋙ 𝟭 A' : (functor.left_unitor _).symm
+  ... ≅ eA.functor ⋙ (e'.functor ⋙ e'.inverse) : iso_whisker_left _ e'.unit_iso
+  ... ≅ (eA.functor ⋙ e'.functor) ⋙ e'.inverse : by refl
+  ... ≅ F ⋙ e'.inverse : iso_whisker_right hF _,
 end
 
-variables (εinv : F ⋙ e'.inverse ≅ eA.functor) (hεinv : υ hF = εinv)
+variables (ε : eA.functor ≅ F ⋙ e'.inverse) (hε : υ hF = ε)
 
-include εinv hG
+include ε hG
 omit hF
 
 variable (hG)
@@ -254,7 +254,7 @@ variable (hG)
 def equivalence_unit_iso : 𝟭 A ≅ (F ⋙ eB.inverse) ⋙ G :=
 begin
   calc 𝟭 A ≅ eA.functor ⋙ eA.inverse : eA.unit_iso
-  ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right εinv.symm _
+  ... ≅ (F ⋙ e'.inverse) ⋙ eA.inverse : iso_whisker_right ε _
   ... ≅ F ⋙ 𝟭 B' ⋙ e'.inverse ⋙ eA.inverse : by refl
   ... ≅ F ⋙ (eB.inverse ⋙ eB.functor) ⋙ (e'.inverse ⋙ eA.inverse) :
         iso_whisker_left _ (iso_whisker_right eB.counit_iso.symm _)
@@ -266,11 +266,11 @@ begin
   ... ≅ (F ⋙ eB.inverse) ⋙ G : by refl,
 end
 
-include hεinv
-variables {εinv hF hG}
+include hε
+variables {ε hF hG}
 
 lemma equivalence_unit_iso_eq :
-  (equivalence hF hG).unit_iso = equivalence_unit_iso hG εinv :=
+  (equivalence hF hG).unit_iso = equivalence_unit_iso hG ε :=
 begin
   ext1, apply nat_trans.ext, ext X,
   dsimp [equivalence, iso.refl, nat_iso.hcomp, is_equivalence.inverse,
@@ -281,9 +281,9 @@ begin
   simp only [assoc, equivalence_unit_iso_hom_app, nat_iso.cancel_nat_iso_hom_left],
   simp only [← eA.inverse.map_comp, ← assoc],
   congr,
-  rw ← hεinv,
+  rw ← hε,
   dsimp [υ],
-  erw [id_comp, id_comp],
+  erw [id_comp, comp_id],
 end
 
 end compatibility

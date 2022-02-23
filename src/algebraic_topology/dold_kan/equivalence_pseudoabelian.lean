@@ -86,27 +86,27 @@ lemma equivalence_counit_iso :
   dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) :=
 compatibility.equivalence_counit_iso_eq hη
 
-lemma hεinv : compatibility.υ (eq_to_iso hN₁) =
-  (Γ₂N₁_iso.symm : (N₁ : simplicial_object C ⥤ _) ⋙
-  preadditive.dold_kan.equivalence.inverse ≅ κequiv.functor) :=
+lemma hε : compatibility.υ (eq_to_iso hN₁) =
+  (Γ₂N₁_iso : κequiv.functor ≅ (N₁ : simplicial_object C ⥤ _) ⋙
+  preadditive.dold_kan.equivalence.inverse) :=
 begin
-  symmetry,
-  ext1, apply nat_trans.ext, ext1 X,
+  ext1, ext1, ext1, ext1 X,
+  erw [nat_trans.comp_app, Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans],
   dsimp [compatibility.υ],
-  erw [comp_id, comp_id],
-  simp only [eq_to_hom_app, eq_to_hom_map],
-  sorry,
---  apply Γ₂N₁_Γ₂N₂_compatibility,
+  simp only [id_comp, comp_id],
+  slice_lhs 2 3 { erw [← nat_trans.comp_app, is_iso.hom_inv_id], },
+  slice_lhs 2 3 { erw id_comp, },
+  simpa only [eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans],
 end
 
 /-- The unit isomorphism induced by `Γ₂N₁` -/
 @[simps]
 def ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ :=
-compatibility.equivalence_unit_iso (eq_to_iso hΓ₀) Γ₂N₁_iso.symm
+compatibility.equivalence_unit_iso (eq_to_iso hΓ₀) Γ₂N₁_iso
 
 lemma equivalence_unit_iso : dold_kan.equivalence.unit_iso =
   (ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ) :=
-compatibility.equivalence_unit_iso_eq hεinv
+compatibility.equivalence_unit_iso_eq hε
 
 end dold_kan
 
