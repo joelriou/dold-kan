@@ -7,7 +7,7 @@ Authors: Joël Riou
 import for_mathlib.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
-import for_mathlib.idempotents.karoubi
+import for_mathlib.idempotents.functor_extension
 
 noncomputable theory
 
@@ -195,7 +195,7 @@ variables (C) (c)
 @[simps]
 def karoubi_homological_complex_equivalence :
   karoubi (homological_complex C c) ≌ homological_complex (karoubi C) c :=
-{ functor   := karoubi_homological_complex.functor,
+{ functor    := karoubi_homological_complex.functor,
   inverse    := karoubi_homological_complex.inverse,
   unit_iso   := karoubi_homological_complex.unit_iso,
   counit_iso := eq_to_iso karoubi_homological_complex.counit_eq,
@@ -277,5 +277,38 @@ def karoubi_cochain_complex_equivalence :
   karoubi_homological_complex_equivalence C (complex_shape.up α)
 
 end idempotents
+
+namespace functor
+
+variables {D : Type*} [category D] [preadditive D]
+
+@[simps]
+def map_karoubi_homological_complex (F : C ⥤ D) [F.additive] (c : complex_shape ι) :
+  karoubi (homological_complex C c) ⥤ karoubi (homological_complex D c) :=
+(functor_extension'' _ _).obj (functor.map_homological_complex F c)
+
+lemma map_homological_complex_karoubi_compatibility
+  (F : C ⥤ D) [F.additive] (c : complex_shape ι) :
+  to_karoubi _ ⋙ F.map_karoubi_homological_complex c =
+  F.map_homological_complex c ⋙ to_karoubi _ :=
+begin
+  apply functor.ext,
+  { intros X Y f,
+    ext n,
+    dsimp [to_karoubi],
+    simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id,
+      homological_complex.comp_f, map_karoubi_homological_complex_obj_p_f,
+      homological_complex.id_f, map_id, map_homological_complex_map_f],
+    erw id_comp, },
+  { intro X,
+    ext1,
+    { erw [id_comp, comp_id],
+      ext n,
+      dsimp,
+      simpa only [F.map_id, homological_complex.id_f], },
+    { refl, }, },
+end
+
+end functor
 
 end category_theory

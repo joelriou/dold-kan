@@ -109,7 +109,7 @@ end
 
 namespace idempotents
 
-variables (C D : Type*) [category C] [category D]
+variables (C D E : Type*) [category C] [category D] [category E]
 
 @[simps]
 def functor_extension' : (C ⥤ karoubi D) ⥤ (karoubi C ⥤ karoubi D) :=
@@ -258,6 +258,22 @@ def karoubi_universal' : (C ⥤ karoubi D) ≌ (karoubi C ⥤ karoubi D) :=
     simpa only [eq_to_iso.hom, eq_to_hom_app, eq_to_hom_map, eq_to_hom_refl, id_comp]
       using congr_map F P.idempotence,
   end, }
+
+lemma functor_extension'_comp
+  (F : C ⥤ karoubi D) (G : D ⥤ karoubi E) :
+  (functor_extension' C E).obj (F ⋙ (functor_extension' D E).obj G) =
+  (functor_extension' C D).obj F ⋙ (functor_extension' D E).obj G :=
+begin
+  apply functor.ext,
+  { intros X Y f,
+    erw [id_comp, comp_id],
+    refl, },
+  { intro P,
+    ext,
+    { dsimp,
+      erw [comp_id, id_comp], },
+    { refl, }, }
+end
 
 @[simps]
 def functor_extension'' : (C ⥤ D) ⥤ (karoubi C ⥤ karoubi D) :=
