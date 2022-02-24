@@ -155,7 +155,7 @@ begin
   calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
   ... ≅ N ⋙ (κequiv'.functor ⋙ κequiv'.inverse) : iso_whisker_left _ κequiv'.unit_iso
   ... ≅ (N ⋙ κequiv'.functor) ⋙ κequiv'.inverse : by refl
-  ... ≅ N₁ ⋙ κequiv'.inverse : iso_whisker_right (N'_equiv_karoubi_normalized A).symm _
+  ... ≅ N₁ ⋙ κequiv'.inverse : iso_whisker_right (N₁_iso_to_karoubi_normalized A).symm _
   ... ≅ idempotents.dold_kan.N : by refl,
 end
 
