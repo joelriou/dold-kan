@@ -13,7 +13,6 @@ import algebraic_topology.dold_kan.equivalence
 
 -/
 
-
 noncomputable theory
 
 open category_theory

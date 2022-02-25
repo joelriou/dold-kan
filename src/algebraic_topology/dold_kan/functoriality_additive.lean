@@ -14,25 +14,29 @@ open category_theory.idempotents
 open algebraic_topology
 
 universe v
-variables {C : Type*} [category.{v} C] [additive_category C]
-variables {D : Type*} [category.{v} D] [additive_category D]
-variables (F : C ⥤ D) [functor.additive F]
 
 open algebraic_topology.dold_kan
 
 namespace category_theory
 
+namespace simplicial_object
+
+@[simps]
+def karoubi_whiskering (C D : Type*) [category.{v} C] [category.{v} D] :=
+simplicial_object.whiskering C D ⋙ functor_extension'' _ _
+
+end simplicial_object
+
 namespace preadditive
 
 namespace dold_kan
 
-@[simps]
-def functor_karoubi_simplicial_object :=
-(simplicial_object.whiskering C D) ⋙ (functor_extension'' _ _)
+variables {C : Type*} [category.{v} C] [additive_category C]
+variables {D : Type*} [category.{v} D] [additive_category D]
+variables (F : C ⥤ D) [functor.additive F]
 
-lemma functoriality_N₁ : (simplicial_object.whiskering C D).obj F ⋙
-  algebraic_topology.dold_kan.N₁ =
-  algebraic_topology.dold_kan.N₁ ⋙ F.map_karoubi_homological_complex _ :=
+lemma functoriality_N₁ : (simplicial_object.whiskering C D).obj F ⋙ N₁ =
+  N₁ ⋙ F.map_karoubi_homological_complex _ :=
 begin
   apply functor.ext,
   { intros X Y f,
@@ -40,10 +44,10 @@ begin
     simp only [karoubi.comp, homological_complex.comp_f, karoubi.eq_to_hom_f,
       homological_complex.eq_to_hom_f, eq_to_hom_refl, comp_id],
     dsimp,
-    simp only [dold_kan.map_P_infty_degreewise, ← F.map_comp],
+    simp only [map_P_infty_degreewise, ← F.map_comp],
     congr' 1,
-    rw [assoc, dold_kan.P_infty_degreewise_naturality],
-    simp only [← assoc, dold_kan.P_infty_degreewise_is_a_projector], },
+    rw [assoc, P_infty_degreewise_naturality],
+    simp only [← assoc, P_infty_degreewise_is_a_projector], },
   { intro X,
     ext n,
     dsimp,
@@ -54,22 +58,21 @@ begin
     simpa only [← h], }
 end
 
-lemma functoriality_N : functor_karoubi_simplicial_object.obj F ⋙ dold_kan.equivalence.functor =
+lemma functoriality_N :
+  (simplicial_object.karoubi_whiskering _ _).obj F ⋙ dold_kan.equivalence.functor =
   dold_kan.equivalence.functor ⋙ F.map_karoubi_homological_complex _ :=
 begin
   dsimp [functor.map_karoubi_homological_complex,
-    functor_karoubi_simplicial_object],
+    simplicial_object.karoubi_whiskering],
   simp only [functor_extension'', functor.comp_obj, N, N₂],
-  erw ← functor_extension'_comp (simplicial_object C) (chain_complex C ℕ) (chain_complex D ℕ)
-    algebraic_topology.dold_kan.N₁ (F.map_homological_complex (complex_shape.down ℕ) ⋙ to_karoubi _),
-  erw ← functor_extension'_comp (simplicial_object C) (simplicial_object D) (chain_complex D ℕ)
+  erw ← functor_extension'_comp _ _ _ N₁ (F.map_homological_complex _ ⋙ to_karoubi _),
+  erw ← functor_extension'_comp _ _ _
     ((simplicial_object.whiskering C D).obj F ⋙ to_karoubi _) N₁,
   congr' 1,
-  rw functor.assoc,
   have h := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _)
     (N₁ : simplicial_object D ⥤ _),
   simp only [functor.comp_obj, whiskering_left, functor.id] at h,
-  erw h,
+  erw [functor.assoc, h],
   apply functoriality_N₁,
 end
 
