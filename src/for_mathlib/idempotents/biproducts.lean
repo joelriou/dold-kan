@@ -31,11 +31,11 @@ namespace biproducts
 @[simps]
 def bicone : limits.bicone F :=
 { X :=
-  { X := (biproduct.bicone (λ j, (F j).X)).X,
+  { X := biproduct (λ j, (F j).X),
     p := biproduct.map (λ j, (F j).p),
     idempotence := begin
       ext j,
-      simp only [limits.biproduct.ι_map_assoc, limits.biproduct.ι_map],
+      simp only [biproduct.ι_map_assoc, biproduct.ι_map],
       slice_lhs 1 2 { rw (F j).idempotence, },
     end, },
   π := λ j,
