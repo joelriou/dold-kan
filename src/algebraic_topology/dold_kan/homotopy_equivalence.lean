@@ -5,7 +5,6 @@ Author: Joël Riou
 -/
 
 import algebraic_topology.dold_kan.normalized
-import algebraic_topology.dold_kan.n_reflects_iso -- change this...
 
 open category_theory
 open category_theory.category
@@ -26,7 +25,7 @@ namespace dold_kan
 universe v
 
 variables {C : Type*} [category.{v} C] [preadditive C]
-variables {X : simplicial_object C}
+variables (X : simplicial_object C)
 
 /-- inductive construction of homotopies from `P q` to `𝟙` -/
 noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
@@ -42,16 +41,17 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
   end
 
 def Q_is_homotopic_to_zero (q : ℕ) : homotopy (Q q : K[X] ⟶ _) 0 :=
-homotopy.equiv_sub_zero.to_fun (P_is_homotopic_to_id q).symm
+homotopy.equiv_sub_zero.to_fun (P_is_homotopic_to_id X q).symm
 
 lemma homotopies_P_id_are_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
-  (((P_is_homotopic_to_id (q+1)).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩) : X _[n] ⟶ X _[n+1]) =
-  (P_is_homotopic_to_id q).hom ⟨⟨n,n+1⟩,cs_down_succ n⟩ :=
+  ((P_is_homotopic_to_id X (q+1)).hom n (n+1) : X _[n] ⟶ X _[n+1]) =
+  (P_is_homotopic_to_id X q).hom n (n+1) :=
 begin
   unfold P_is_homotopic_to_id,
-  simp only [homotopy.trans, homotopy.of_eq, homotopy.comp_left, homotopy.add,
-    zero_add, homotopy.comp_prehomotopy, pi.add_apply,
-    add_zero, add_right_eq_self, homotopy_Hσ_to_zero, homotopy.null_homotopy],
+  simp only [homotopy_Hσ_to_zero, complex_shape.down_rel, eq_self_iff_true,
+    homotopy.trans_hom, pi.add_apply, homotopy.of_eq_hom, pi.zero_apply,
+    homotopy.add_hom, homotopy.comp_left_hom, homotopy.null_homotopy'_hom,
+    dif_pos, add_zero, zero_add, add_right_eq_self],
   erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero],
 end
 
@@ -62,25 +62,35 @@ variable (X)
 @[simps]
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : K[X] ⟶ _) (𝟙 _) :=
-{ hom := λ ij, (P_is_homotopic_to_id (ij.val.1+2)).hom ij,
-  comm := begin
-    ext n,
+{ hom := λ i j, (P_is_homotopic_to_id X (j+1)).hom i j,
+  zero' := λ i j hij, homotopy.zero _ i j hij,
+  comm := λ n, begin
     cases n,
-    { have h : ((_ : X _[0] ⟶ _) = _) := (P_is_homotopic_to_id 2).comm_ext 0,
-      simp only [P_infty_degreewise, homological_complex.add_f_apply,
-        homological_complex.id_f] at h ⊢,
-      erw homotopy.null_homotopic_map_f_of_not_rel_left
-        (cs_down_succ 0) cs_down_0_not_rel_left at h ⊢,
-      simpa only [P_deg0_eq] using h, },
-    { have h : ((_ : X _[n+1] ⟶ _) = _) :=
-        (P_is_homotopic_to_id (n+2)).comm_ext (n+1),
-      simp only [P_infty_degreewise, homological_complex.add_f_apply],
-      erw homotopy.null_homotopic_map_f (cs_down_succ (n+1)) (cs_down_succ n) at h ⊢,
-      rw homotopies_P_id_are_eventually_constant (lt_add_one (n+1)),
-      rwa ← P_is_eventually_constant (rfl.ge : n+1 ≤ n+1), },
+    { have h := (P_is_homotopic_to_id X 2).comm 0,
+      simp only [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,
+        zero_add, homological_complex.id_f, P_infty_degreewise, P_deg0_eq] at h ⊢,
+      erw ← h, },
+    { have h := (P_is_homotopic_to_id X (n+2)).comm (n+1),
+      simp only [homotopy.d_next_succ_chain_complex, homotopy.prev_d_chain_complex,
+        homological_complex.id_f, P_infty_degreewise] at h ⊢,
+      erw [homotopies_P_id_are_eventually_constant X (lt_add_one (n+1)), ← h],
+      rw ← P_is_eventually_constant (rfl.ge : n+1 ≤ n+1), },
   end }
 
+/-- the inclusion of the Moore complex in the alternating face map complex
+is an homotopy equivalence -/
+@[simps]
+def homotopy_equiv_inclusion_of_Moore_complex {A : Type*} [category A] [abelian A]
+  {Y : simplicial_object A}:
+  homotopy_equiv ((normalized_Moore_complex A).obj Y)
+    ((alternating_face_map_complex A).obj Y) :=
+{ hom := inclusion_of_Moore_complex_map Y,
+  inv := P_infty_into_Moore_subcomplex Y,
+  homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
+  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
+      (P_infty_is_homotopic_to_id Y), }
 
+/- Unnecessary
 @[simps]
 def inclusion_N₂ : (N₂ : karoubi (simplicial_object C) ⥤ _ ) ⟶
   (functor_extension'' _ _).obj (alternating_face_map_complex C) :=
@@ -219,20 +229,7 @@ homotopy_equiv (τ'.obj (N₂.obj P))
     convert homotopy.comp (homotopy.refl (eq_to_hom eq))
       (homotopy.comp (P_infty_is_homotopic_to_id _) (homotopy.refl (eq_to_hom eq.symm))),
     simpa only [id_comp, eq_to_hom_trans, eq_to_hom_refl],
-  end }
-
-/-- the inclusion of the Moore complex in the alternating face map complex
-is an homotopy equivalence -/
-@[simps]
-def homotopy_equiv_inclusion_of_Moore_complex {A : Type*} [category A] [abelian A]
-  {Y : simplicial_object A}:
-  homotopy_equiv ((normalized_Moore_complex A).obj Y)
-    ((alternating_face_map_complex A).obj Y) :=
-{ hom := inclusion_of_Moore_complex_map Y,
-  inv := P_infty_into_Moore_subcomplex Y,
-  homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
-  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
-      (P_infty_is_homotopic_to_id Y), }
+  end }-/
 
 end dold_kan
 

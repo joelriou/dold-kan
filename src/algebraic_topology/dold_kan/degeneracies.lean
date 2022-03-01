@@ -119,7 +119,8 @@ begin
         simp only [fin.coe_zero, fin.coe_one, preadditive.add_comp, pow_one,
           preadditive.comp_add, one_zsmul, neg_smul, preadditive.neg_comp, pow_zero,
           preadditive.comp_neg, neg_sq, one_pow, fin.succ_one_eq_two, fin.coe_two,
-          fin.succ_zero_eq_one, neg_add_rev, neg_neg, ← add_assoc],
+          fin.succ_zero_eq_one, neg_add_rev, neg_neg, ← add_assoc,
+          eq_self_iff_true, if_true],
         have simplif : ∀ (a b c d e f : X _[0] ⟶ X _[1]), a = b → a = c → a = d → a =e → a = f
           → a + b + (-c) + (-d) + e  + (-f) = 0,
         { intros a b c d e f hb hc hd he hf,

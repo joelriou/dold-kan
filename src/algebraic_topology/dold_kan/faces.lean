@@ -85,7 +85,7 @@ lemma Hσφ_eq_neg_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1
 begin
   have hnaq_shift : Π d : ℕ, n+d=(a+d)+q,
   { intro d, rw [add_assoc, add_comm d, ← add_assoc, hnaq], },
-  rw [Hσ, homotopy.null_homotopic_map_f (cs_down_succ (n+1)) (cs_down_succ n),
+  rw [Hσ, homotopy.null_homotopic_map'_f (cs_down_succ (n+1)) (cs_down_succ n),
     hσ'_eq hnaq (cs_down_succ n), hσ'_eq (hnaq_shift 1) (cs_down_succ (n+1))],
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, eq_to_hom_refl, comp_id,
@@ -161,8 +161,8 @@ by simpa only [fin.eq_iff_veq]
 lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
 begin
-  simp only [Hσ, homotopy.null_homotopic_map_f (c_mk (n+2) (n+1) rfl) (c_mk (n+1) n rfl),
-    hσ'_eq_zero hqn (cs_down_succ n), comp_zero, zero_add],
+  simp only [Hσ, homotopy.null_homotopic_map'_f (c_mk (n+2) (n+1) rfl) (c_mk (n+1) n rfl)],
+  erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero, zero_add],
   by_cases hqn' : n+1<q,
   { rw [hσ'_eq_zero hqn' (c_mk (n+2) (n+1) rfl), zero_comp, comp_zero], },
   { simp only [hσ'_eq (show n+1=0+q, by linarith) (c_mk (n+2) (n+1) rfl),
