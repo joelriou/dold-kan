@@ -50,7 +50,7 @@ begin
 end
 
 /-- the sequence of maps that provide the null homotopic map that is used in
-the inductive construction of projectors `P q` -/
+the inductive construction of projections `P q` -/
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
 if n<q
   then 0

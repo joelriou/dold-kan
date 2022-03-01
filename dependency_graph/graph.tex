@@ -15,7 +15,7 @@
 
 Colours :
 \begin{itemize}
-\item \emph{red} : code need tidying, doc missing
+\item \emph{red} : code needs tidying, doc missing
 \item \emph{orange} : code ok, doc missing
 \item \emph{green} : almost PR ready, doc ready, passes \#lint
 \end{itemize}
@@ -25,7 +25,7 @@ Colours :
 \node[green](notations) at (0,0) {notations.lean};
 \node[red](homotopies) at (0,-2) {homotopies.lean};
 \node[red](faces) at (0,-4) {faces.lean};
-\node[red](projectors) at (0,-6) {projectors.lean};
+\node[red](projections) at (0,-6) {projections.lean};
 \node[red](pinfty) at (0,-8) {p\_infty.lean};
 \node[red](functorgamma) at (-6,-8) {functor\_gamma.lean};
 \node[red](decomposition) at (-2,-10) {decomposition.lean};
@@ -55,8 +55,8 @@ Colours :
 \path (functorn) edge (nreflectsiso);
 \path (degeneracies) edge [bend right] (gammacompn);
 \path (homotopies) edge (faces);
-\path (faces) edge (projectors);
-\path (projectors) edge (pinfty);
+\path (faces) edge (projections);
+\path (projections) edge (pinfty);
 \path (pinfty) edge (decomposition);
 \path (pinfty) edge (functorn);
 \path (functorn) edge (normalized);

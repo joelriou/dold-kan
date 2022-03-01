@@ -26,7 +26,7 @@ universe v
 variables {C : Type*} [category.{v} C] [preadditive C]
 variables {X : simplicial_object C}
 
-/-- This is the inductive definition of the projectors `P q`, with `P 0 := Id` and
+/-- This is the inductive definition of the projections `P q`, with `P 0 := Id` and
 `P (q+1) := P q ≫ (𝟙 _ + Hσ q)`.
 
 By our construction, we can take for granted that these are morphisms of chain
