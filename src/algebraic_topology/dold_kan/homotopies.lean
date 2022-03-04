@@ -38,8 +38,6 @@ def c := complex_shape.down ℕ
 
 def c_mk (i j : ℕ) (h : j+1 = i) : (complex_shape.down ℕ).rel i j := h
 
-lemma cs_down_succ (j : ℕ) : c.rel (j+1) j := by { dsimp, refl, }
-
 lemma cs_down_0_not_rel_left (j : ℕ) : ¬c.rel 0 j :=
 begin
   intro hj,
@@ -92,17 +90,17 @@ variable {X}
 lemma Hσ_eq_zero (q : ℕ) : (Hσ q : K[X] ⟶ K[X]).f 0 = 0  :=
 begin
   unfold Hσ,
-  rw null_homotopic_map'_f_of_not_rel_left (cs_down_succ 0) cs_down_0_not_rel_left,
+  rw null_homotopic_map'_f_of_not_rel_left (c_mk 1 0 rfl) cs_down_0_not_rel_left,
   cases q,
-  { rw hσ'_eq (show 0=0+0, by refl) (cs_down_succ 0),
-    simp only [hσ'_eq (show 0=0+0, by refl) (cs_down_succ 0),
+  { erw hσ'_eq (show 0=0+0, by refl) (c_mk 1 0 rfl),
+    simp only [hσ'_eq (show 0=0+0, by refl) (c_mk 1 0 rfl),
       pow_zero, fin.mk_zero, one_zsmul, eq_to_hom_refl, category.comp_id],
     erw chain_complex.of_d,
     simp only [alternating_face_map_complex.obj_d, fin.sum_univ_two,
       fin.coe_zero, pow_zero, one_zsmul, fin.coe_one, pow_one, comp_add,
       neg_smul, one_zsmul, comp_neg, add_neg_eq_zero],
     erw [δ_comp_σ_self, δ_comp_σ_succ], },
-  { rw [hσ'_eq_zero (nat.succ_pos q) (cs_down_succ 0), zero_comp], },
+  { erw [hσ'_eq_zero (nat.succ_pos q) (c_mk 1 0 rfl), zero_comp], },
 end
 
 lemma hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :

@@ -52,7 +52,7 @@ begin
     homotopy.trans_hom, pi.add_apply, homotopy.of_eq_hom, pi.zero_apply,
     homotopy.add_hom, homotopy.comp_left_hom, homotopy.null_homotopy'_hom,
     dif_pos, add_zero, zero_add, add_right_eq_self],
-  erw [hσ'_eq_zero hqn (cs_down_succ n), comp_zero],
+  erw [hσ'_eq_zero hqn (c_mk (n+1) n rfl), comp_zero],
 end
 
 variable (X)

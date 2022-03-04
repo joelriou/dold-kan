@@ -107,7 +107,7 @@ begin
         rw [show q = 0, by linarith],
         unfold P,
         simp only [id_comp, homological_complex.add_f_apply, preadditive.comp_add, homological_complex.id_f],
-        erw [comp_id, Hσ, homotopy.null_homotopic_map_f (cs_down_succ 1) (cs_down_succ 0)],
+        erw [comp_id, Hσ, homotopy.null_homotopic_map_f (c_mk 2 1 rfl) (c_mk 1 0 rfl)],
         unfold hσ' hσ,
         simp only [tsub_zero, nat.not_lt_zero, zero_tsub, pow_one, preadditive.comp_add, one_zsmul,
           if_false, eq_to_hom_refl, neg_smul, preadditive.neg_comp, comp_id, pow_zero, preadditive.comp_neg],
