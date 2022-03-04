@@ -7,7 +7,7 @@ Authors: Joël Riou
 import for_mathlib.idempotents.functor_extension
 import category_theory.natural_isomorphism
 
-import category_theory.fully_faithful
+import category_theory.functor.fully_faithful
 
 open category_theory.category
 open category_theory.idempotents
@@ -58,7 +58,7 @@ begin
   simp only [assoc],
   congr,
   ext,
-  simp only [decomp_id_p_f, comp, to_karoubi_map_f, P.idempotence],
+  simp only [decomp_id_p_f, comp, to_karoubi_map_f, P.idem],
 end
 
 lemma whiskering_left_to_karoubi_hom_inv_fun_id

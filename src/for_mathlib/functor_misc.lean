@@ -1,4 +1,4 @@
-import category_theory.functor_category
+import category_theory.functor.category
 import category_theory.eq_to_hom
 
 open category_theory

@@ -203,7 +203,7 @@ begin
   have eq₂ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n :=
     P_infty_degreewise_is_a_projector n,
   have eq₃ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
-  { simpa only [nat_trans.comp_app] using congr_app P.idempotence (op [n]), },
+  { simpa only [nat_trans.comp_app] using congr_app P.idem (op [n]), },
   slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
   repeat
   { slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },

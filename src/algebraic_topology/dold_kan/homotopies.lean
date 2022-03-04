@@ -6,7 +6,6 @@ Author: Joël Riou
 
 --import for_mathlib.homotopy
 import algebra.homology.homotopy
-import for_mathlib.homotopy_var
 import for_mathlib.functor_misc
 import algebraic_topology.dold_kan.notations
 

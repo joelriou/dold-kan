@@ -150,7 +150,7 @@ begin
         karoubi_chain_complex_equivalence_functor_obj_d_f,
         karoubi_chain_complex_equivalence_functor_obj_X_p, comp_id, assoc],
       have h := karoubi.hom_ext.mp (homological_complex.congr_hom (N₁.obj
-        ((karoubi_functor_category_embedding _ _).obj P)).idempotence j),
+        ((karoubi_functor_category_embedding _ _).obj P)).idem j),
       simp only [homological_complex.comp_f, karoubi.comp] at h,
       conv { to_lhs, congr, skip, erw h, },
       dsimp only [N₁],
@@ -159,7 +159,7 @@ begin
       subst h,
       erw karoubi_alternating_face_map_complex_d P j,
       repeat { erw karoubi_P_infty_f, },
-      have eq := congr_app P.idempotence (op [j]),
+      have eq := congr_app P.idem (op [j]),
       simp only [nat_trans.comp_app] at eq,
       slice_lhs 3 4 { rw eq, },
       slice_lhs 3 4 { rw P_infty_degreewise_naturality, },

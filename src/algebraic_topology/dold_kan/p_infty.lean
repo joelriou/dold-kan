@@ -119,14 +119,14 @@ begin
   dsimp [τ, τ₁, τ₂, nat_trans_P_infty_degreewise] at h₁₄,
   erw [id_comp, id_comp, comp_id, comp_id] at h₁₄,
   erw [h₁₄, ← h₃₂, ← h₄₃],
-  simp only [karoubi_functor_category.map_app_f, karoubi.decomp_id_p_f,
+  simp only [karoubi_functor_category_embedding.map_app_f, karoubi.decomp_id_p_f,
     karoubi.decomp_id_i_f, karoubi.comp],
   let π : Y₄ ⟶ Y₄ := (to_karoubi _ ⋙ karoubi_functor_category_embedding _ _).map Y.p,
   have eq := karoubi.hom_ext.mp (P_infty_degreewise_naturality n π),
   simp only [karoubi.comp] at eq,
   erw [← eq, ← assoc],
   congr,
-  simpa only [nat_trans.comp_app] using congr_app Y.idempotence (op [n]),
+  simpa only [nat_trans.comp_app] using congr_app Y.idem (op [n]),
 end
 
 end dold_kan
