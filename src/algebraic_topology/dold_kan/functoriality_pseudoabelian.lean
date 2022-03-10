@@ -9,7 +9,7 @@ import algebraic_topology.dold_kan.equivalence_pseudoabelian
 
 /-!
 
-# Functoriality of the Dold-Kan correspondance for pseudoabelian categories
+# Functoriality of the Dold-Kan correspondence for pseudoabelian categories
 
 -/
 

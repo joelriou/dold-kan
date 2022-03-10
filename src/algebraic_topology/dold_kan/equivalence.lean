@@ -11,7 +11,7 @@ import algebraic_topology.dold_kan.normalized
 
 # The Dold-Kan correspondence
 
-The Dold-Kan correspondance states that for any abelian category `A`, there is
+The Dold-Kan correspondence states that for any abelian category `A`, there is
 an equivalence between the category of simplicial objects in `A` and the
 category of chain complexes in `A` (with degrees indexed by `ℕ` and the
 homological convention that the degree is decreased by the differentials).

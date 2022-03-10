@@ -4,12 +4,61 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Joël Riou
 -/
 
---import for_mathlib.homotopy
 import algebra.homology.homotopy
 import for_mathlib.functor_misc
 import algebraic_topology.dold_kan.notations
 
-/- TODO doc : provide some details about the operators `P q` -/
+/-!
+
+# Construction of homotopies for the Dold-Kan correspondance
+
+(The general strategy of proof of the Dold-Kan correspondance is explained
+in `equivalence.lean`.)
+
+The purpose of the files `homotopies.lean`, `faces.lean`, `projections.lean`
+and `p_infty.lean` is to construct an idempotent endomorphism
+`P_infty : K[X] ⟶ K[X]` of the alternating face map complex
+for each `X : simplicial_object C` when `C` is a preadditive category.
+In the case `C` is abelian, this `P_infty` shall be the projection on the
+normalized Moore subcomplex of `K[X]` associated to the decomposition of the
+complex `K[X]` as a direct sum of this normalized subcomplex and of the
+degenerate subcomplex.
+
+In `p_infty.lean`, this endomorphism `P_infty` shall be obtained by
+passing to the limit idempotent endomorphisms `P q` for all `(q : ℕ)`.
+These endomorphisms `P q` are defined by induction. The idea is to
+start from the identity endomorphism `P 0` of `K[X]` and to ensure by
+induction that the `q` higher face maps (except $d_0$) vanish on the
+image of `P q`. Then, in a certain degree `n`, the image of `P q` for
+a big enough `q` will be contained in the normalized subcomplex. This
+construction is done in `projections.lean`.
+
+It would be easy to define the `P q` degreewise (similarly as it is done
+in *Simplicial Homotopy Theory* by Goerrs-Jardine p. 149), but then we would
+have to prove that they are compatible with the differential (i.e. they
+are chain complex maps), and also that they are homotopic to the identity.
+These two verifications are quite technical. In order to reduce the number
+of such technical lemmas, the strategy that is followed here is to define
+a series of null homotopic maps `Hσ q` (attached to families of maps `hσ`)
+and use these in order to construct `P q` : the endomorphisms `P q`
+shall basically be obtained by altering the identity endomorphism by adding
+null homotopic maps, so that we get for free that they are morphisms
+of chain complexes and that they are homotopic to the identity. The most
+technical verifications that are needed about the null homotopic maps `Hσ`
+are obtained in `faces.lean`.
+
+In this file `homotopies.lean`, we define the null homotopic maps
+`Hσ q : K[X] ⟶ K[X]`, show that they are natural (see `nat_trans_Hσ`) and
+compatible the application of additive functors (see `map_Hσ`).
+
+## References
+* Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
+Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
+* Paul G. Goerss, John F. Jardine, Simplical Homotopy Theory, Modern Birkhäuser Classics,
+Reprint of the 1999 edition.
+
+-/
+
 
 open category_theory
 open category_theory.category
@@ -31,13 +80,15 @@ universe v
 variables {C : Type*} [category.{v} C] [preadditive C]
 variables {X : simplicial_object C}
 
-/-- As we are using chain complexes indexed by ℕ, we shall need the relation
+/-- As we are using chain complexes indexed by `ℕ`, we shall need the relation
 `c` such `c m n` if and only if `m=n+1`. -/
-@[simp]
-def c := complex_shape.down ℕ
+abbreviation c := complex_shape.down ℕ
 
-def c_mk (i j : ℕ) (h : j+1 = i) : (complex_shape.down ℕ).rel i j := h
+/-- Helper when we need some `c.rel i j` (i.e. `complex_shape.down ℕ`) is needed,
+e.g. `c_mk n (n+1) rfl` -/
+lemma c_mk (i j : ℕ) (h : j+1 = i) : c.rel i j := h
 
+/-- This lemma is meant to be used with `null_homotopic_map'_f_of_not_rel_left` -/
 lemma cs_down_0_not_rel_left (j : ℕ) : ¬c.rel 0 j :=
 begin
   intro hj,
@@ -46,25 +97,20 @@ begin
   rw [nat.succ_eq_add_one, hj],
 end
 
-/-- the sequence of maps that provide the null homotopic map that is used in
-the inductive construction of projections `P q` -/
+/-- the sequence of maps that provide the null homotopic map that are used in
+the inductive construction of the projections `P q : K[X] ⟶ K[X]` -/
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
 if n<q
   then 0
   else (-1 : ℤ)^(n-q) • X.σ ⟨n-q, nat.sub_lt_succ n q⟩
 
-/-- We can turn `hσ` into a `prehomotopy`. However, this requires using
-`eq_to_hom`. -/
+/-- We can turn `hσ` into a datum that can be passed to `null_homotopic_map'`. -/
 def hσ' (q : ℕ) : Π i j, c.rel j i → (K[X].X i ⟶ K[X].X j) :=
 λ i j hij, (hσ q i) ≫ eq_to_hom (by congr')
 
 lemma hσ'_eq_zero {q n m : ℕ} (hnq : n<q) (hnm : c.rel m n) :
   (hσ' q n m hnm : X _[n] ⟶ X _[m])= 0 :=
-begin
-  simp only [hσ', hσ],
-  split_ifs,
-  exact zero_comp,
-end
+by { simp only [hσ', hσ], split_ifs, exact zero_comp, }
 
 lemma hσ'_eq {q n a m : ℕ} (ha : n=a+q) (hnm : c.rel m n) :
   (hσ' q n m hnm : X _[n] ⟶ X _[m]) =
@@ -74,19 +120,19 @@ begin
   simp only [hσ', hσ],
   split_ifs,
   { exfalso, linarith, },
-  { congr; exact tsub_eq_of_eq_add ha, }
+  { have h' := tsub_eq_of_eq_add ha,
+    congr', }
 end
 
 /-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
-def Hσ (q : ℕ) : K[X] ⟶ K[X] := homotopy.null_homotopic_map' (hσ' q)
-
-variable (X)
+def Hσ (q : ℕ) : K[X] ⟶ K[X] := null_homotopic_map' (hσ' q)
 
 /-- `Hσ` is null homotopic -/
 def homotopy_Hσ_to_zero (q : ℕ) : homotopy (Hσ q : K[X] ⟶ K[X]) 0 :=
-homotopy.null_homotopy' (hσ' q)
+null_homotopy' (hσ' q)
 
-variable {X}
+
+/-- In degree `0`, the null homotopic map `Hσ` is zero. -/
 lemma Hσ_eq_zero (q : ℕ) : (Hσ q : K[X] ⟶ K[X]).f 0 = 0  :=
 begin
   unfold Hσ,
@@ -103,11 +149,15 @@ begin
   { erw [hσ'_eq_zero (nat.succ_pos q) (c_mk 1 0 rfl), zero_comp], },
 end
 
-lemma hσ_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
-  (f.app (op [n]) ≫ hσ q n : X _[n] ⟶ Y _[n+1]) =
-  hσ q n ≫ f.app (op [n+1]) :=
+/-- The maps `hσ' q i j hij` are natural with respect to the simplicial object -/
+lemma hσ'_naturality (q : ℕ) (i j : ℕ) (hij : c.rel j i)
+  {X Y : simplicial_object C} (f : X ⟶ Y) :
+  f.app (op [i]) ≫ hσ' q i j hij = hσ' q i j hij ≫ f.app (op [j]) :=
 begin
-  by_cases hqn : n<q; unfold hσ; split_ifs,
+  have h : i+1 = j := hij,
+  subst h,
+  simp only [hσ', eq_to_hom_refl, comp_id],
+  by_cases hqn : i<q; unfold hσ; split_ifs,
   { simp only [zero_comp, comp_zero], },
   { simp only [zsmul_comp, comp_zsmul],
     congr' 1,
@@ -115,17 +165,7 @@ begin
     refl, },
 end
 
-lemma hσ'_naturality (q : ℕ) (i j : ℕ) (hij : c.rel j i)
-  {X Y : simplicial_object C} (f : X ⟶ Y) :
-  f.app (op [i]) ≫ hσ' q i j hij = hσ' q i j hij ≫ f.app (op [j]) :=
-begin
-  dsimp [c] at hij,
-  have h : i+1 = j := hij,
-  subst h,
-  simp only [hσ', hσ_naturality, eq_to_hom_refl, comp_id],
-end
-
-/-- For each q, Hσ q is a natural transformation. -/
+/-- For each q, `Hσ q` is a natural transformation. -/
 def nat_trans_Hσ (q : ℕ) :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
 { app := λ _, Hσ q,
@@ -138,6 +178,7 @@ def nat_trans_Hσ (q : ℕ) :
       chain_complex.of_hom_f, hσ'_naturality],
   end }
 
+/-- The maps `hσ' q i j hij` are compatible with the application of additive functors. -/
 lemma map_hσ' {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C)
   (q i j : ℕ) (hij : c.rel j i) :
@@ -150,6 +191,7 @@ begin
   { simpa only [eq_to_hom_map, functor.map_comp, functor.map_zsmul], },
 end
 
+/-- The null homotopic maps `Hσ` are comptible with the application of additive functors. -/
 lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
   (Hσ q : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
@@ -157,9 +199,8 @@ lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
 begin
   unfold Hσ,
   have eq := homological_complex.congr_hom (map_null_homotopic_map' G (hσ' q)) n,
-  dsimp [functor.map_homological_complex] at eq,
-  simp only [← map_hσ'] at eq,
-  erw eq,
+  simp only [functor.map_homological_complex_map_f, ← map_hσ'] at eq,
+  rw eq,
   let h := (congr_obj (map_alternating_face_map_complex G) X).symm,
   congr',
 end

@@ -34,7 +34,7 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
 | (q+1) :=
   begin
     have h := homotopy.add (P_is_homotopic_to_id q)
-      (homotopy.comp_left (homotopy_Hσ_to_zero X q) (P q)),
+      (homotopy.comp_left (homotopy_Hσ_to_zero q) (P q)),
     refine homotopy.trans (homotopy.of_eq _) (homotopy.trans h (homotopy.of_eq _)),
     { unfold P, simp only [comp_add, comp_id], },
     { simp only [add_zero, comp_zero], },
