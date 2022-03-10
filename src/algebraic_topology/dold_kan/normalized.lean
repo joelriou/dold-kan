@@ -25,15 +25,14 @@ variables {A : Type*} [category A] [abelian A]
 variables {X : simplicial_object A}
 
 lemma higher_faces_vanish_on_Moore_complex (n : ℕ) :
-  higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map X).f (n+1)) :=
-{ vanishing := λ j hj,
-  begin
-    simp only [inclusion_of_Moore_complex_map, chain_complex.of_hom],
-    erw ← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ
-      _ j (by simp only [finset.mem_univ])),
-    slice_lhs 2 3 { rw kernel_subobject_arrow_comp, },
-    rwa [comp_zero],
-  end }
+  higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map X).f (n+1)) := λ j hj,
+begin
+  simp only [inclusion_of_Moore_complex_map, chain_complex.of_hom],
+  erw ← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ
+    _ j (by simp only [finset.mem_univ])),
+  slice_lhs 2 3 { rw kernel_subobject_arrow_comp, },
+  rwa [comp_zero],
+end
 
 lemma P_infty_on_Moore_complex :
   inclusion_of_Moore_complex_map X ≫ P_infty = inclusion_of_Moore_complex_map X :=
@@ -55,7 +54,7 @@ begin
   { rw finset_inf_factors,
     intros i hi,
     apply kernel_subobject_factors,
-    exact (higher_faces_vanish_P (n+1) n).vanishing i (le_add_self), }
+    exact (higher_faces_vanish_P (n+1) n) i (le_add_self), }
 end
 
 /-- P_infty factors through the normalized_Moore_complex -/

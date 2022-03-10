@@ -24,12 +24,20 @@ namespace dold_kan
 variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
-structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
-(vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
+/-- We shall say that a morphism `φ : Y ⟶ X _[n+1]` satisfies `higher_faces_vanish q φ`
+when the compositions `φ ≫ X.δ j` are `0` for $j ≥ \max (1, n+2-q)$. When `q ≤ n+1`,
+it basically means that the composition `φ ≫ X.δ j` are `0` for the `q` highest
+possible values of a non zero `j`. Otherwise, when `q ≥ n+2`, all the compositions
+`φ ≫ X.δ j` for nonzero `j` vanish. -/
+def higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
+∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0
+
+--structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
+--(vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
 
 lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
-{ vanishing := λ j hj, v.vanishing j (by { rw ← add_assoc, exact le_add_right hj, }) }
+λ j hj, v j (by { rw ← add_assoc, exact le_add_right hj, })
 
 /-- the map `λ a, a+i` from `fin` q to `fin n`, when $n=a+q$ -/
 @[simp]
@@ -95,7 +103,7 @@ begin
   rw sum_trunc (hnaq_shift 2), swap,
   { rintro ⟨k, hk⟩,
     let i : fin (n+1) := ⟨a+k+1, by linarith⟩,
-    have eq := v.vanishing i (by { simp only [i, fin.coe_mk], linarith, }),
+    have eq := v i (by { simp only [i, fin.coe_mk], linarith, }),
     have hi : translate_fin (a+2) (hnaq_shift 2) ⟨k, hk⟩ = i.succ,
     { ext, simp only [translate_fin, fin.coe_mk, fin.succ_mk], linarith, },
     rw [hi, eq, zero_comp, zsmul_zero], },
@@ -112,7 +120,7 @@ begin
     conv at δσ_rel { to_lhs,
       simp only [fin.succ_mk, fin.succ_mk, show a+1+k+1+1 = a+3+k, by linarith], },
     simp only [δσ_rel, ← assoc, zero_comp, zsmul_zero,
-      v.vanishing i (by { simp only [i, fin.coe_mk], linarith, })], },
+      v i (by { simp only [i, fin.coe_mk], linarith, })], },
   /- leaving out three specific terms -/
   conv { to_lhs, congr, skip, rw [fin.sum_univ_cast_succ, fin.sum_univ_cast_succ ], },
   rw fin.sum_univ_cast_succ,
@@ -181,19 +189,19 @@ begin
       simp only [fin.cast_succ_zero, cast_succ] at δσ_rel,
       have h : translate_fin 2 (by rw add_comm 2) j = j.succ.succ,
       { ext, simp only [translate_fin, fin.coe_mk, fin.coe_succ, add_comm 2], },
-      simp only [comp_zsmul, h, δσ_rel, ← assoc, v.vanishing j (by linarith),
+      simp only [comp_zsmul, h, δσ_rel, ← assoc, v j (by linarith),
         zero_comp, zsmul_zero], }, },
 end
 
 lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
-{ vanishing := begin
+begin
     intros j hj₁,
     simp only [add_comp, comp_add, homological_complex.add_f_apply, homological_complex.id_f],
     erw comp_id,
     -- when n < q, the result follows immediately from the assumption
     by_cases hqn : n<q,
-    { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v.vanishing j (by linarith)], },
+    { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v j (by linarith)], },
     -- we now assume that n≥q, and write n=a+q
     cases nat.le.dest (not_lt.mp hqn) with a ha,
     rw [Hσφ_eq_neg_σδ (show n=a+q, by linarith) v,
@@ -228,7 +236,7 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
       have δδ_rel := δ_comp_δ X ineq2,
       simp only [fin.cast_succ_mk, fin.eta] at δδ_rel,
       slice_rhs 2 3 { erw [← δδ_rel], },
-      simp only [← assoc, v.vanishing j (by linarith), zero_comp], },
+      simp only [← assoc, v j (by linarith), zero_comp], },
     { -- in the last case, a=m, q=1 and j=a+1
       have ham'' : a=m := le_antisymm ham (not_lt.mp ham'),
       have hq : q=1,
@@ -238,8 +246,8 @@ lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
         simp only [fin.coe_mk, fin.coe_cast_succ],
         linarith, },
       slice_rhs 2 3 { rw [hj₄, δ_comp_δ_self], },
-      simp only [← assoc, v.vanishing j (by linarith), zero_comp], },
-  end, }
+      simp only [← assoc, v j (by linarith), zero_comp], },
+end
 
 end dold_kan
 

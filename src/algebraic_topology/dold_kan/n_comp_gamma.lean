@@ -12,10 +12,7 @@ noncomputable theory
 open category_theory
 open category_theory.category
 open category_theory.limits
---open category_theory.preadditive
 open category_theory.idempotents
---open category_theory.simplicial_object
---open homotopy
 open opposite
 open_locale simplicial dold_kan
 
@@ -79,7 +76,7 @@ begin
   rcases simplex_category.eq_comp_δ_of_not_surjective' i k hk₂ with ⟨θ, hθ⟩,
   haveI : mono θ := mono_of_mono_fac hθ.symm,
   erw [P_infty_degreewise, hθ, op_comp, X.map_comp, ← assoc, ← k.succ_pred hk₁,
-    (higher_faces_vanish_P (m+1) m).vanishing (k.pred hk₁) le_add_self, zero_comp],
+    higher_faces_vanish_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
 end
 
 lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
