@@ -73,7 +73,7 @@ begin
         { exact nat.lt.step hi, }, }, },
     { simp only [fin.coe_mk],
       have hnaq' : n = a+q := by linarith,
-      simpa only [Hσφ_eq_neg_σδ hnaq' (higher_faces_vanish_P q n), reverse_fin_eq ⟨q, hqn'⟩ hnaq', neg_neg], },
+      simpa only [Hσφ_eq_neg_σδφ hnaq' (higher_faces_vanish_P q n), reverse_fin_eq ⟨q, hqn'⟩ hnaq', neg_neg], },
     { simp only [finset.mem_filter, fin.coe_mk, lt_self_iff_false,
         and_false, not_false_iff], }, },
 end

@@ -75,7 +75,7 @@ lemma higher_faces_vanish_P : Π (q : ℕ),
 | 0     := λ n j hj₁, by { exfalso, have hj₂ := fin.is_lt j, linarith, }
 | (q+1) := λ n,begin
     unfold P,
-    exact higher_faces_vanish_ind (higher_faces_vanish_P q n),
+    exact higher_faces_vanish_induction (higher_faces_vanish_P q n),
   end
 
 lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
@@ -92,7 +92,7 @@ begin
     { exact Hσφ_eq_zero hqn (downgrade_vanishing v), },
     { cases nat.le.dest (not_lt.mp hqn) with a ha,
       have hnaq : n=a+q := by linarith,
-      simp only [Hσφ_eq_neg_σδ hnaq (downgrade_vanishing v), neg_eq_zero, ← assoc],
+      simp only [Hσφ_eq_neg_σδφ hnaq (downgrade_vanishing v), neg_eq_zero, ← assoc],
       have eq := v ⟨a, by linarith⟩ _, swap,
       { have foo := nat.succ_eq_add_one,
         simp only [hnaq, fin.coe_mk, nat.succ_eq_add_one, add_assoc], },

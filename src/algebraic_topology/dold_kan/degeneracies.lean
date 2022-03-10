@@ -147,7 +147,7 @@ begin
           rw [show (P q).f (n+1) ≫ X.σ i = φ, by refl],
           unfold P,
           erw [← assoc, P_is_identity_where_faces_vanish v, homological_complex.add_f_apply,
-            preadditive.comp_add, comp_id, Hσφ_eq_neg_σδ hi' v, add_neg_eq_zero],
+            preadditive.comp_add, comp_id, Hσφ_eq_neg_σδφ hi' v, add_neg_eq_zero],
           dsimp [φ],
           have eq : (⟨(i : ℕ)+1, _⟩ : fin(n+3)) = i.succ, rotate 2,
           { have h := fin.is_lt i,

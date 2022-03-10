@@ -27,13 +27,10 @@ variables {X : simplicial_object C}
 /-- We shall say that a morphism `φ : Y ⟶ X _[n+1]` satisfies `higher_faces_vanish q φ`
 when the compositions `φ ≫ X.δ j` are `0` for $j ≥ \max (1, n+2-q)$. When `q ≤ n+1`,
 it basically means that the composition `φ ≫ X.δ j` are `0` for the `q` highest
-possible values of a non zero `j`. Otherwise, when `q ≥ n+2`, all the compositions
+possible values of a nonzero `j`. Otherwise, when `q ≥ n+2`, all the compositions
 `φ ≫ X.δ j` for nonzero `j` vanish. -/
 def higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
 ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0
-
---structure higher_faces_vanish {Y : C} {n : ℕ} (q : ℕ) (φ : Y ⟶ X _[n+1]) : Prop :=
---(vanishing : ∀ (j : fin (n+1)), (n+1 ≤ (j : ℕ) + q) → φ ≫ X.δ j.succ = 0)
 
 lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
@@ -44,6 +41,7 @@ lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
 def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin q) : fin n :=
 ⟨a+(i:ℕ), (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))⟩
 
+/- For algebra.big_operators.basic -/
 @[to_additive]
 lemma prod_split {β : Type*} [comm_monoid β] {n a b : ℕ}
   (h : n=a+b) (f : fin(n) → β) :
@@ -74,6 +72,7 @@ begin
     rw [add_assoc, add_comm 1], }
 end
 
+/- For algebra.big_operators.basic -/
 @[to_additive]
 lemma prod_trunc {β : Type*} [comm_monoid β] {n a b : ℕ}
   (h : n=a+b) (f : fin(n) → β)
@@ -86,7 +85,7 @@ begin
   rw mul_one,
 end
 
-lemma Hσφ_eq_neg_σδ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
+lemma Hσφ_eq_neg_σδφ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) =
   - φ ≫ X.δ ⟨a+1, nat.succ_lt_succ (nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq)))⟩ ≫
   X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
@@ -193,7 +192,7 @@ begin
         zero_comp, zsmul_zero], }, },
 end
 
-lemma higher_faces_vanish_ind {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
+lemma higher_faces_vanish_induction {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish (q+1) (φ ≫ (𝟙 _ + Hσ q).f (n+1)) :=
 begin
     intros j hj₁,
@@ -204,7 +203,7 @@ begin
     { rw [Hσφ_eq_zero hqn v, zero_comp, add_zero, v j (by linarith)], },
     -- we now assume that n≥q, and write n=a+q
     cases nat.le.dest (not_lt.mp hqn) with a ha,
-    rw [Hσφ_eq_neg_σδ (show n=a+q, by linarith) v,
+    rw [Hσφ_eq_neg_σδφ (show n=a+q, by linarith) v,
       neg_comp, add_neg_eq_zero, assoc, assoc],
     cases n with m hm,
     -- the boundary case n=0
