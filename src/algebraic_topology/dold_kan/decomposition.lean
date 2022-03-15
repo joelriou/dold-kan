@@ -10,7 +10,6 @@ open category_theory
 open category_theory.category
 open category_theory.preadditive
 open opposite
---open category_theory.simplicial_object
 open_locale big_operators
 open_locale simplicial
 
