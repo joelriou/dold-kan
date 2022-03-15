@@ -8,6 +8,19 @@ import algebraic_topology.dold_kan.projections
 import for_mathlib.idempotents.functor_categories
 import for_mathlib.idempotents.functor_extension
 
+/-
+
+# Construction of the projection `P_infty` for the Dold-Kan correspondence
+
+In this file, we construct the projection `P_infty : K[X] ⟶ K[X]` by passing
+to the limit the projections `P q` defined in `projections.lean`. This
+projection is a critical tool in this formalisation of the Dold-Kan correspondence,
+because in the case of abelian categories, `P_infty` corresponds to the
+projection on the normalized Moore subcomplex, with kernel the degenerate subcomplex.
+(See `equivalence.lean` for the general strategy of proof.)
+
+-/
+
 open category_theory
 open category_theory.category
 open category_theory.limits
