@@ -8,6 +8,19 @@ import algebraic_topology.dold_kan.homotopies
 import algebra.big_operators.fin
 import data.nat.parity
 
+
+/-
+# Study of face maps for the Dold-Kan correspondance
+
+In this file, we obtain the technical lemmas that are used in the file
+`projections.lean` in order to obtain basic properties of the endomorphisms
+`P q : K[X] ⟶ K[X]` with respect to face maps (see `homotopies.lean` for the
+role of these endomorphisms in the overall strategy of proof).
+
+The main lemma in this file is `higher_faces_vanish_induction`. It is based
+on two technical lemmas `Hσφ_eq_neg_σδφ` and `Hσφ_eq_zero`.
+
+-/
 open nat
 open category_theory
 open category_theory.limits
