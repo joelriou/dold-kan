@@ -49,6 +49,12 @@ lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
 λ j hj, v j (by { rw ← add_assoc, exact le_add_right hj, })
 
+/- For data.fin.basic -/
+@[simp]
+lemma fin.cast_le_one {n m : ℕ} (h : n.succ.succ ≤ m.succ.succ) :
+  fin.cast_le h 1 = 1 :=
+by simpa only [fin.eq_iff_veq]
+
 /- For algebra.big_operators.basic -/
 @[to_additive]
 lemma fin.prod_eq_of_fin_cast {β : Type*} [comm_monoid β] {a b : ℕ} (f : fin b → β) (h : a = b) :
@@ -90,9 +96,7 @@ lemma fin.prod_trunc {β : Type*} [comm_monoid β] {n a b : ℕ}
   ∏ (i : fin (n)), f i =
   ∏ (i : fin (a)), f (fin.cast_le (nat.le.intro (h.symm)) i) :=
 begin
-  rw [← fin.prod_eq_of_fin_cast f h.symm, fin.prod_split],
-  conv { to_lhs, congr, skip, rw fintype.prod_eq_one _ hf, },
-  rw mul_one,
+  rw [← fin.prod_eq_of_fin_cast f h.symm, fin.prod_split, fintype.prod_eq_one _ hf, mul_one],
   congr,
 end
 
@@ -107,7 +111,7 @@ begin
     hσ'_eq hnaq (c_mk (n+1) n rfl), hσ'_eq (hnaq_shift 1) (c_mk (n+2) (n+1) rfl)],
   repeat { erw chain_complex.of_d, },
   simp only [alternating_face_map_complex.obj_d, eq_to_hom_refl, comp_id,
-    comp_sum, sum_comp, comp_id, comp_add],
+    comp_sum, sum_comp, comp_add],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
   /- cleaning up the first sum -/
   rw fin.sum_trunc (hnaq_shift 2), swap,
@@ -121,41 +125,40 @@ begin
   rw fin.sum_trunc (hnaq_shift 3), swap,
   { rintros ⟨k, hk⟩,
     simp only [fin.nat_add_mk, fin.cast_mk, assoc],
-    let i : fin (n+1) := ⟨a+1+(k : ℕ), by linarith⟩,
-    have h : fin.cast_succ (⟨a+1, by linarith⟩ : fin(n+1)) < i.succ,
+    let i : fin (n+1) := ⟨a+1+k, by linarith⟩,
+    have h : fin.cast_succ (⟨a+1, by linarith⟩ : fin (n+1)) < i.succ,
     { simp only [fin.lt_iff_coe_lt_coe, fin.cast_succ_mk, fin.coe_mk, fin.succ_mk],
       linarith, },
     have δσ_rel := δ_comp_σ_of_gt X h,
     simp only [fin.cast_succ_mk] at δσ_rel,
-    conv at δσ_rel { to_lhs,
-      simp only [fin.succ_mk, fin.succ_mk, show a+1+k+1+1 = a+3+k, by linarith], },
-    simp only [δσ_rel, ← assoc, zero_comp, zsmul_zero,
-      v i (by { simp only [i, fin.coe_mk], linarith, })], },
+    conv_lhs at δσ_rel
+    { simp only [fin.succ_mk, fin.succ_mk, show a+1+k+1+1 = a+3+k, by linarith], },
+    have eq := v i (by { simp only [i, fin.coe_mk], linarith, }),
+    simp only [δσ_rel, ← assoc, zero_comp, zsmul_zero, eq], },
   /- leaving out three specific terms -/
-  conv { to_lhs, congr, skip, rw [fin.sum_univ_cast_succ, fin.sum_univ_cast_succ ], },
+  conv_lhs { congr, skip, rw [fin.sum_univ_cast_succ, fin.sum_univ_cast_succ], },
   rw fin.sum_univ_cast_succ,
   /- the purpose of the following `simplif` is to create three subgoals in order
     to finish the proof -/
-  have simplif : ∀ (a b c d e f : Y ⟶ X _[n+1]), b=f → d+e=0 → c+a=0 → a+b+(c+d+e) =f,
+  have simplif : ∀ (a b c d e f : Y ⟶ X _[n+1]), b=f → d+e=0 → c+a=0 → a+b+(c+d+e) = f,
   { intros a b c d e f h1 h2 h3,
     rw [add_assoc c d e, h2, add_zero, add_comm a b, add_assoc,
       add_comm a c, h3, add_zero, h1], },
   apply simplif,
   { /- b=f -/
-    have eq : (-1 : ℤ)^(a+1) * (-1 : ℤ)^a = -1 := begin
-      rw ← pow_add,
+    have eq : (-1 : ℤ)^(a+1) * (-1 : ℤ)^a = -1,
+    { rw ← pow_add,
       apply neg_one_pow_of_odd,
       use a,
-      linarith,
-    end,
+      linarith, },
     simp only [eq, fin.last, fin.cast_le_mk, fin.coe_mk, neg_smul, one_zsmul], },
   { /- d+e = 0 -/
-    let b : fin(n+2) := ⟨a+1, nat.succ_lt_succ $ nat.lt_succ_iff.mpr $
+    let b : fin (n+2) := ⟨a+1, nat.succ_lt_succ $ nat.lt_succ_iff.mpr $
       nat.le.intro (eq.symm hnaq)⟩,
-    have eq1 : X.σ b ≫ X.δ (fin.cast_succ b) = 𝟙 _ := by rw δ_comp_σ_self,
-    have eq2 : X.σ b ≫ X.δ b.succ = 𝟙 _ := by rw δ_comp_σ_succ,
-    simp only [b, fin.cast_succ_mk, fin.succ_mk] at eq1 eq2,
-    simp only [eq1, eq2, fin.last, assoc, fin.cast_succ_mk, fin.cast_le_mk, fin.coe_mk,
+    have eq₁ : X.σ b ≫ X.δ (fin.cast_succ b) = 𝟙 _ := δ_comp_σ_self _,
+    have eq₂ : X.σ b ≫ X.δ b.succ = 𝟙 _ := δ_comp_σ_succ _,
+    simp only [b, fin.cast_succ_mk, fin.succ_mk] at eq₁ eq₂,
+    simp only [eq₁, eq₂, fin.last, assoc, fin.cast_succ_mk, fin.cast_le_mk, fin.coe_mk,
       comp_id, add_eq_zero_iff_eq_neg, ← neg_zsmul],
     congr,
     ring_exp,
@@ -171,10 +174,6 @@ begin
     congr,
     ring_exp, },
 end
-
-@[simp] lemma fin.cast_le_one {n m : ℕ} (h : n.succ.succ ≤ m.succ.succ) :
-  fin.cast_le h 1 = 1 :=
-by simpa only [fin.eq_iff_veq]
 
 lemma Hσφ_eq_zero {Y : C} {n q : ℕ} (hqn : n<q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (Hσ q).f (n+1) = 0 :=
@@ -193,8 +192,8 @@ begin
         pow_zero, one_zsmul, fin.mk_one, fin.cast_le_one, fin.coe_one, pow_one, neg_smul,
         comp_neg],
       erw [δ_comp_σ_self, δ_comp_σ_succ, add_right_neg], },
-    { rintro j,
-      have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin(n+1)) < j.succ), swap,
+    { intro j,
+      have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin (n+1)) < j.succ), swap,
       { simpa only [fin.cast_succ_zero] using fin.succ_pos j, },
       simp only [fin.cast_succ_zero, cast_succ] at δσ_rel,
       have h : fin.cast (by rw add_comm 2) (fin.nat_add 2 j) = j.succ.succ,
@@ -236,22 +235,22 @@ begin
     { by_contradiction,
       rw [not_le, ← nat.succ_le_iff] at h,
       linarith, },
-    have ineq1 : (fin.cast_succ (⟨a, nat.lt_succ_iff.mpr ham⟩ : fin(m+1)) < j),
+    have ineq₁ : (fin.cast_succ (⟨a, nat.lt_succ_iff.mpr ham⟩ : fin(m+1)) < j),
     { rw fin.lt_iff_coe_lt_coe, exact haj, },
-    erw [δ_comp_σ_of_gt X ineq1],
+    erw δ_comp_σ_of_gt X ineq₁,
     by_cases ham' : a<m,
     { -- case where `a<m`
-      have ineq2 : (fin.cast_succ (⟨a+1, nat.succ_lt_succ ham'⟩ : fin(m+1)) ≤ j),
+      have ineq₂ : (fin.cast_succ (⟨a+1, nat.succ_lt_succ ham'⟩ : fin(m+1)) ≤ j),
       { simpa only [fin.le_iff_coe_le_coe] using nat.succ_le_iff.mpr haj, },
-      have δδ_rel := δ_comp_δ X ineq2,
+      have δδ_rel := δ_comp_δ X ineq₂,
       simp only [fin.cast_succ_mk, fin.eta] at δδ_rel,
-      slice_rhs 2 3 { erw [← δδ_rel], },
+      slice_rhs 2 3 { erw ← δδ_rel, },
       simp only [← assoc, v j (by linarith), zero_comp], },
     { -- in the last case, a=m, q=1 and j=a+1
       have ham'' : a=m := le_antisymm ham (not_lt.mp ham'),
       have hq : q=1,
       { simpa [← ham'', show a.succ=a+1, by refl, add_comm a, add_right_inj] using ha, },
-      have hj₄ : (⟨a+1, by linarith⟩ : fin (m+3)) = (fin.cast_succ j),
+      have hj₄ : (⟨a+1, by linarith⟩ : fin (m+3)) = fin.cast_succ j,
       { ext,
         simp only [fin.coe_mk, fin.coe_cast_succ],
         linarith, },
