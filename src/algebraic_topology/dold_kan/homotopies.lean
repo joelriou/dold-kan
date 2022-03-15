@@ -10,9 +10,9 @@ import algebraic_topology.dold_kan.notations
 
 /-!
 
-# Construction of homotopies for the Dold-Kan correspondance
+# Construction of homotopies for the Dold-Kan correspondence
 
-(The general strategy of proof of the Dold-Kan correspondance is explained
+(The general strategy of proof of the Dold-Kan correspondence is explained
 in `equivalence.lean`.)
 
 The purpose of the files `homotopies.lean`, `faces.lean`, `projections.lean`

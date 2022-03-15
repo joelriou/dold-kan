@@ -10,7 +10,7 @@ import data.nat.parity
 
 
 /-
-# Study of face maps for the Dold-Kan correspondance
+# Study of face maps for the Dold-Kan correspondence
 
 In this file, we obtain the technical lemmas that are used in the file
 `projections.lean` in order to obtain basic properties of the endomorphisms

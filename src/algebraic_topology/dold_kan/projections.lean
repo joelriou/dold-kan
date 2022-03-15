@@ -6,12 +6,30 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.faces
 
+/-
+
+# Construction of projections for the Dold-Kan correspondence
+
+In this file, we construct endomorphisms `P q : K[X] ⟶ K[X]` for all
+`q : ℕ`. We study how they behave with respect to face maps with the lemmas
+`higher_faces_vanish_P` and `P_is_identity_where_faces_vanish`.
+
+Then, we show that they are projections (see `P_degreewise_is_a_projection`
+and `P_is_a_projection`).  They are natural transformations (see `nat_trans_P`
+and `P_degreewise_naturality`) and are compatible with the application
+of additive functors (see `map_P`).
+
+By passing to the limit, these endomorphisms `P q` shall be used in `p_infty.lean`
+in order to define `P_infty : K[X] ⟶ K[X]`, see `equivalence.lean` for the general
+strategy of proof of the Dold-Kan equivalence.
+
+-/
+
 open category_theory
 open category_theory.category
 open category_theory.limits
 open category_theory.preadditive
 open category_theory.simplicial_object
-open simplex_category
 open opposite
 open_locale simplicial dold_kan
 
@@ -33,7 +51,7 @@ noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
-/-- Q q is the complement projector associated to P q -/
+/-- Q q is the complement projection associated to P q -/
 def Q (q : ℕ) : K[X] ⟶ K[X] := 𝟙 _ - P q
 
 lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel }
@@ -46,15 +64,19 @@ lemma Q_eq_0 : (Q 0 : K[X] ⟶ _) = 0 := sub_self _
 lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
 by { unfold Q P, simp only [comp_add, comp_id], abel, }
 
-/- All the `P q` coincide with `𝟙 _` in degree 0. -/
-lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
+/-- All the `Q q` coincide with `0` in degree 0. -/
+lemma Q_deg0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
 begin
   induction q with q hq,
-  { refl, },
-  { unfold P,
-    simp only [homological_complex.comp_f, homological_complex.add_f_apply,
-      homological_complex.id_f, comp_add, id_comp, add_right_eq_self, hq, Hσ_eq_zero], }
+  { simpa only [Q_eq_0], },
+  { rw Q_eq,
+    simp only [Q_eq, hq, Hσ_eq_zero, homological_complex.sub_f_apply,
+      homological_complex.comp_f, comp_zero, sub_zero], }
 end
+
+/-- All the `P q` coincide with `𝟙 _` in degree 0. -/
+lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
+by conv_rhs { erw [← P_add_Q_degreewise q 0, Q_deg0_eq, add_zero], }
 
 /-- This lemma expresses the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
@@ -71,7 +93,7 @@ lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
 begin
   induction q with q hq,
   { unfold P,
-    erw [homological_complex.id_f, comp_id], },
+    erw comp_id, },
   { unfold P,
     simp only [comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id, ← assoc,
@@ -102,7 +124,7 @@ by { ext n, exact P_degreewise_is_a_projection q n, }
 /-- For each q, P q is a natural transformation. -/
 def nat_trans_P (q : ℕ) :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
-{ app := λ _, P q,
+{ app := λ X, P q,
   naturality' := λ X Y f, begin
     induction q with q hq,
     { erw [id_comp, comp_id], },
@@ -120,14 +142,13 @@ homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 
 lemma map_P {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
-  ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) =
-    G.map ((P q : K[X] ⟶ _).f n) :=
+  ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) = G.map ((P q : K[X] ⟶ _).f n) :=
 begin
   induction q with q hq,
   { erw [G.map_id], refl, },
   { unfold P,
-    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply, comp_id,
-      functor.map_add, functor.map_comp, hq, map_Hσ], }
+    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply,
+      comp_id, functor.map_add, functor.map_comp, hq, map_Hσ], }
 end
 
 end dold_kan
