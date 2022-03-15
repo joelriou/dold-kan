@@ -51,35 +51,34 @@ begin
   exact eq,
 end
 
-lemma P_infty_degreewise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) =
-  (P n).f n := by refl
+lemma P_infty_degreewise (n : ℕ) :
+  (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := by refl
 
 lemma P_infty_degreewise_is_a_projection (n : ℕ) :
   (P_infty.f n : X _[n] ⟶ _) ≫ (P_infty.f n) = P_infty.f n :=
-by simp only [P_infty_degreewise, ← homological_complex.comp_f, P_is_a_projection n]
+by simp only [P_infty_degreewise, P_degreewise_is_a_projection]
 
 lemma P_infty_is_a_projection : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
 by { ext n, exact P_infty_degreewise_is_a_projection n, }
 
 lemma P_infty_degreewise_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
-   f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
+  f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
 P_degreewise_naturality n n f
 
 variable (C)
-@[simps]
-def nat_trans_P_infty : ((alternating_face_map_complex C) ⟶
-  (alternating_face_map_complex C)) :=
-{ app := λ _, P_infty,
-  naturality' := λ X Y f, begin
-    ext n,
-    simp only [homological_complex.comp_f, chain_complex.of_hom_f,
-      alternating_face_map_complex_map, alternating_face_map_complex.map,
-      P_infty_degreewise_naturality],
-  end }
 
+/-- `P_infty` induces a natural transformation, i.e. an endomorphism of
+the functor `alternating_face_map_complex C`. -/
+@[simps]
+def nat_trans_P_infty :
+  alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
+{ app := λ _, P_infty,
+  naturality' := λ X Y f, by { ext n, exact P_infty_degreewise_naturality n f, }, }
+
+/-- The natural transformation in each degree that is induced by `nat_trans_P_infty`. -/
 @[simps]
 def nat_trans_P_infty_degreewise (n : ℕ) :=
-  nat_trans_P_infty C ◫ 𝟙 (homological_complex.eval _ _ n)
+nat_trans_P_infty C ◫ 𝟙 (homological_complex.eval _ _ n)
 
 variable {C}
 
@@ -87,9 +86,12 @@ variable {C}
 lemma map_P_infty_degreewise {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (n : ℕ) :
   (P_infty : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
-    G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=
+  G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=
 by simp only [P_infty_degreewise, map_P]
 
+/-- Given an object `Y : karoubi (simplicial_object C)`, this lemma
+computes `P_infty` for the associated object in `simplicial_object (karoubi C)`
+in terms of `P_infty` for `Y.X : simplicial_object C` and `Y.p`. -/
 lemma karoubi_P_infty_f {Y : karoubi (simplicial_object C)} (n : ℕ) :
   ((P_infty : K[(karoubi_functor_category_embedding _ _).obj Y] ⟶ _).f n).f =
   Y.p.app (op [n]) ≫ (P_infty : K[Y.X] ⟶ _).f n :=
