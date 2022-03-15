@@ -95,8 +95,6 @@ lemma karoubi_P_infty_f {Y : karoubi (simplicial_object C)} (n : ℕ) :
   Y.p.app (op [n]) ≫ (P_infty : K[Y.X] ⟶ _).f n :=
 begin
   -- We introduce P_infty endomorphisms P₁, P₂, P₃, P₄ on various objects Y₁, Y₂, Y₃, Y₄.
-  -- The statement of lemma relates P₁ and P₂.
-  -- The proof proceeds by obtaining relations h₃₂, h₄₃, h₁₄.
   let Y₁ := (karoubi_functor_category_embedding _ _).obj Y,
   let Y₂ := Y.X,
   let Y₃ := (((whiskering _ _).obj (to_karoubi C)).obj Y.X),
@@ -105,13 +103,17 @@ begin
   let P₂ : K[Y₂] ⟶ _ := P_infty,
   let P₃ : K[Y₃] ⟶ _ := P_infty,
   let P₄ : K[Y₄] ⟶ _ := P_infty,
+  -- The statement of lemma relates P₁ and P₂.
+  suffices h₁₂ : (P₁.f n).f = Y.p.app (op [n]) ≫ P₂.f n,
+  { exact h₁₂, },
+  -- The proof proceeds by obtaining relations h₃₂, h₄₃, h₁₄.
   have h₃₂ : (P₃.f n).f = P₂.f n :=
-    karoubi.hom_ext.mp (map_P_infty_degreewise (to_karoubi C) Y.X n),
+    karoubi.hom_ext.mp (map_P_infty_degreewise (to_karoubi C) Y₂ n),
   have h₄₃ : P₄.f n = P₃.f n,
   { have eq := nat_trans_P_infty_degreewise_app (karoubi C) n,
     erw [← eq Y₃, ← eq Y₄],
     congr,
-    exact congr_obj (to_karoubi_comp_karoubi_functor_category_embedding _ _) Y.X, },
+    exact congr_obj (to_karoubi_comp_karoubi_functor_category_embedding _ _) Y₂, },
   let τ₁ := 𝟙 (karoubi_functor_category_embedding (simplex_categoryᵒᵖ) C),
   let τ₂ := nat_trans_P_infty_degreewise (karoubi C) n,
   let τ := τ₁ ◫ τ₂,
@@ -126,7 +128,7 @@ begin
   simp only [karoubi.comp] at eq,
   erw [← eq, ← assoc],
   congr,
-  simpa only [nat_trans.comp_app] using congr_app Y.idem (op [n]),
+  exact congr_app Y.idem (op [n]),
 end
 
 end dold_kan
