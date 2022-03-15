@@ -36,53 +36,51 @@ lemma downgrade_vanishing {Y : C} {n : ℕ} {q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish (q+1) φ) : higher_faces_vanish q φ :=
 λ j hj, v j (by { rw ← add_assoc, exact le_add_right hj, })
 
-/-- the map `λ a, a+i` from `fin` q to `fin n`, when $n=a+q$ -/
-@[simp]
-def translate_fin {n : ℕ} (a : ℕ) {q : ℕ} (hnaq : n=a+q) (i : fin q) : fin n :=
-⟨a+(i:ℕ), (gt_of_ge_of_gt (eq.ge hnaq) ((add_lt_add_iff_left a).mpr (fin.is_lt i)))⟩
-
 /- For algebra.big_operators.basic -/
 @[to_additive]
-lemma prod_split {β : Type*} [comm_monoid β] {n a b : ℕ}
-  (h : n=a+b) (f : fin(n) → β) :
-  ∏ (i : fin (n)), f i =
-  (∏ (i : fin (a)), f (fin.cast_le (nat.le.intro (eq.symm h)) i)) *
-  ∏ (i : fin (b)), f (translate_fin a h i) :=
+lemma fin.prod_eq_of_fin_cast {β : Type*} [comm_monoid β] {a b : ℕ} (f : fin b → β) (h : a = b) :
+  ∏ (i : fin a), f (fin.cast h i) = ∏ (i : fin b), f i :=
+by { subst h, congr, ext, congr, ext, simp only [fin.coe_cast], }
+
+@[to_additive]
+lemma fin.prod_split {β : Type*} [comm_monoid β] {a b : ℕ} (f : fin (a+b) → β) :
+  ∏ (i : fin (a+b)), f i =
+  (∏ (i : fin a), f (fin.cast_le le_self_add i)) * ∏ (i : fin b), f (fin.nat_add a i) :=
 begin
-  revert f a n,
+  revert f a,
   induction b with b hb,
-  { intros n a hnaq f,
-    rw add_zero at hnaq,
-    subst hnaq,
+  { intros a f,
     simp only [fin.prod_univ_zero, mul_one],
     congr,
     ext i,
     congr,
     ext,
-    rw fin.coe_cast_le, },
-  { intros n a h f,
-    have h' : n = (a+1)+b := by { rw [h, succ_eq_add_one], linarith, },
-    rw [hb h' f, fin.prod_univ_cast_succ, mul_assoc],
-    conv { to_rhs, rw fin.prod_univ_succ, },
+    simp only [fin.coe_cast_le], },
+  { intros a f,
+    have eq : (a+1)+b=(a+b).succ := by simpa only [add_assoc, add_comm 1],
+    rw [fin.prod_univ_succ, ← mul_assoc, ← fin.prod_eq_of_fin_cast f eq,
+      hb (λ (i : fin((a+1)+b)), f (fin.cast eq i))],
     congr,
-    ext,
-    congr' 1,
-    ext,
-    simp only [translate_fin, fin.coe_mk, fin.coe_succ],
-    rw [add_assoc, add_comm 1], }
+    { rw fin.prod_univ_cast_succ,
+      congr, },
+    { ext,
+      simp only,
+      congr,
+      ext,
+      simp only [fin.coe_cast, fin.coe_nat_add, fin.coe_succ, add_assoc, add_comm 1], }, }
 end
 
-/- For algebra.big_operators.basic -/
 @[to_additive]
-lemma prod_trunc {β : Type*} [comm_monoid β] {n a b : ℕ}
+lemma fin.prod_trunc {β : Type*} [comm_monoid β] {n a b : ℕ}
   (h : n=a+b) (f : fin(n) → β)
-  (hf : ∀ (j : fin (b)), f (translate_fin a h j) = 1) :
+  (hf : ∀ (j : fin (b)), f (fin.cast h.symm (fin.nat_add a j)) = 1) :
   ∏ (i : fin (n)), f i =
-  ∏ (i : fin (a)), f (fin.cast_le (nat.le.intro (eq.symm h)) i) :=
+  ∏ (i : fin (a)), f (fin.cast_le (nat.le.intro (h.symm)) i) :=
 begin
-  rw prod_split h,
+  rw [← fin.prod_eq_of_fin_cast f h.symm, fin.prod_split],
   conv { to_lhs, congr, skip, rw fintype.prod_eq_one _ hf, },
   rw mul_one,
+  congr,
 end
 
 lemma Hσφ_eq_neg_σδφ {Y : C} {n a q : ℕ} (hnaq : n=a+q) {φ : Y ⟶ X _[n+1]}
@@ -99,17 +97,17 @@ begin
     comp_sum, sum_comp, comp_id, comp_add],
   simp only [comp_zsmul, zsmul_comp, ← assoc, ← mul_zsmul],
   /- cleaning up the first sum -/
-  rw sum_trunc (hnaq_shift 2), swap,
+  rw fin.sum_trunc (hnaq_shift 2), swap,
   { rintro ⟨k, hk⟩,
     let i : fin (n+1) := ⟨a+k+1, by linarith⟩,
     have eq := v i (by { simp only [i, fin.coe_mk], linarith, }),
-    have hi : translate_fin (a+2) (hnaq_shift 2) ⟨k, hk⟩ = i.succ,
-    { ext, simp only [translate_fin, fin.coe_mk, fin.succ_mk], linarith, },
+    have hi : fin.cast (hnaq_shift 2).symm (fin.nat_add (a+2) ⟨k, hk⟩) = i.succ,
+    { ext, simp only [fin.nat_add_mk, fin.cast_mk, fin.coe_mk, fin.succ_mk], linarith, },
     rw [hi, eq, zero_comp, zsmul_zero], },
   /- cleaning up the second sum -/
-  rw sum_trunc (hnaq_shift 3), swap,
+  rw fin.sum_trunc (hnaq_shift 3), swap,
   { rintros ⟨k, hk⟩,
-    simp only [translate_fin, fin.coe_mk, assoc],
+    simp only [fin.nat_add_mk, fin.cast_mk, assoc],
     let i : fin (n+1) := ⟨a+1+(k : ℕ), by linarith⟩,
     have h : fin.cast_succ (⟨a+1, by linarith⟩ : fin(n+1)) < i.succ,
     { simp only [fin.lt_iff_coe_lt_coe, fin.cast_succ_mk, fin.coe_mk, fin.succ_mk],
@@ -176,7 +174,7 @@ begin
       pow_zero, fin.mk_zero, one_zsmul, eq_to_hom_refl, comp_id],
     erw chain_complex.of_d,
     simp only [alternating_face_map_complex.obj_d, comp_sum],
-    rw sum_trunc (show n+3=2+(n+1), by linarith),
+    rw fin.sum_trunc (show n+3=2+(n+1), by linarith),
     { simp only [fin.sum_univ_cast_succ, fin.sum_univ_zero, zero_add],
       simp only [fin.last, fin.mk_zero, fin.cast_succ_zero, fin.cast_le_zero, fin.coe_zero,
         pow_zero, one_zsmul, fin.mk_one, fin.cast_le_one, fin.coe_one, pow_one, neg_smul,
@@ -186,8 +184,8 @@ begin
       have δσ_rel := δ_comp_σ_of_gt X (_ : fin.cast_succ (0 : fin(n+1)) < j.succ), swap,
       { simpa only [fin.cast_succ_zero] using fin.succ_pos j, },
       simp only [fin.cast_succ_zero, cast_succ] at δσ_rel,
-      have h : translate_fin 2 (by rw add_comm 2) j = j.succ.succ,
-      { ext, simp only [translate_fin, fin.coe_mk, fin.coe_succ, add_comm 2], },
+      have h : fin.cast (by rw add_comm 2) (fin.nat_add 2 j) = j.succ.succ,
+      { ext, simp only [add_comm 2, fin.coe_cast, fin.coe_nat_add, fin.coe_succ], },
       simp only [comp_zsmul, h, δσ_rel, ← assoc, v j (by linarith),
         zero_comp, zsmul_zero], }, },
 end
