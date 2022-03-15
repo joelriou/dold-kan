@@ -81,7 +81,7 @@ begin
   rw [assoc],
   dsimp [P_infty_into_Moore_subcomplex],
   simp only [factor_thru_arrow],
-  exact P_infty_degreewise_is_a_projector n,
+  exact P_infty_degreewise_is_a_projection n,
 end
 
 lemma P_infty_comp_P_infty_into_Moore_subcomplex (X : simplicial_object A) :

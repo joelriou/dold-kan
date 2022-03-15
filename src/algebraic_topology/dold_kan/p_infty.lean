@@ -54,12 +54,12 @@ end
 lemma P_infty_degreewise (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) =
   (P n).f n := by refl
 
-lemma P_infty_degreewise_is_a_projector (n : ℕ) :
+lemma P_infty_degreewise_is_a_projection (n : ℕ) :
   (P_infty.f n : X _[n] ⟶ _) ≫ (P_infty.f n) = P_infty.f n :=
-by simp only [P_infty_degreewise, ← homological_complex.comp_f, P_is_a_projector n]
+by simp only [P_infty_degreewise, ← homological_complex.comp_f, P_is_a_projection n]
 
-lemma P_infty_is_a_projector : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
-by { ext n, exact P_infty_degreewise_is_a_projector n, }
+lemma P_infty_is_a_projection : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
+by { ext n, exact P_infty_degreewise_is_a_projection n, }
 
 lemma P_infty_degreewise_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
    f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=

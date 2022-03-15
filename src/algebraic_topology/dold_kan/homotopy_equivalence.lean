@@ -11,8 +11,6 @@ open category_theory.category
 open category_theory.limits
 open category_theory.preadditive
 open category_theory.idempotents
---open category_theory.simplicial_object
---open homotopy
 open opposite
 open_locale simplicial dold_kan
 

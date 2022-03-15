@@ -111,7 +111,7 @@ lemma F_id (n : ℕ) : F (morph_components_id X n) = 𝟙 _ :=
 begin
   simp only [← P_add_Q_degreewise (n+1) (n+1), F],
   congr' 1,
-  { simp only [morph_components_id, P_infty_degreewise, P_degreewise_is_a_projector], },
+  { simp only [morph_components_id, P_infty_degreewise, P_degreewise_is_a_projection], },
   { convert (decomposition_Q n (n+1) rfl.le).symm,
     ext i,
     simpa only [finset.mem_univ, finset.mem_filter, true_and, true_iff] using fin.is_lt i, },

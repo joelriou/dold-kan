@@ -47,7 +47,7 @@ begin
     simp only [map_P_infty_degreewise, ← F.map_comp],
     congr' 1,
     rw [assoc, P_infty_degreewise_naturality],
-    simp only [← assoc, P_infty_degreewise_is_a_projector], },
+    simp only [← assoc, P_infty_degreewise_is_a_projection], },
   { intro X,
     ext n,
     dsimp,

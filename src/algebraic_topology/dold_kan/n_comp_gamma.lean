@@ -166,7 +166,7 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
       slice_rhs 1 2 { erw ι_colim_map, },
       simp only [discrete.nat_trans_app, cofan.mk_ι_app, colimit.ι_desc,
         eq_to_hom_map, assoc, comp_id, functor.map_comp],
-      slice_rhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+      slice_rhs 1 2 { erw P_infty_degreewise_is_a_projection, },
       simp only [assoc],
     end },
   naturality' := λ X Y f, begin
@@ -176,7 +176,7 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
       alternating_face_map_complex.map, alternating_face_map_complex_map, homological_complex.comp_f,
       chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f, colimit.ι_desc_assoc, nat_trans.naturality],
     slice_lhs 2 3 { erw P_infty_degreewise_naturality, },
-    slice_lhs 1 2 { erw P_infty_degreewise_is_a_projector, },
+    slice_lhs 1 2 { erw P_infty_degreewise_is_a_projection, },
     slice_lhs 2 3 { erw ← f.naturality, },
     simpa only [← assoc],
   end }
@@ -198,7 +198,7 @@ begin
   have eq₁ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
     P_infty_degreewise_naturality _ _,
   have eq₂ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n :=
-    P_infty_degreewise_is_a_projector n,
+    P_infty_degreewise_is_a_projection n,
   have eq₃ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
   { simpa only [nat_trans.comp_app] using congr_app P.idem (op [n]), },
   slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
@@ -263,7 +263,7 @@ begin
   cofan.mk_ι_app],
   erw [nat_trans.id_app, nat_trans.id_app, id_comp, id_comp, comp_id,
     colimit.ι_desc, cofan.mk_ι_app],
-  repeat { slice_rhs 1 2 { erw P_infty_degreewise_is_a_projector, }, },
+  repeat { slice_rhs 1 2 { erw P_infty_degreewise_is_a_projection, }, },
   rw assoc,
 end
 
