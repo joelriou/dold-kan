@@ -6,6 +6,27 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.p_infty
 
+/-
+
+# Construction of functors N for the Dold-Kan correspondence
+
+In this file, we construct the functors `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`
+and `N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`
+for any preadditive category `C`.
+
+In the case `C` is additive, the functor `N₂` shall be the functor of the equivalence
+`category_theory.preadditive.dold_kan.equivalence` defined in `equivalence_additive.lean`.
+
+In the case the category `C` is pseudoabelian, the composition of `N₁` with the inverse of the
+equivalence `chain_complex C ℕ ⥤ karoubi (chain_complex C ℕ)` will be the functor
+`category_theory.idempotents.dold_kan.N` of the equivalence of categories
+`category_theory.idempotents.dold_kan.equivalence : simplicial_object C ≌ chain_complex C ℕ`
+defined in `equivalence_pseudoabelian.lean`.
+
+(See `equivalence.lean` for the general strategy of proof.)
+
+-/
+
 open category_theory
 open category_theory.category
 open category_theory.idempotents
@@ -18,6 +39,8 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
+/-- The functor `simplicial_object C ⥤ karoubi (chain_complex C ℕ)` which maps
+`X` to the formal direct factor of `K[X]` defined by `P_infty`. -/
 @[simps]
 def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
 { obj := λ X,
@@ -47,6 +70,7 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
     rw assoc,
   end }
 
+/-- The extension of `N₁` to the Karoubi envelope of `simplicial_object C`. -/
 @[simps]
 def N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
 (functor_extension' _ _).obj N₁
