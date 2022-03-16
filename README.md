@@ -6,7 +6,7 @@ The general strategy of the proof is explained in [`equivalence.lean`](https://g
 
 ## Dependency graph
 
-![graph](http://jriou.org/tmp/lean/dold-kan/2022-03-15-graph.svg)
+![graph](http://jriou.org/tmp/lean/dold-kan/2022-03-16-graph.svg)
 
 [PDF version of the graph](http://jriou.org/tmp/lean/dold-kan/graph.pdf)
 
