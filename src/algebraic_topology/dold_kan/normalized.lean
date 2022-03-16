@@ -6,6 +6,24 @@ Author: Joël Riou
 
 import algebraic_topology.dold_kan.functor_n
 
+/-
+
+# Comparison with the normalized Moore complex functor
+
+In this file, we show that when the category `A` is abelian,
+there is an isomorphism `N₁_iso_to_karoubi_normalized A` between
+the functor `N₁ : simplicial_object A ⥤ karoubi (chain_complex A ℕ)`
+defined in `functor_n.lean` and the composition of
+`normalized_Moore_complex A` with the inclusion
+`chain_complex A ℕ ⥤ karoubi (chain_complex A ℕ)`.
+
+This isomorphism shall be used in `equivalence.lean` in order to obtain
+the Dold-Kan equivalence
+`category_theory.abelian.dold_kan.equivalence : simplicial_object A ≌ chain_complex A ℕ`
+with a functor (definitionally) equal to `normalized_Moore_complex A`.
+
+-/
+
 open category_theory
 open category_theory.category
 open category_theory.limits
@@ -143,6 +161,10 @@ end
 
 variable (A)
 
+/-- When the category `A` is abelian,
+the functor `N₁ : simplicial_object A ⥤ karoubi (chain_complex A ℕ)` defined
+using `P_infty` identifies to the composition of normalized Moore complex functor
+and the inclusion in the Karoubi envelope. -/
 def N₁_iso_to_karoubi_normalized :
   N₁ ≅ (normalized_Moore_complex A ⋙ to_karoubi _) :=
 { hom :=
