@@ -59,7 +59,6 @@ Reprint of the 1999 edition.
 
 -/
 
-
 open category_theory
 open category_theory.category
 open category_theory.limits
@@ -84,7 +83,7 @@ variables {X : simplicial_object C}
 `c` such `c m n` if and only if `m=n+1`. -/
 abbreviation c := complex_shape.down ℕ
 
-/-- Helper when we need some `c.rel i j` (i.e. `complex_shape.down ℕ`) is needed,
+/-- Helper when we need some `c.rel i j` (i.e. `complex_shape.down ℕ`),
 e.g. `c_mk n (n+1) rfl` -/
 lemma c_mk (i j : ℕ) (h : j+1 = i) : c.rel i j := h
 
