@@ -61,7 +61,7 @@ In `functor_gamma.lean`, assuming that the category `C` is additive,
 we define the functor in the other direction
 `Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C)` as the formal
 extension of a functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C` which is
-defined similarly as in *Simplicial Homotopy Theory* by Goerrs-Jardine.
+defined similarly as in *Simplicial Homotopy Theory* by Goerss-Jardine.
 In `degeneracies.lean`, we show that `P_infty` vanishes in the image of degeneracy
 operators, which is one of the key properties that makes possible to contruct
 the isomorphism `N₂Γ₂ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ))`.
