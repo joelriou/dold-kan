@@ -50,12 +50,12 @@ begin
     simp only [← assoc, P_infty_degreewise_is_a_projection], },
   { intro X,
     ext n,
-    dsimp,
-    erw [homological_complex.eq_to_hom_f, ← algebraic_topology.dold_kan.map_P_infty_degreewise,
-      comp_id, id_comp],
-    have h := congr_obj (map_alternating_face_map_complex F) X,
-    dsimp at ⊢ h,
-    simpa only [← h], }
+    { dsimp,
+      erw [homological_complex.eq_to_hom_f, ← algebraic_topology.dold_kan.map_P_infty_degreewise,
+      comp_id, id_comp], },
+    { have h := congr_obj (map_alternating_face_map_complex F) X,
+      dsimp at ⊢ h,
+      simpa only [← h], }, },
 end
 
 lemma functoriality_N :

@@ -190,7 +190,7 @@ begin
   { simpa only [eq_to_hom_map, functor.map_comp, functor.map_zsmul], },
 end
 
-/-- The null homotopic maps `Hσ` are comptible with the application of additive functors. -/
+/-- The null homotopic maps `Hσ` are compatible with the application of additive functors. -/
 lemma map_Hσ {D : Type*} [category.{v} D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
   (Hσ q : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
