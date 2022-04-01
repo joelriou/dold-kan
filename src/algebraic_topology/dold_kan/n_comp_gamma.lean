@@ -281,7 +281,7 @@ def Γ₂N₂_iso : 𝟭 _ ≅ (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ 
 (as_iso Γ₂N₂_nat_trans).symm
 
 @[simps]
-def Γ₂N₁_iso : to_karoubi _  ≅ (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂:=
+def Γ₂N₁_iso : to_karoubi _  ≅ (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ :=
 (as_iso Γ₂N₁_nat_trans).symm
 
 end dold_kan
