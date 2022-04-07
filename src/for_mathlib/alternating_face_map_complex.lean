@@ -161,7 +161,7 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
 
 variables {C}
 
-def map_alternating_face_map_complex {D : Type*} [category.{v} D] [preadditive D]
+def map_alternating_face_map_complex {D : Type*} [category D] [preadditive D]
   (F : C ⥤ D) [F.additive] :
   alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =
   (simplicial_object.whiskering C D).obj F ⋙ alternating_face_map_complex D :=

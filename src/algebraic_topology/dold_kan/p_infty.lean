@@ -37,9 +37,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-universe v
-
-variables {C : Type*} [category.{v} C] [preadditive C]
+variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
 lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
@@ -96,7 +94,7 @@ nat_trans_P_infty C ◫ 𝟙 (homological_complex.eval _ _ n)
 variable {C}
 
 @[simp]
-lemma map_P_infty_degreewise {D : Type*} [category.{v} D] [preadditive D]
+lemma map_P_infty_degreewise {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (n : ℕ) :
   (P_infty : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
   G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=

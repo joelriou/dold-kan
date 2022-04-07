@@ -19,8 +19,7 @@ open category_theory
 open category_theory.idempotents
 open algebraic_topology
 
-universes v
-variables {C D : Type*} [category.{v} C] [category.{v} D]
+variables {C D : Type*} [category C] [category D]
   [additive_category C] [additive_category D]
   [is_idempotent_complete C] [is_idempotent_complete D]
 

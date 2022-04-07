@@ -17,13 +17,11 @@ open category_theory.idempotents
 --open opposite
 open_locale simplicial dold_kan
 
-universe v
-
 namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category.{v} C] [additive_category C]
+variables {C : Type*} [category C] [additive_category C]
 
 @[simp]
 def N₁Γ₀_map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : Γ_index_set [n]) :
@@ -64,14 +62,14 @@ begin
     refl, },
 end
 
-lemma simplex_category.eq_eq_to_hom_of_mono {x y : simplex_category.{v}} (i : x ⟶ y) [mono i] (hxy : x = y) :
+lemma simplex_category.eq_eq_to_hom_of_mono {x y : simplex_category} (i : x ⟶ y) [mono i] (hxy : x = y) :
   i = eq_to_hom hxy :=
 begin
   unfreezingI { subst hxy, },
   exact simplex_category.eq_id_of_mono i,
 end
 
-lemma simplex_category.eq_eq_to_hom_of_epi {x y : simplex_category.{v}} (i : x ⟶ y) [epi i] (hxy : x = y) :
+lemma simplex_category.eq_eq_to_hom_of_epi {x y : simplex_category} (i : x ⟶ y) [epi i] (hxy : x = y) :
   i = eq_to_hom hxy :=
 begin
   unfreezingI { subst hxy, },
@@ -221,19 +219,20 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
     comm := begin
       ext n A,
       simp only [to_karoubi_obj_p, homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc],
-      dsimp,
+      dsimp at ⊢ A,
       erw [comp_id],
       split_ifs,
       { have hA := eq_Γ_index_id h,
         subst hA,
         slice_rhs 1 2 { erw P_infty_eq_id_on_Γ_summand, },
-        simp only [N₁Γ₀_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
+        simpa only [N₁Γ₀_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
           Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
       { erw [← assoc, P_infty_eq_zero_on_Γ_summand K h, zero_comp], },
     end },
   naturality' := λ K L f, begin
     ext n A,
     simp,
+    dsimp at ⊢ A,
     erw [← assoc],
     split_ifs,
     { have hA := eq_Γ_index_id h,
@@ -294,11 +293,11 @@ def N₁Γ₀_iso : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
     ext K n A,
     simp only [homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc_assoc,
       nat_trans.id_app, karoubi.id_eq, karoubi.comp, nat_trans.comp_app],
-    dsimp,
+    dsimp at ⊢ A,
     split_ifs,
     { have h' := eq_Γ_index_id h,
       subst h',
-      erw [P_infty_eq_id_on_Γ_summand, id_comp],refl, },
+      erw [P_infty_eq_id_on_Γ_summand, id_comp], refl, },
     { erw [zero_comp, P_infty_eq_zero_on_Γ_summand K h], },
   end,
   inv_hom_id' := begin

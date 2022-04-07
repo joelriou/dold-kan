@@ -16,15 +16,13 @@ open category_theory.idempotents
 open opposite
 open_locale simplicial dold_kan
 
-universe v
-
 namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category.{v} C] [additive_category C]
+variables {C : Type*} [category C] [additive_category C]
 
-lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (i : Δ' ⟶ [n]) [mono i]
+lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
 P_infty.f n ≫ X.map i.op = 0 :=
 begin
@@ -79,12 +77,18 @@ begin
     higher_faces_vanish_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
 end
 
-lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category.{v}} (f : op [n] ⟶ op Δ') [mono f.unop]
+/-
+lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category} (f : op [n] ⟶ op Δ') [mono f.unop]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
   P_infty.f n ≫ X.map f = 0 :=
-P_infty_eq_zero_on X f.unop h₁ h₂
+begin
 
-lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category.{v}) ⟶ [n']) [mono i] :
+  have pif := P_infty_eq_zero_on X f.unop h₁ h₂,
+  sorry,
+--P_infty_eq_zero_on X f.unop h₁ h₂
+end-/
+
+lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category) ⟶ [n']) [mono i] :
   Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n = P_infty.f n' ≫ X.map i.op :=
 begin
   /- We start with the case `i` is an identity -/
@@ -111,7 +115,7 @@ begin
   { rw [Γ_on_mono_eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',
       exact h (congr_arg simplex_category.len h'.symm), },
-    rw P_infty_eq_zero_on',
+    rw P_infty_eq_zero_on,
     { exact h, },
     { by_contradiction h',
       exact hi h', }, },
@@ -124,7 +128,7 @@ begin
   simp only [simplex_category.mk_len],
 end
 
-lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category.{v}} (i : Δ' ⟶ Δ) [mono i] :
+lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
   Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
     X.map (eq_to_hom (by simp only [simplex_category.mk_len]) ≫ i.op ≫ eq_to_hom (by simp only [simplex_category.mk_len])) :=
 begin
@@ -153,9 +157,8 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
         slice_lhs 1 2 { erw Γ_on_mono_comp_P_infty, },
         simp only [assoc, ← X.map_comp],
         congr' 2,
-        simp only [id_comp, eq_to_hom_refl, eq_to_hom_trans_assoc],
-        congr' 1,
-        rw [← op_comp, em.fac, op_comp, quiver.hom.op_unop],
+        repeat { erw id_comp, },
+        rw [← op_comp, em.fac, op_comp],
         refl,
       end },
     comm := begin
@@ -214,7 +217,6 @@ begin
   slice_lhs 2 3 { erw comp_id, },
   slice_lhs 3 4 { erw colimit.ι_desc, },
   dsimp only [cofan.mk],
-  slice_lhs 3 4 { erw comp_id, },
   slice_lhs 3 4 { erw [P.X.map_id, comp_id], },
   slice_lhs 2 3 { erw eq₁, },
   slice_lhs 1 2 { erw eq₂, },

@@ -45,7 +45,7 @@ begin
 end
 
 lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
-  {Δ Δ' : simplex_category.{v}} (e : Δ ⟶ Δ') [epi e] :
+  {Δ Δ' : simplex_category} (e : Δ ⟶ Δ') [epi e] :
   sigma.ι (Γ_summand K Δ') ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩ ≫ Γ_simplicial K e =
   sigma.ι (Γ_summand K Δ) ⟨Δ', ⟨e, by apply_instance⟩⟩ :=
 begin

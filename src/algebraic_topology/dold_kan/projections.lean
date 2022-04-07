@@ -39,9 +39,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-universe v
-
-variables {C : Type*} [category.{v} C] [preadditive C]
+variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
 /-- This is the inductive definition of the projections `P q : K[X] ⟶ K[X]`,
@@ -140,7 +138,7 @@ lemma P_degreewise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶
   f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
 homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 
-lemma map_P {D : Type*} [category.{v} D] [preadditive D]
+lemma map_P {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
   ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) = G.map ((P q : K[X] ⟶ _).f n) :=
 begin

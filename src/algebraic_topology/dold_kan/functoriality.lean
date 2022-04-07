@@ -20,9 +20,8 @@ open category_theory.category
 open category_theory.idempotents
 open algebraic_topology
 
-universes v
-variables {A : Type*} [category.{v} A] [abelian A]
-variables {B : Type*} [category.{v} B] [abelian B]
+variables {A : Type*} [category A] [abelian A]
+variables {B : Type*} [category B] [abelian B]
 
 namespace category_theory
 

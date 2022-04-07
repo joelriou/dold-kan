@@ -10,7 +10,7 @@ open category_theory.limits
 
 namespace simplex_category
 
-def strong_epi_of_epi {X Y : simplex_category.{u}} (f : X ⟶ Y) [epi f] :
+def strong_epi_of_epi {X Y : simplex_category} (f : X ⟶ Y) [epi f] :
   strong_epi f :=
 { epi := by apply_instance,
   has_lift := λ A B u v w hw comm,
@@ -43,25 +43,16 @@ def strong_epi_of_epi {X Y : simplex_category.{u}} (f : X ⟶ Y) [epi f] :
             rw [le_antisymm h ineq] at h',
             exact (irrefl y₂ : ¬(y₂<y₂)) h', },
         end, },
-    use {
-      lift := γ,
-      fac_left' := begin
-        ext x,
-        dsimp,
-        simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
-          order_hom.coe_fun_mk, hγ'],
-      end,
-      fac_right' := begin
-        ext y,
+    refine ⟨nonempty.intro { lift := γ, fac_left' := _, fac_right' := _, }⟩,
+    { ext1, ext1, ext1 x,
+      exact hγ' x, },
+    { ext y,
       dsimp,
-      simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
-        order_hom.coe_fun_mk],
-      rw [← hlift y, hγ', comm'],
-      end, },
+      rw [← hlift y, hγ', comm'], },
   end }
 
 def strong_epi_mono_factorisation_of_epi_mono_factorisation
-  {x y z : simplex_category.{u}} (f : x ⟶ z) (e : x ⟶ y) (i : y ⟶ z)
+  {x y z : simplex_category} (f : x ⟶ z) (e : x ⟶ y) (i : y ⟶ z)
   [epi e] [mono i] (h : e ≫ i = f) : strong_epi_mono_factorisation f :=
 begin
   haveI : strong_epi e := strong_epi_of_epi e,
@@ -73,7 +64,7 @@ begin
   fac' := h, },
 end
 
-def canonical_strong_epi_mono_factorisation {x y : simplex_category.{u}} (f : x ⟶ y) :
+def canonical_strong_epi_mono_factorisation {x y : simplex_category} (f : x ⟶ y) :
   strong_epi_mono_factorisation f :=
 begin
   let α := { j : fin(y.len+1) // ∃ (i : fin(x.len+1)), f.to_order_hom i = j },
@@ -118,16 +109,16 @@ begin
       exact equiv.injective φ.to_equiv h,
     end,
     fac' := by { ext i, dsimp,
-      simp only [order_iso.apply_symm_apply, hom.to_order_hom_mk,
+      simpa only [order_iso.apply_symm_apply, hom.to_order_hom_mk,
         order_iso.coe_to_order_embedding, order_embedding.to_order_hom_coe,
         function.comp_app, order_hom.comp_coe, order_hom.coe_fun_mk], }, },
 end
 
-instance : has_strong_epi_mono_factorisations simplex_category.{v} :=
+instance : has_strong_epi_mono_factorisations simplex_category :=
   has_strong_epi_mono_factorisations.mk
   (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
-lemma eq_of_is_iso {x y : simplex_category.{v}} {f : x ⟶ y} (hf : is_iso f) : x = y :=
+lemma eq_of_is_iso {x y : simplex_category} {f : x ⟶ y} (hf : is_iso f) : x = y :=
 begin
   ext,
   apply le_antisymm,
@@ -135,8 +126,7 @@ begin
   { exact len_le_of_epi (show epi f, by apply_instance), },
 end
 
-
-lemma eq_eq_to_hom_of_is_iso {x y : simplex_category.{v}} {f : x ⟶ y} (hf : is_iso f) :
+lemma eq_eq_to_hom_of_is_iso {x y : simplex_category} {f : x ⟶ y} (hf : is_iso f) :
   f = eq_to_hom (eq_of_is_iso hf) :=
 begin
   have h := eq_of_is_iso hf,
@@ -146,7 +136,7 @@ end
 
 /- Two mono factorisations satisfying the universal property of
 the image are equal. -/
-def uniqueness_mono_factorisation {x y : simplex_category.{u}} {f : x ⟶ y}
+def uniqueness_mono_factorisation {x y : simplex_category} {f : x ⟶ y}
   (F F' : mono_factorisation f) (hF : is_image F) (hF' : is_image F') :
   F = F' :=
 begin
@@ -158,7 +148,7 @@ begin
 end
 
 def mono_factorisation_eq
-  {x y z : simplex_category.{u}} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
+  {x y z : simplex_category} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
   [epi e] [mono i] (h : e ≫ i = f) :
   image.mono_factorisation f = { I := y, m := i, e := e, fac' := h, } :=
 begin
@@ -169,7 +159,7 @@ begin
 end
 
 lemma epi_of_mono_factorisation
-  {x y : simplex_category.{u}} (f : x ⟶ y) :
+  {x y : simplex_category} (f : x ⟶ y) :
   epi (image.mono_factorisation f).e :=
 begin
   rw uniqueness_mono_factorisation (image.mono_factorisation f)

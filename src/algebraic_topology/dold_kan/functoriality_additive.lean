@@ -13,8 +13,6 @@ open category_theory.category
 open category_theory.idempotents
 open algebraic_topology
 
-universe v
-
 open algebraic_topology.dold_kan
 
 namespace category_theory
@@ -22,7 +20,7 @@ namespace category_theory
 namespace simplicial_object
 
 @[simps]
-def karoubi_whiskering (C D : Type*) [category.{v} C] [category.{v} D] :=
+def karoubi_whiskering (C D : Type*) [category C] [category D] :=
 simplicial_object.whiskering C D ⋙ functor_extension'' _ _
 
 end simplicial_object
@@ -31,8 +29,8 @@ namespace preadditive
 
 namespace dold_kan
 
-variables {C : Type*} [category.{v} C] [additive_category C]
-variables {D : Type*} [category.{v} D] [additive_category D]
+variables {C : Type*} [category C] [additive_category C]
+variables {D : Type*} [category D] [additive_category D]
 variables (F : C ⥤ D) [functor.additive F]
 
 lemma functoriality_N₁ : (simplicial_object.whiskering C D).obj F ⋙ N₁ =

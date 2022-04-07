@@ -10,7 +10,7 @@ variables {C : Type*} [category C] [preadditive C]
 variables {ι : Type*} {c : complex_shape ι}
 
 namespace homological_complex
-
+/-
 @[simp]
 def eq_to_hom_f {K L : homological_complex C c} (h : K = L) (n : ι) :
   homological_complex.hom.f (eq_to_hom h) n =
@@ -31,7 +31,7 @@ begin
   by_cases hij : c.rel i j,
   { simpa only [id_comp, eq_to_hom_refl, comp_id] using h_d i j hij, },
   { rw [K_shape' i j hij, L_shape' i j hij], }
-end
+end-/
 
 def congr_X {K L : homological_complex C c} (h : K = L) :
   ∀ (n : ι), K.X n = L.X n :=
@@ -55,7 +55,8 @@ lemma map_of (F : C ⥤ D) [F.additive] (X : α → C) (d : Π n, X (n+1) ⟶ X 
   chain_complex.of (λ n, F.obj (X n))
     (λ n, F.map (d n)) (λ n, by rw [ ← F.map_comp, sq n, functor.map_zero]) :=
 begin
-  ext i j hij,
+  apply homological_complex.ext,
+  intros i j hij,
   { have h : j+1=i := hij,
     subst h,
     simp only [of_d, functor.map_homological_complex_obj_d, id_comp,
