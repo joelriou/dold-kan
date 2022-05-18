@@ -2,7 +2,7 @@
 
 Get the code using `leanproject get joelriou/dold-kan`.
 
-The general strategy of the proof is explained in [`equivalence.lean`](https://github.com/joelriou/dold-kan/blob/main/src/algebraic_topology/dold_kan/equivalence.lean).
+The general strategy of the proof is explained in [`equivalence.lean`](https://github.com/joelriou/dold-kan/blob/main/src/for_mathlib/dold_kan/equivalence.lean).
 
 ## Dependency graph
 
