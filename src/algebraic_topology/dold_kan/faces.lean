@@ -55,7 +55,7 @@ lemma fin.cast_le_one {n m : ℕ} (h : n.succ.succ ≤ m.succ.succ) :
   fin.cast_le h 1 = 1 :=
 by simpa only [fin.eq_iff_veq]
 
-/- For algebra.big_operators.basic -/
+/- For algebra.big_operators.fin -/
 @[to_additive]
 lemma fin.prod_eq_of_fin_cast {β : Type*} [comm_monoid β] {a b : ℕ} (f : fin b → β) (h : a = b) :
   ∏ (i : fin a), f (fin.cast h i) = ∏ (i : fin b), f i :=
