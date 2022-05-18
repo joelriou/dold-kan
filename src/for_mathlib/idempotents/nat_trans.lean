@@ -97,10 +97,10 @@ begin
   erw [F.map_id, G.map_id, id_comp, comp_id],
 end
 
-lemma karoubi_universal'_inverse_preimage_iso (F G : karoubi C ⥤ karoubi D)
-  (e : ((karoubi_universal' C D).inverse).obj F ≅ ((karoubi_universal' C D).inverse).obj G) :
-  preimage_iso e = (whiskering_left_to_karoubi_iso_equiv F G).inv_fun e :=
-by { ext1, exact karoubi_universal'_inverse_preimage F G e.hom, }
+--lemma karoubi_universal'_inverse_preimage_iso (F G : karoubi C ⥤ karoubi D)
+--  (e : ((karoubi_universal' C D).inverse).obj F ≅ ((karoubi_universal' C D).inverse).obj G) :
+--  preimage_iso e = (whiskering_left_to_karoubi_iso_equiv F G).inv_fun e :=
+--by { ext1, exact karoubi_universal'_inverse_preimage F G e.hom, }
 
 lemma whiskering_left_to_karoubi_hom_equiv_inv_fun_compat {F G : karoubi C ⥤ D}
   (ψ : to_karoubi _ ⋙ F ⟶ to_karoubi _ ⋙ G) (X : C) :

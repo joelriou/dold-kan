@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import algebraic_topology.dold_kan.projections
+import for_mathlib.dold_kan.projections
 import for_mathlib.idempotents.functor_categories
 import for_mathlib.idempotents.functor_extension
 

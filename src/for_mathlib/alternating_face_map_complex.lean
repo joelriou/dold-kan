@@ -4,17 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou, Adam Topaz, Johan Commelin
 -/
 
-import for_mathlib.homological_complex_misc
-
-import algebra.homology.homological_complex
 import algebra.homology.additive
-import algebraic_topology.simplicial_object
 import algebraic_topology.Moore_complex
-import category_theory.preadditive.additive_functor
-import category_theory.abelian.basic
-import algebra.big_operators.basic
-import tactic.ring_exp
-import data.fintype.card
+import algebra.big_operators.fin
 
 /-!
 
@@ -37,15 +29,13 @@ when `A` is an abelian category.
 -/
 
 open category_theory category_theory.limits category_theory.subobject
-open category_theory.preadditive
+open category_theory.preadditive category_theory.category
 open opposite
 
 open_locale big_operators
 open_locale simplicial
 
 noncomputable theory
-
-universes v
 
 namespace algebraic_topology
 
@@ -151,7 +141,7 @@ chain_complex.of_hom _ _ _ _ _ _
 
 end alternating_face_map_complex
 
-variables (C : Type*) [category.{v} C] [preadditive C]
+variables (C : Type*) [category C] [preadditive C]
 
 /-- The alternating face map complex, as a functor -/
 @[simps]
@@ -161,27 +151,27 @@ def alternating_face_map_complex : simplicial_object C ⥤ chain_complex C ℕ :
 
 variables {C}
 
-def map_alternating_face_map_complex {D : Type*} [category D] [preadditive D]
+lemma map_alternating_face_map_complex {D : Type*} [category D] [preadditive D]
   (F : C ⥤ D) [F.additive] :
-  alternating_face_map_complex C ⋙ (functor.map_homological_complex F _) =
+  alternating_face_map_complex C ⋙ F.map_homological_complex _ =
   (simplicial_object.whiskering C D).obj F ⋙ alternating_face_map_complex D :=
 begin
   apply category_theory.functor.ext,
   { intros X Y f,
     ext n,
-    dsimp,
-    simp only [homological_complex.eq_to_hom_f, eq_to_hom_refl],
-    erw [category.comp_id, category.id_comp], },
+    simp only [functor.comp_map, alternating_face_map_complex.map,
+      alternating_face_map_complex_map, functor.map_homological_complex_map_f,
+      chain_complex.of_hom_f, simplicial_object.whiskering_obj_map_app,
+      homological_complex.comp_f, homological_complex.eq_to_hom_f,
+      eq_to_hom_refl, comp_id, id_comp], },
   { intro X,
-    dsimp [alternating_face_map_complex.obj],
-    erw chain_complex.map_of,
+    erw chain_complex.map_chain_complex_of,
     congr,
     ext n,
-    dsimp,
-    simp only [functor.map_sum],
+    simp only [alternating_face_map_complex.obj_d, functor.map_sum],
     congr,
     ext,
-    simpa only [functor.map_zsmul], },
+    apply functor.map_zsmul, },
 end
 
 /-!

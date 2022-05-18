@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import algebraic_topology.dold_kan.functor_n
+import for_mathlib.dold_kan.functor_n
 
 /-
 

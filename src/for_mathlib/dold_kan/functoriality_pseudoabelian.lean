@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import algebraic_topology.dold_kan.functoriality_additive
-import algebraic_topology.dold_kan.equivalence_pseudoabelian
+import for_mathlib.dold_kan.functoriality_additive
+import for_mathlib.dold_kan.equivalence_pseudoabelian
 
 /-!
 

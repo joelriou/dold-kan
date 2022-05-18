@@ -109,43 +109,55 @@ end
 
 namespace idempotents
 
-variables (C D E : Type*) [category C] [category D] [category E]
+variables {C D E : Type*} [category C] [category D] [category E]
+
+namespace functor_extension'
+
+@[simps]
+def obj (F : C ⥤ karoubi D) : karoubi C ⥤ karoubi D :=
+{ obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).f,
+    by simpa only [F.map_comp, hom_ext]
+      using congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idem ⟩,
+  map := λ P Q f, ⟨(F.map f.f).f,
+    by simpa only [F.map_comp, hom_ext]
+      using congr_arg (λ (f : P.X ⟶ Q.X), F.map f) f.comm ⟩, }
+
+@[simps]
+def map {F G : C ⥤ karoubi D} (φ : F ⟶ G) : obj F ⟶ obj G :=
+{ app := λ P,
+  { f := (F.map P.p).f ≫ (φ.app P.X).f,
+    comm := begin
+      dsimp,
+      have h := hom_ext.mp (φ.naturality P.p),
+      have h' := hom_ext.mp (congr_map F P.idem),
+      simp only [functor.map_comp, comp] at h h',
+      slice_rhs 3 4 { erw ← h },
+      slice_rhs 1 3 { erw [h', h'], },
+    end, },
+  naturality' := λ P Q f, begin
+    ext,
+    dsimp [obj],
+    have h := hom_ext.mp (φ.naturality f.f),
+    have h' := hom_ext.mp (congr_map F (comp_p f)),
+    have h'' := hom_ext.mp (congr_map F (p_comp f)),
+    simp only [functor.map_comp, comp] at ⊢ h h' h'',
+    slice_rhs 2 3 { rw ← h, },
+    slice_lhs 1 2 { rw h', },
+    slice_rhs 1 2 { rw h'', },
+  end }
+
+end functor_extension'
+
+variables (C D E)
 
 @[simps]
 def functor_extension' : (C ⥤ karoubi D) ⥤ (karoubi C ⥤ karoubi D) :=
-{ obj := λ F,
-  { obj := λ P, ⟨(F.obj P.X).X, (F.map P.p).f,
-      by simpa only [F.map_comp, hom_ext]
-        using congr_arg (λ (f : P.X ⟶ P.X), F.map f) P.idem ⟩,
-    map := λ P Q f, ⟨(F.map f.f).f,
-      by simpa only [F.map_comp, hom_ext]
-        using congr_arg (λ (f : P.X ⟶ Q.X), F.map f) f.comm ⟩, },
-  map := λ F G φ,
-  { app := λ P,
-    { f := (F.map P.p).f ≫ (φ.app P.X).f,
-      comm := begin
-        dsimp,
-        have h := hom_ext.mp (φ.naturality P.p),
-        have h' := hom_ext.mp (congr_map F P.idem),
-        simp only [functor.map_comp, comp] at h h',
-        slice_rhs 3 4 { erw ← h },
-        slice_rhs 1 3 { erw [h', h'], },
-      end, },
-    naturality' := λ P Q f, begin
-      ext,
-      dsimp,
-      have h := hom_ext.mp (φ.naturality f.f),
-      have h' := hom_ext.mp (congr_map F (comp_p f)),
-      have h'' := hom_ext.mp (congr_map F (p_comp f)),
-      simp only [functor.map_comp, comp] at ⊢ h h' h'',
-      slice_rhs 2 3 { rw ← h, },
-      slice_lhs 1 2 { rw h', },
-      slice_rhs 1 2 { rw h'', },
-    end },
+{ obj := functor_extension'.obj,
+  map := λ F G, functor_extension'.map,
   map_id' := λ F, by { ext P, exact comp_p (F.map P.p), },
   map_comp' := λ F G H φ φ', begin
     ext P,
-    dsimp,
+    dsimp [functor_extension'.map],
     simp only [comp],
     have h := hom_ext.mp (φ.naturality P.p),
     simp only [comp] at h,
@@ -161,18 +173,15 @@ begin
   { intros F G φ,
     ext X,
     dsimp,
-    simp only [functor.map_id, id_eq, eq_to_hom_f, eq_to_hom_refl, comp_id,
-      functor_extension'_obj_obj_p, to_karoubi_obj_p, eq_to_hom_app, comp],
-    rw [F.map_id X, id_eq, comp_p (φ.app X)], },
+    simp only [eq_to_hom_app, F.map_id, karoubi.comp, eq_to_hom_f, id_eq, p_comp, eq_to_hom_refl, comp_id, comp_p,
+      functor_extension'.obj_obj_p, to_karoubi_obj_p, F.map_id X], },
   { intro F,
     apply functor.ext,
     { intros X Y f,
       ext,
       dsimp,
-      simp only [eq_to_hom_f, eq_to_hom_refl, comp_id, functor_extension'_obj_obj_p,
-        to_karoubi_obj_p, comp],
-      erw [F.map_id, id_eq],
-      exact (F.map f).comm, },
+      simp only [eq_to_hom_f, eq_to_hom_refl, comp_id, comp_p, functor_extension'.obj_obj_p, to_karoubi_obj_p, comp],
+      erw [F.map_id, id_eq, p_comp], },
     { intro X,
       ext,
       { dsimp,
@@ -183,69 +192,56 @@ end
 @[simps]
 def functor_extension'_counit_iso :
 (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) ⋙ functor_extension' C D ≅ 𝟭 _ :=
+nat_iso.of_components (λ G,
 { hom :=
-  { app := λ G,
-    { app := λ P,
-      { f := (G.map (decomp_id_p P)).f,
-        comm := begin
-          have eq : P.decomp_id_p = (to_karoubi C).map P.p ≫ P.decomp_id_p ≫ 𝟙 _,
-          { simp only [P.idem, decomp_id_p_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
-          have eq' := hom_ext.mp (congr_map G eq),
-          simp only [G.map_comp, G.map_id] at eq',
-          simpa only [comp] using eq',
-        end },
+  { app := λ P,
+    { f := (G.map (decomp_id_p P)).f,
+      comm := begin
+        have eq : P.decomp_id_p = (to_karoubi C).map P.p ≫ P.decomp_id_p ≫ 𝟙 _,
+        { simp only [P.idem, decomp_id_p_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
+        have eq' := hom_ext.mp (congr_map G eq),
+        simp only [G.map_comp, G.map_id] at eq',
+        simpa only [comp] using eq',
+      end },
       naturality' := λ P Q f, begin
         ext,
         simpa only [G.map_comp, hom_ext] using (congr_map G (decomp_id_p_naturality f)).symm,
       end },
-    naturality' := λ G G' φ, begin
-      ext P,
-      have eq := hom_ext.mp (φ.naturality P.decomp_id_p),
-      have eq' : ((to_karoubi C).map P.p) ≫ P.decomp_id_p = P.decomp_id_p,
-      { ext, simpa only using P.idem, },
-      simp only [comp] at eq,
-      simp only [functor_extension'_map_app_f, whisker_left_app, assoc, functor.comp_map,
-        whiskering_left_obj_map, nat_trans.comp_app, comp, functor.id_map],
-      erw [← eq, ← assoc],
-      dsimp,
-      congr' 1,
-      simpa only [G.map_comp] using hom_ext.mp (congr_map G eq'),
-    end },
   inv :=
-  { app := λ G,
-    { app := λ P,
-      { f := (G.map (decomp_id_i P)).f,
-        comm := begin
-          have eq : P.decomp_id_i = 𝟙 _ ≫ P.decomp_id_i ≫ (to_karoubi C).map P.p,
-          { simp only [P.idem, decomp_id_i_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
-          have eq' := hom_ext.mp (congr_map G eq),
-          simp only [G.map_comp, G.map_id] at eq',
-          simpa only [comp] using eq',
-        end, },
-      naturality' := λ P Q f, begin
-        ext,
-        simpa only [G.map_comp, hom_ext] using congr_map G (decomp_id_i_naturality f),
-      end },
-    naturality' := λ G G' φ, begin
-      ext P,
-      have eq := hom_ext.mp (φ.naturality P.decomp_id_i),
-      have eq' : P.decomp_id_i = P.decomp_id_i ≫ ((to_karoubi C).map P.p),
-      { ext, simpa only using P.idem.symm, },
-      simp only [comp] at eq,
-      simp only [functor.id_map, nat_trans.comp_app, comp, functor_extension'_map_app_f,
-        whisker_left_app, functor.comp_map, whiskering_left_obj_map, ← eq],
-      rw ← assoc,
-      congr' 1,
-      simpa only [G.map_comp] using hom_ext.mp (congr_map G eq'),
+  { app := λ P,
+    { f := (G.map (decomp_id_i P)).f,
+      comm := begin
+        have eq : P.decomp_id_i = 𝟙 _ ≫ P.decomp_id_i ≫ (to_karoubi C).map P.p,
+        { simp only [P.idem, decomp_id_i_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
+        have eq' := hom_ext.mp (congr_map G eq),
+        simp only [G.map_comp, G.map_id] at eq',
+        simpa only [comp] using eq',
+      end, },
+    naturality' := λ P Q f, begin
+      ext,
+      simpa only [G.map_comp, hom_ext] using congr_map G (decomp_id_i_naturality f),
     end },
   hom_inv_id' := begin
-    ext G P,
+    ext P,
     simpa only [G.map_comp, G.map_id] using hom_ext.mp (congr_map G P.decomp_p.symm),
   end,
   inv_hom_id' := begin
-    ext G P,
+    ext P,
     simpa only [G.map_comp, G.map_id] using hom_ext.mp (congr_map G P.decomp_id.symm),
-  end, }
+  end, })
+begin
+  intros G G' φ,
+  ext P,
+  have eq := hom_ext.mp (φ.naturality P.decomp_id_p),
+  have eq' : ((to_karoubi C).map P.p) ≫ P.decomp_id_p = P.decomp_id_p,
+  { ext, simpa only using P.idem, },
+  simp only [comp] at eq,
+  simp,
+  erw [← eq, ← assoc],
+  dsimp,
+  congr' 1,
+  simpa only [G.map_comp] using hom_ext.mp (congr_map G eq'),
+end
 
 @[simps]
 def karoubi_universal' : (C ⥤ karoubi D) ≌ (karoubi C ⥤ karoubi D) :=

@@ -5,12 +5,13 @@ Authors: Joël Riou
 -/
 
 import algebra.homology.homotopy
-import for_mathlib.functor_misc
-import algebraic_topology.dold_kan.notations
+import for_mathlib.dold_kan.notations
 
 /-!
 
 # Construction of homotopies for the Dold-Kan correspondence
+
+TODO (@joelriou) continue adding the various files references below
 
 (The general strategy of proof of the Dold-Kan correspondence is explained
 in `equivalence.lean`.)
@@ -52,10 +53,8 @@ In this file `homotopies.lean`, we define the null homotopic maps
 compatible the application of additive functors (see `map_Hσ`).
 
 ## References
-* Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
-Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
-* Paul G. Goerss, John F. Jardine, Simplical Homotopy Theory, Modern Birkhäuser Classics,
-Reprint of the 1999 edition.
+* [Albrecht Dold, *Homology of Symmetric Products and Other Functors of Complexes*][dold1958]
+* [Paul G. Goerss, John F. Jardine, *Simplical Homotopy Theory*][goerss-jardine-2009]
 
 -/
 
@@ -78,12 +77,13 @@ variables {C : Type*} [category C] [preadditive C]
 variables {X : simplicial_object C}
 
 /-- As we are using chain complexes indexed by `ℕ`, we shall need the relation
-`c` such `c m n` if and only if `m=n+1`. -/
+`c` such `c m n` if and only if `n+1=m`. -/
 abbreviation c := complex_shape.down ℕ
 
 /-- Helper when we need some `c.rel i j` (i.e. `complex_shape.down ℕ`),
 e.g. `c_mk n (n+1) rfl` -/
-lemma c_mk (i j : ℕ) (h : j+1 = i) : c.rel i j := h
+lemma c_mk (i j : ℕ) (h : j+1 = i) : c.rel i j :=
+complex_shape.down_mk i j h
 
 /-- This lemma is meant to be used with `null_homotopic_map'_f_of_not_rel_left` -/
 lemma cs_down_0_not_rel_left (j : ℕ) : ¬c.rel 0 j :=
@@ -94,7 +94,7 @@ begin
   rw [nat.succ_eq_add_one, hj],
 end
 
-/-- the sequence of maps that provide the null homotopic map that are used in
+/-- The sequence of maps which gives the null homotopic maps `Hσ` that shall be in
 the inductive construction of the projections `P q : K[X] ⟶ K[X]` -/
 def hσ (q : ℕ) (n : ℕ) : X _[n] ⟶ X _[n+1] :=
 if n<q
@@ -102,8 +102,8 @@ if n<q
   else (-1 : ℤ)^(n-q) • X.σ ⟨n-q, nat.sub_lt_succ n q⟩
 
 /-- We can turn `hσ` into a datum that can be passed to `null_homotopic_map'`. -/
-def hσ' (q : ℕ) : Π i j, c.rel j i → (K[X].X i ⟶ K[X].X j) :=
-λ i j hij, (hσ q i) ≫ eq_to_hom (by congr')
+def hσ' (q : ℕ) : Π n m, c.rel m n → (K[X].X n ⟶ K[X].X m) :=
+λ n m hnm, (hσ q n) ≫ eq_to_hom (by congr')
 
 lemma hσ'_eq_zero {q n m : ℕ} (hnq : n<q) (hnm : c.rel m n) :
   (hσ' q n m hnm : X _[n] ⟶ X _[m])= 0 :=
@@ -112,7 +112,7 @@ by { simp only [hσ', hσ], split_ifs, exact zero_comp, }
 lemma hσ'_eq {q n a m : ℕ} (ha : n=a+q) (hnm : c.rel m n) :
   (hσ' q n m hnm : X _[n] ⟶ X _[m]) =
   ((-1 : ℤ)^a • X.σ ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm ha))⟩) ≫
-      eq_to_hom (by { congr', }) :=
+      eq_to_hom (by congr') :=
 begin
   simp only [hσ', hσ],
   split_ifs,
@@ -121,13 +121,12 @@ begin
     congr', }
 end
 
-/-- the null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
+/-- The null homotopic map $(hσ q) ∘ d + d ∘ (hσ q)$ -/
 def Hσ (q : ℕ) : K[X] ⟶ K[X] := null_homotopic_map' (hσ' q)
 
 /-- `Hσ` is null homotopic -/
 def homotopy_Hσ_to_zero (q : ℕ) : homotopy (Hσ q : K[X] ⟶ K[X]) 0 :=
 null_homotopy' (hσ' q)
-
 
 /-- In degree `0`, the null homotopic map `Hσ` is zero. -/
 lemma Hσ_eq_zero (q : ℕ) : (Hσ q : K[X] ⟶ K[X]).f 0 = 0  :=
@@ -136,8 +135,7 @@ begin
   rw null_homotopic_map'_f_of_not_rel_left (c_mk 1 0 rfl) cs_down_0_not_rel_left,
   cases q,
   { erw hσ'_eq (show 0=0+0, by refl) (c_mk 1 0 rfl),
-    simp only [hσ'_eq (show 0=0+0, by refl) (c_mk 1 0 rfl),
-      pow_zero, fin.mk_zero, one_zsmul, eq_to_hom_refl, category.comp_id],
+    simp only [pow_zero, fin.mk_zero, one_zsmul, eq_to_hom_refl, category.comp_id],
     erw chain_complex.of_d,
     simp only [alternating_face_map_complex.obj_d, fin.sum_univ_two,
       fin.coe_zero, pow_zero, one_zsmul, fin.coe_one, pow_one, comp_add,
@@ -146,18 +144,18 @@ begin
   { erw [hσ'_eq_zero (nat.succ_pos q) (c_mk 1 0 rfl), zero_comp], },
 end
 
-/-- The maps `hσ' q i j hij` are natural with respect to the simplicial object -/
-lemma hσ'_naturality (q : ℕ) (i j : ℕ) (hij : c.rel j i)
+/-- The maps `hσ' q n m hnm` are natural on the simplicial object -/
+lemma hσ'_naturality (q : ℕ) (n m : ℕ) (hnm : c.rel m n)
   {X Y : simplicial_object C} (f : X ⟶ Y) :
-  f.app (op [i]) ≫ hσ' q i j hij = hσ' q i j hij ≫ f.app (op [j]) :=
+  f.app (op [n]) ≫ hσ' q n m hnm = hσ' q n m hnm ≫ f.app (op [m]) :=
 begin
-  have h : i+1 = j := hij,
+  have h : n+1 = m := hnm,
   subst h,
   simp only [hσ', eq_to_hom_refl, comp_id],
-  by_cases hqn : i<q; unfold hσ; split_ifs,
-  { simp only [zero_comp, comp_zero], },
+  unfold hσ,
+  split_ifs,
+  { rw [zero_comp, comp_zero], },
   { simp only [zsmul_comp, comp_zsmul],
-    congr' 1,
     erw f.naturality,
     refl, },
 end
@@ -165,22 +163,22 @@ end
 /-- For each q, `Hσ q` is a natural transformation. -/
 def nat_trans_Hσ (q : ℕ) :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
-{ app := λ _, Hσ q,
+{ app := λ X, Hσ q,
   naturality' := λ X Y f, begin
     unfold Hσ,
     rw [null_homotopic_map'_comp, comp_null_homotopic_map'],
     congr,
-    ext i j hij,
+    ext n m hnm,
     simp only [alternating_face_map_complex_map, alternating_face_map_complex.map,
       chain_complex.of_hom_f, hσ'_naturality],
-  end }
+  end, }
 
-/-- The maps `hσ' q i j hij` are compatible with the application of additive functors. -/
+/-- The maps `hσ' q n m hnm` are compatible with the application of additive functors. -/
 lemma map_hσ' {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C)
-  (q i j : ℕ) (hij : c.rel j i) :
-  (hσ' q i j hij : K[((whiskering _ _).obj G).obj X].X i ⟶ _) =
-  G.map (hσ' q i j hij : K[X].X i ⟶ _) :=
+  (q n m : ℕ) (hnm : c.rel m n) :
+  (hσ' q n m hnm : K[((whiskering _ _).obj G).obj X].X n ⟶ _) =
+    G.map (hσ' q n m hnm : K[X].X n ⟶ _) :=
 begin
   unfold hσ' hσ,
   split_ifs,
@@ -192,13 +190,13 @@ end
 lemma map_Hσ {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
   (Hσ q : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
-  G.map ((Hσ q : K[X] ⟶ _).f n) :=
+    G.map ((Hσ q : K[X] ⟶ _).f n) :=
 begin
   unfold Hσ,
   have eq := homological_complex.congr_hom (map_null_homotopic_map' G (hσ' q)) n,
   simp only [functor.map_homological_complex_map_f, ← map_hσ'] at eq,
   rw eq,
-  let h := (congr_obj (map_alternating_face_map_complex G) X).symm,
+  let h := (functor.congr_obj (map_alternating_face_map_complex G) X).symm,
   congr',
 end
 

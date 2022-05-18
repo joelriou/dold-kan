@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import algebraic_topology.dold_kan.gamma_comp_n
-import algebraic_topology.dold_kan.n_reflects_iso
+import for_mathlib.dold_kan.gamma_comp_n
+import for_mathlib.dold_kan.n_reflects_iso
 
 noncomputable theory
 
