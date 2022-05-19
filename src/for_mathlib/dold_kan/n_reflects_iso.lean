@@ -26,7 +26,7 @@ variables {C : Type*} [category C] [preadditive C]
 instance : reflects_isomorphisms
   (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
 begin
-  refine ⟨_⟩,
+  constructor,
   intros X Y f,
   introI,
   /- restating the result in a way that allows induction on the degree n -/
@@ -112,7 +112,7 @@ end
 instance : reflects_isomorphisms
   (N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)) :=
 begin
-  refine ⟨_⟩,
+  constructor,
   intros X Y f,
   introI,
   -- the following four functors reflects isomorphisms so that
