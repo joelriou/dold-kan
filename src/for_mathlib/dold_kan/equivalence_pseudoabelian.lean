@@ -61,8 +61,8 @@ by the functors `N` and `Γ`. It is obtained by applying the results in
 def equivalence : simplicial_object C ≌ chain_complex C ℕ :=
 compatibility.equivalence (eq_to_iso hN₁) (eq_to_iso hΓ₀)
 
-lemma equivalence_functor : (@equivalence C _ _).functor = N := by refl
-lemma equivalence_inverse : (@equivalence C _ _).inverse = Γ := by refl
+lemma equivalence_functor : (equivalence : simplicial_object C ≌ _).functor = N := by refl
+lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _).inverse = Γ := by refl
 
 /-- The natural isomorphism `NΓ' satisfies the compatibility that is needed
 for the construction of our counit isomorphism `η` -/

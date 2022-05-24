@@ -170,8 +170,8 @@ begin
   exact N.as_equivalence,
 end
 
-lemma equivalence_functor : (@equivalence A _ _).functor = N := by refl
-lemma equivalence_inverse : (@equivalence A _ _).inverse = Γ := by refl
+lemma equivalence_functor : (equivalence : simplicial_object A ≌ _).functor = N := by refl
+lemma equivalence_inverse : (equivalence : simplicial_object A ≌ _).inverse = Γ := by refl
 
 end dold_kan
 
