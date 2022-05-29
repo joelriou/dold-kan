@@ -147,6 +147,7 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
         P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
       naturality' := λ Δ Δ' θ, begin
         ext A,
+        cases A,
         slice_rhs 1 2 { erw colimit.ι_desc, },
         dsimp,
         let em := image.mono_factorisation (θ.unop ≫ A.2.1),

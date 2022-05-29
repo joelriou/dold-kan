@@ -206,9 +206,11 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
         have h : j+1 = i := hij,
         subst h,
         ext A,
+        cases A,
         simp only [cofan.mk_ι_app, colimit.ι_desc_assoc, N₁Γ₀_map_termwise],
         split_ifs,
-        { have hA := eq_Γ_index_id h,
+        { dsimp at h,
+          have hA := eq_Γ_index_id h,
           subst hA,
           dsimp,
           erw [id_comp, d_on_KΓ], },
@@ -218,6 +220,7 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
       end },
     comm := begin
       ext n A,
+      cases A,
       simp only [to_karoubi_obj_p, homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc],
       dsimp at ⊢ A,
       erw [comp_id],
@@ -231,6 +234,7 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
     end },
   naturality' := λ K L f, begin
     ext n A,
+    cases A,
     simp,
     dsimp at ⊢ A,
     erw [← assoc],
@@ -291,6 +295,7 @@ def N₁Γ₀_iso : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
   inv := N₁Γ₀_iso_inv,
   hom_inv_id' := begin
     ext K n A,
+    cases A,
     simp only [homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc_assoc,
       nat_trans.id_app, karoubi.id_eq, karoubi.comp, nat_trans.comp_app],
     dsimp at ⊢ A,

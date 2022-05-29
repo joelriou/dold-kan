@@ -239,6 +239,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
   map := λ Δ Δ' θ, Γ_simplicial K θ.unop,
   map_id' := λ Δ, begin
     ext A,
+    cases A,
     haveI : epi A.2.1 := A.2.2,
     have eq := Γ_simplicial_on_summand K A
       (show A.2.1 ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.2.1, by { simp only [comp_id, id_comp], }),
@@ -251,6 +252,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
   end,
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
     ext A,
+    cases A,
     let em' := image.mono_factorisation (θ'.unop ≫ A.2.1),
     haveI : epi em'.e := simplex_category.epi_of_mono_factorisation _,
     slice_rhs 1 2 { rw Γ_simplicial_on_summand K A em'.fac, },
