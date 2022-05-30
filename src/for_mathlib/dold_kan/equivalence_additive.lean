@@ -36,10 +36,9 @@ def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ
   functor_unit_iso_comp' := λ P, begin
     let α := N.map_iso (Γ₂N₂_iso.app P),
     let β := N₂Γ₂_iso.app (N.obj P),
-    suffices : α.hom ≫ β.hom = 𝟙 _,
-    { exact this, },
-    symmetry,
-    erw [← iso.inv_comp_eq, comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
+    suffices : 𝟙 _ = α.hom ≫ β.hom,
+    { exact this.symm, },
+    rw [← iso.inv_comp_eq, comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
     exact algebraic_topology.dold_kan.identity_N₂_objectwise P,
   end }
 
