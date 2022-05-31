@@ -77,17 +77,6 @@ begin
     higher_faces_vanish_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
 end
 
-/-
-lemma P_infty_eq_zero_on' (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category} (f : op [n] ⟶ op Δ') [mono f.unop]
-  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 f.unop) :
-  P_infty.f n ≫ X.map f = 0 :=
-begin
-
-  have pif := P_infty_eq_zero_on X f.unop h₁ h₂,
-  sorry,
---P_infty_eq_zero_on X f.unop h₁ h₂
-end-/
-
 lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category) ⟶ [n']) [mono i] :
   Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n = P_infty.f n' ≫ X.map i.op :=
 begin
