@@ -112,7 +112,7 @@ require that `F` is an exact functor!)
 ## References
 * Albrecht Dold, Homology of Symmetric Products and Other Functors of Complexes,
 Annals of Mathematics, Second Series, Vol. 68 No. 1 (Jul. 1958), pp. 54-80.
-* Paul G. Goerss, John F. Jardine, Simplical Homotopy Theory, Modern Birkhäuser Classics,
+* Paul G. Goerss, John F. Jardine, Simplicial Homotopy Theory, Modern Birkhäuser Classics,
 Reprint of the 1999 edition.
 
 -/
