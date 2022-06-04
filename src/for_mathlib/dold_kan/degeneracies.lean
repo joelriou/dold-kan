@@ -12,7 +12,7 @@ open category_theory.category
 open category_theory.limits
 open category_theory.idempotents
 open opposite
-open_locale simplicial
+open_locale simplicial dold_kan
 
 noncomputable theory
 
@@ -24,10 +24,33 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
-lemma P_infty_eq_id_on_Γ_summand (K : chain_complex C ℕ) (n : ℕ) :
+lemma P_infty_eq_id_on_Γ_summand_old (K : chain_complex C ℕ) (n : ℕ) :
   inclusion_Γ_summand K (Γ_index_id n) ≫ P_infty.f n =
     inclusion_Γ_summand K (Γ_index_id n) :=
 begin
+  rw P_infty_degreewise,
+  cases n,
+  { erw [P_deg0_eq, comp_id], },
+  { apply P_is_identity_where_faces_vanish,
+    intros j hj,
+    let i := simplex_category.δ j.succ,
+    erw Γ_simplicial_on_summand K (Γ_index_id (n+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+    rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
+    { intro h,
+      apply nat.succ_ne_self n,
+      simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
+    { rintro ⟨h₁, h₂⟩,
+      erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
+      exact h₂ rfl, }, },
+end
+
+@[simp, reassoc]
+lemma P_infty_eq_id_on_Γ_summand (K : chain_complex C ℕ) (n : ℕ) :
+  sigma.ι (Γ_summand K [n]) (Γ_index_id n) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
+    sigma.ι (Γ_summand K [n]) (Γ_index_id n) :=
+begin
+  change inclusion_Γ_summand K (Γ_index_id n) ≫ P_infty.f n =
+    inclusion_Γ_summand K (Γ_index_id n),
   rw P_infty_degreewise,
   cases n,
   { erw [P_deg0_eq, comp_id], },

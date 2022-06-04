@@ -302,7 +302,7 @@ def N₁Γ₀_iso : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
     split_ifs,
     { have h' := eq_Γ_index_id h,
       subst h',
-      erw [P_infty_eq_id_on_Γ_summand, id_comp], refl, },
+      erw [P_infty_eq_id_on_Γ_summand, id_comp], },
     { erw [zero_comp, P_infty_eq_zero_on_Γ_summand K h], },
   end,
   inv_hom_id' := begin

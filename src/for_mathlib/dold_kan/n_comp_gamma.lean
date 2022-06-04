@@ -182,35 +182,37 @@ begin
   { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂), },
 end
 
+lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
+(N₂Γ₂_iso.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id n) :=
+begin
+  simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
+    P_infty_eq_id_on_Γ_summand_assoc,
+    ι_colim_map, discrete.nat_trans_app],
+  dsimp,
+  simp only [← P_infty_degreewise_naturality_assoc,
+    P_infty_degreewise_is_a_projection_assoc, app_idem_assoc],
+end
+
+lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id n) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
+P_infty.f n ≫ P.p.app (op [n]) :=
+begin
+  simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ_summand_assoc,
+    ι_colim_map_assoc, discrete.nat_trans_app, assoc],
+  erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
+  dsimp,
+  simp only [P_infty_degreewise_naturality_assoc,
+    P_infty_degreewise_is_a_projection_assoc, app_idem],
+end
+
 lemma identity_N₂_objectwise (P : karoubi (simplicial_object C)) :
 N₂Γ₂_iso.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂_nat_trans.app P) = 𝟙 (N₂.obj P) :=
 begin
   ext n,
-  simp only [karoubi.comp, homological_complex.comp_f, N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
-    N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, karoubi.id_eq],
-  have eq₁ : P.p.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ P.p.app (op [n]) :=
-    P_infty_degreewise_naturality _ _,
-  have eq₂ : (P_infty : K[P.X] ⟶ _).f n ≫ P_infty.f n = P_infty.f n :=
-    P_infty_degreewise_is_a_projection n,
-  have eq₃ : P.p.app (op [n]) ≫ P.p.app _ = P.p.app _,
-  { simpa only [nat_trans.comp_app] using congr_app P.idem (op [n]), },
-  slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
-  repeat
-  { slice_lhs 3 4 { erw P_infty_eq_id_on_Γ_summand, },
-    slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-    slice_lhs 2 3 { erw eq₁, },
-    slice_lhs 1 2 { erw eq₂, },
-    slice_lhs 2 3 { erw eq₃, }, },
-  slice_lhs 3 4 { erw [ι_colim_map, discrete.nat_trans_app], },
-  slice_lhs 2 3 { erw eq₁, },
-  slice_lhs 1 2 { erw eq₂, },
-  slice_lhs 2 3 { erw comp_id, },
-  slice_lhs 3 4 { erw colimit.ι_desc, },
-  dsimp only [cofan.mk],
-  slice_lhs 3 4 { erw [P.X.map_id, comp_id], },
-  slice_lhs 2 3 { erw eq₁, },
-  slice_lhs 1 2 { erw eq₂, },
-  slice_lhs 2 3 { erw eq₃, },
+  simpa only [assoc, karoubi.comp, homological_complex.comp_f, identity_N₂_objectwise_eq₁,
+    identity_N₂_objectwise_eq₂, P_infty_degreewise_naturality_assoc,
+    P_infty_degreewise_is_a_projection_assoc, app_idem],
 end
 
 lemma identity_N₂ :

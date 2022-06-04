@@ -161,6 +161,12 @@ begin
       refl, }, }
 end
 
+variables {J C}
+
+@[simp, reassoc]
+lemma app_idem (P : karoubi (J ⥤ C)) (X : J) :
+  P.p.app X ≫ P.p.app X = P.p.app X := congr_app P.idem X
+
 end idempotents
 
 end category_theory
