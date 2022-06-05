@@ -36,7 +36,7 @@ begin
 end
 
 lemma d_on_KΓ (K : chain_complex C ℕ) (j : ℕ) :
-  inclusion_Γ_summand K (Γ_index_id (j+1)) ≫ K[Γ₀.obj K].d (j+1) j
+  inclusion_Γ_summand K (Γ_index_id [j+1]) ≫ K[Γ₀.obj K].d (j+1) j
     ≫ sigma.desc (N₁Γ₀_map_termwise K j) = K.d (j+1) j :=
 begin
   erw chain_complex.of_d,
@@ -45,17 +45,17 @@ begin
   erw finset.sum_eq_single (0 : fin (j+2)), rotate,
   { intros b hb₀ hb,
     let i := simplex_category.δ b,
-    erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+    erw Γ_simplicial_on_summand K (Γ_index_id [j+1])
       (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
     erw Γ_on_mono_eq_zero K i (λ hj, by simpa only [simplex_category.len_mk, nat.succ_ne_self]
-      using congr_arg simplex_category.len hj) (by { rw is_d0_iff, exact hb, }),
+      using congr_arg simplex_category.len hj) (by { rw is_d₀_iff, exact hb, }),
     simp only [smul_zero', zero_comp], },
   { intro h, exfalso, simpa only [finset.mem_univ, not_true] using h, },
   { simp only [fin.coe_zero, pow_zero, ← assoc, one_zsmul],
     let i := simplex_category.δ (0 : fin (j+2)),
-    erw Γ_simplicial_on_summand K (Γ_index_id (j+1))
+    erw Γ_simplicial_on_summand K (Γ_index_id [j+1])
       (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    erw [Γ_on_mono_on_d0 K i (is_d0_iff.mpr rfl), assoc],
+    erw [Γ_on_mono_on_d0 K i (is_d₀_iff.mpr rfl), assoc],
     simp only [N₁Γ₀_map_termwise, colimit.ι_desc, cofan.mk_ι_app, simplex_category.len_mk,
       eq_self_iff_true, eq_to_hom_refl, dite_eq_ite, if_true],
     erw comp_id,
@@ -228,7 +228,7 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
       { have hA := eq_Γ_index_id h,
         subst hA,
         slice_rhs 1 2 { erw P_infty_eq_id_on_Γ_summand, },
-        simpa only [N₁Γ₀_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
+        simp only [N₁Γ₀_map_termwise, inclusion_Γ_summand, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
           Γ_index_id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
       { erw [← assoc, P_infty_eq_zero_on_Γ_summand K h, zero_comp], },
     end },
@@ -254,7 +254,7 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
 abbreviation N₁Γ₀_iso_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
 { app := λ K,
   { f :=
-    { f := λ n, sigma.ι (Γ_summand K [n]) (Γ_index_id n),
+    { f := λ n, sigma.ι (Γ_summand K [n]) (Γ_index_id [n]),
       comm' := λ i j hij, begin
         have h : j+1 = i := hij,
         subst h,
@@ -263,18 +263,18 @@ abbreviation N₁Γ₀_iso_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ 
         { intros b hb hb',
           let i := simplex_category.δ b,
           rw [preadditive.comp_zsmul],
-          erw Γ_simplicial_on_summand K (Γ_index_id (j+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+          erw Γ_simplicial_on_summand K (Γ_index_id [j+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
           rw [Γ_on_mono_eq_zero K i, zero_comp, zsmul_zero],
           { intro h,
             exact nat.succ_ne_self j (congr_arg simplex_category.len h), },
-          { rw is_d0_iff, exact hb', }, },
+          { rw is_d₀_iff, exact hb', }, },
         { simp only [finset.mem_univ, not_true, forall_false_left], },
         { simp only [fin.coe_zero, pow_zero, one_zsmul],
           let i := simplex_category.δ (0 : fin (j+2)),
-          erw Γ_simplicial_on_summand K (Γ_index_id (j+1)) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+          erw Γ_simplicial_on_summand K (Γ_index_id [j+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
           congr',
           apply Γ_on_mono_on_d0 K i,
-          erw is_d0_iff, },
+          erw is_d₀_iff, },
       end },
     comm := begin
       ext n,

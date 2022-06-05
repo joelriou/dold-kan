@@ -23,7 +23,7 @@ namespace dold_kan
 variables {C : Type*} [category C] [additive_category C]
 
 lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
-  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d0 i) :
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d₀ i) :
 P_infty.f n ≫ X.map i.op = 0 :=
 begin
   have h₃ := simplex_category.len_le_of_mono (show mono i, by apply_instance),
@@ -58,7 +58,7 @@ begin
       unfreezingI { subst h₉, },
       haveI : mono θ := mono_of_mono_fac hθ.symm,
       rw [simplex_category.eq_id_of_mono θ, id_comp] at hθ,
-      simpa only [hθ, is_d0_iff] using h₂, },
+      simpa only [hθ, is_d₀_iff] using h₂, },
       rw simplex_category.epi_iff_surjective at h₇,
       simp only [not_forall, not_exists] at h₇,
       cases h₇ with y hy,
@@ -87,7 +87,7 @@ begin
     unfreezingI { subst h, },
     simp only [Γ_on_mono_on_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
     erw [X.map_id, comp_id], },
-  by_cases hi : is_d0 i,
+  by_cases hi : is_d₀ i,
   /- The case `i = δ 0` -/
   { erw [Γ_on_mono_on_d0 _ i hi, ← P_infty.comm' n' n hi.left.symm],
     have h' : n' = n+1 := hi.left,
@@ -97,9 +97,9 @@ begin
     rw finset.sum_eq_single (0 : fin (n+2)), rotate,
     { intros b hb hb',
       simp only [preadditive.comp_zsmul],
-      erw [P_infty_eq_zero_on X (simplex_category.δ b) h (by { rw is_d0_iff, exact hb', }), zsmul_zero], },
+      erw [P_infty_eq_zero_on X (simplex_category.δ b) h (by { rw is_d₀_iff, exact hb', }), zsmul_zero], },
     { simp only [finset.mem_univ, not_true, forall_false_left], },
-    { simpa only [eq_d0_of_is_d0 hi, fin.coe_zero, pow_zero, one_zsmul], }, },
+    { simpa only [eq_d₀_of_is_d₀ hi, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
   { rw [Γ_on_mono_eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',
@@ -174,17 +174,19 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
     simpa only [← assoc],
   end }
 
+
+@[simps]
+def Γ₂N₁_compat_Γ₂N₂ : to_karoubi (simplicial_object C) ⋙ N₂ ⋙ Γ₂ ≅ N₁ ⋙ Γ₂ :=
+eq_to_iso (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂))
+
 @[simps]
 def Γ₂N₂_nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 _ :=
-begin
-  apply (whiskering_left_to_karoubi_hom_equiv (N₂ ⋙ Γ₂) (𝟭 _)).inv_fun,
-  refine eq_to_hom _ ≫ Γ₂N₁_nat_trans,
-  { exact congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂), },
-end
+(whiskering_left_to_karoubi_hom_equiv (N₂ ⋙ Γ₂) (𝟭 _)).inv_fun
+    (Γ₂N₁_compat_Γ₂N₂.hom ≫ Γ₂N₁_nat_trans)
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂_iso.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id n) :=
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id [n]) :=
 begin
   simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
     P_infty_eq_id_on_Γ_summand_assoc,
@@ -195,7 +197,7 @@ begin
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id n) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
   simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ_summand_assoc,
@@ -241,24 +243,18 @@ end
 
 lemma Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans (X : simplicial_object C) :
   Γ₂N₁_nat_trans.app X =
-  eq_to_hom begin
-    ext Δ j,
-    { simp only [eq_to_hom_refl, comp_id, id_comp], congr' 1, dsimp, congr, ext A, erw comp_id, },
-    { refl },
-  end ≫ Γ₂N₂_nat_trans.app ((to_karoubi _).obj X) :=
+  (Γ₂N₁_compat_Γ₂N₂.app X).inv ≫
+  Γ₂N₂_nat_trans.app ((to_karoubi _).obj X) :=
 begin
   ext Δ A,
-  simp only [karoubi.comp, eq_to_hom_refl, comp_id, karoubi.eq_to_hom_f],
-  dsimp [Γ₂N₂_nat_trans, Γ₂N₁_nat_trans],
-  simp only [functor.map_comp, eq_to_hom_map, karoubi.eq_to_hom_f, eq_to_hom_refl,
-    comp_id, karoubi.decomp_id_p_f, to_karoubi_obj_p, assoc, eq_to_hom_app, karoubi.comp,
-    nat_trans.comp_app, Γ₂_map_f_app, N₂_map_f_f, karoubi.decomp_id_i_f, Γ₂_obj_p_app,
-    N₂_obj_p_f, ι_colim_map_assoc, discrete.nat_trans_app, colimit.ι_desc,
-  cofan.mk_ι_app],
-  erw [nat_trans.id_app, nat_trans.id_app, id_comp, id_comp, comp_id,
-    colimit.ι_desc, cofan.mk_ι_app],
-  repeat { slice_rhs 1 2 { erw P_infty_degreewise_is_a_projection, }, },
-  rw assoc,
+  simp only [Γ₂N₁_nat_trans_app_f_app, colimit.ι_desc, cofan.mk_ι_app,
+    karoubi.comp, nat_trans.comp_app, assoc, Γ₂N₂_nat_trans_app_f_app,
+    Γ₂N₁_compat_Γ₂N₂, eq_to_iso, iso.app_inv, eq_to_hom_app, karoubi.eq_to_hom_f,
+    eq_to_hom_refl, id_comp, to_karoubi_obj_p],
+  dsimp,
+  simp only [comp_id, ι_colim_map_assoc, discrete.nat_trans_app, assoc],
+  erw [colimit.ι_desc, cofan.mk_ι_app, id_comp, id_comp],
+  simp only [P_infty_degreewise_is_a_projection_assoc],
 end
 
 instance : is_iso (Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=

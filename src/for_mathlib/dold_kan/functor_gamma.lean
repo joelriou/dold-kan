@@ -26,15 +26,14 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
-def Γ_index_set (Δ : simplex_category) :=
-  Σ (Δ' : simplex_category), { α : Δ ⟶ Δ' // epi α }
+def Γ_index_set (Δ : simplex_category) := Σ (Δ' : simplex_category), { α : Δ ⟶ Δ' // epi α }
 
 @[ext]
 lemma Γ_index_set_ext {Δ : simplex_category} (A₁ A₂ : Γ_index_set Δ) (h1 : A₁.1 = A₂.1)
   (h2 : A₁.2.1 ≫ eq_to_hom h1 = A₂.2.1) : A₁ = A₂ :=
 begin
-  rcases A₁ with ⟨Δ'₁, ⟨α₁, hα₁⟩⟩,
-  rcases A₂ with ⟨Δ'₂, ⟨α₂, hα₂⟩⟩,
+  rcases A₁ with ⟨Δ₁, ⟨α₁, hα₁⟩⟩,
+  rcases A₂ with ⟨Δ₂, ⟨α₂, hα₂⟩⟩,
   simp only at h1 h2,
   ext1,
   { exact h1, },
@@ -64,11 +63,13 @@ begin
   { refl, }
 end
 
+--@[simps]
+--def Γ_index_id (n : ℕ) : Γ_index_set [n] := ⟨[n], ⟨𝟙 _, by apply_instance,⟩⟩
 @[simps]
-def Γ_index_id (n : ℕ) : Γ_index_set [n] := ⟨[n], ⟨𝟙 _, by apply_instance,⟩⟩
+def Γ_index_id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
 lemma eq_Γ_index_id {Δ : simplex_category} {A : Γ_index_set Δ} (h : A.1.len = Δ.len) :
-  A = Γ_index_id Δ.len :=
+  A = Γ_index_id Δ :=
 begin
   rcases A with ⟨Δ', ⟨f, hf⟩⟩,
   have hΔ' : Δ' = Δ,
@@ -90,10 +91,10 @@ def Γ_termwise (K : chain_complex C ℕ) (Δ : simplex_category) : C :=
   ∐ (λ (A : Γ_index_set Δ), Γ_summand K Δ A)
 
 @[nolint unused_arguments]
-def is_d0 {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop :=
+def is_d₀ {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop :=
   (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
-lemma is_d0_iff {j : ℕ} {i : fin (j+2)} : is_d0 (simplex_category.δ i) ↔ i = 0 :=
+lemma is_d₀_iff {j : ℕ} {i : fin (j+2)} : is_d₀ (simplex_category.δ i) ↔ i = 0 :=
 begin
   split,
   { rintro ⟨h₁,h₂⟩,
@@ -109,12 +110,12 @@ begin
         ne.def, not_false_iff], }, }
 end
 
-lemma eq_d0_of_is_d0 {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d0 i) :
+lemma eq_d₀_of_is_d₀ {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d₀ i) :
   i = simplex_category.δ 0 :=
 begin
   cases simplex_category.eq_δ_of_mono i with j h,
   unfreezingI { subst h, },
-  rw is_d0_iff at hi,
+  rw is_d₀_iff at hi,
   rw hi,
 end
 
@@ -125,7 +126,7 @@ begin
   { apply eq_to_hom,
     congr,
     assumption, },
-  { by_cases is_d0 i,
+  { by_cases is_d₀ i,
     { exact K.d Δ.len Δ'.len, },
     { exact 0, }, },
 end
@@ -139,7 +140,7 @@ lemma Γ_on_mono_on_eq_to_hom (K : chain_complex C ℕ) {Δ' Δ : simplex_catego
 Γ_on_mono_on_id K (eq_to_hom hi.symm) hi
 
 lemma Γ_on_mono_on_d0 (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i]
-  (hi : is_d0 i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
+  (hi : is_d₀ i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
 begin
   unfold Γ_on_mono,
   split_ifs,
@@ -151,7 +152,7 @@ begin
 end
 
 lemma Γ_on_mono_eq_zero (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i]
-  (h1 : ¬ Δ = Δ') (h2 : ¬is_d0 i) : Γ_on_mono K i = 0 :=
+  (h1 : ¬ Δ = Δ') (h2 : ¬is_d₀ i) : Γ_on_mono K i = 0 :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
 lemma Γ_on_mono_naturality {K K' : chain_complex C ℕ} (f : K ⟶ K')
@@ -200,13 +201,13 @@ begin
   { by_contradiction,
     simpa only [self_eq_add_right,h ] using eq, },
   { by_contradiction,
-    dsimp [is_d0] at h,
+    dsimp [is_d₀] at h,
     simp only [h.left, add_right_inj] at eq,
     linarith, },
   /- in all cases, the LHS is also zero,
   either by definition, or because d ≫ d = 0 -/
-  by_cases h3 : is_d0 i,
-  { by_cases h4 : is_d0 i',
+  by_cases h3 : is_d₀ i,
+  { by_cases h4 : is_d₀ i',
     { rw [Γ_on_mono_on_d0 K i h3, Γ_on_mono_on_d0 K i' h4,
         homological_complex.d_comp_d], },
     { simp only [Γ_on_mono_eq_zero K i' h2 h4, comp_zero], }, },
