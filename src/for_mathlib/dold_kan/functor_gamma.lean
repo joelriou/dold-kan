@@ -63,6 +63,8 @@ variable (Δ)
 @[simps]
 def id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
+instance (Δ : simplex_category) : inhabited (Γ_index_set Δ) := ⟨id Δ⟩
+
 variable {Δ}
 
 lemma eq_id_iff (A : Γ_index_set Δ) :
@@ -98,8 +100,8 @@ def pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
   Γ_index_set Δ' :=
 ⟨_, ⟨factor_thru_image (θ ≫ A.2.1), infer_instance⟩⟩
 
-
-def fac_pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) := image.fac (θ ≫ A.2.1)
+lemma fac_pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
+  (A.pull θ).2.1 ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.snd.val := image.fac (θ ≫ A.2.1)
 
 end Γ_index_set
 
@@ -206,7 +208,7 @@ end
 variable (K)
 
 @[simp, reassoc]
-def comp : Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
+lemma comp : Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
 begin
   /- case where i : Δ' ⟶ Δ is the identity -/
   by_cases h1 : Δ = Δ',
@@ -245,7 +247,7 @@ def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ
   Γ_termwise K Δ ⟶ Γ_termwise K Δ' :=
 sigma.desc (λ A, Γ_on_mono K (image.ι (θ ≫ A.2.1)) ≫ (sigma.ι (Γ_summand K Δ') (A.pull θ)))
 
-@[simp, reassoc]
+@[reassoc]
 lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (fac : e ≫ i = θ ≫ A.2.1) :
@@ -262,7 +264,7 @@ begin
     exact simplex_category.factor_thru_image_eq fac, },
 end
 
-@[simp, reassoc]
+@[reassoc]
 lemma Γ_simplicial_on_summand' (K : chain_complex C ℕ) {Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
   (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
