@@ -24,8 +24,9 @@ namespace dold_kan
 
 variables {C : Type*} [category.{v} C] [additive_category C]
 
-lemma P_infty_eq_id_on_Γ_summand_old (K : chain_complex C ℕ) (n : ℕ) :
-  inclusion_Γ_summand K (Γ_index_set.id [n]) ≫ P_infty.f n =
+@[simp, reassoc]
+lemma P_infty_eq_id_on_Γ_summand (K : chain_complex C ℕ) (n : ℕ) :
+  inclusion_Γ_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
     inclusion_Γ_summand K (Γ_index_set.id [n]) :=
 begin
   rw P_infty_degreewise,
@@ -44,37 +45,14 @@ begin
       exact h₂ rfl, }, },
 end
 
-@[simp, reassoc]
-lemma P_infty_eq_id_on_Γ_summand (K : chain_complex C ℕ) (n : ℕ) :
-  sigma.ι (Γ_summand K [n]) (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
-    sigma.ι (Γ_summand K [n]) (Γ_index_set.id [n]) :=
-begin
-  change inclusion_Γ_summand K (Γ_index_set.id [n]) ≫ P_infty.f n =
-    inclusion_Γ_summand K (Γ_index_set.id [n]),
-  rw P_infty_degreewise,
-  cases n,
-  { erw [P_deg0_eq, comp_id], },
-  { apply P_is_identity_where_faces_vanish,
-    intros j hj,
-    let i := simplex_category.δ j.succ,
-    erw Γ_simplicial_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    rw [Γ_on_mono.eq_zero K i _ _, zero_comp],
-    { intro h,
-      apply nat.succ_ne_self n,
-      simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
-    { rintro ⟨h₁, h₂⟩,
-      erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
-      exact h₂ rfl, }, },
-end
-
 lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
   {Δ Δ' : simplex_category} (e : Δ ⟶ Δ') [epi e] :
-  sigma.ι (Γ_summand K Δ') ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩ ≫ Γ_simplicial K e =
-  sigma.ι (Γ_summand K Δ) ⟨Δ', ⟨e, by apply_instance⟩⟩ :=
+inclusion_Γ_summand K (Γ_index_set.id Δ') ≫ Γ_simplicial K e =
+  inclusion_Γ_summand K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
 begin
-  erw Γ_simplicial_on_summand K ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩
-    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl),
-  erw [Γ_on_mono.on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
+  rw [Γ_simplicial_on_summand K (Γ_index_set.id Δ')
+    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl), Γ_on_mono.on_id],
+  apply id_comp,
 end
 
 lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n b q : ℕ} (hnbq : n+1=b+q) {φ : Y ⟶ X _[n+1]}
@@ -257,6 +235,21 @@ begin
   slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
   erw comp_zero,
 end
+
+/-lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {Δ : simplex_category} {A : Γ_index_set Δ}
+  (hA : ¬A.1 = Δ) :
+  inclusion_Γ_summand K A ≫ P_infty.f Δ.len = 0 :=
+begin
+  have h : ∃ (n : ℕ), Δ = [n] := ⟨Δ.len, rfl⟩,
+  cases h with n hn,
+  subst hn,
+  apply P_infty_eq_zero_on_Γ_summand_old,
+  intro h,
+  apply hA,
+  ext,
+  exact h,
+end
+-/
 
 end dold_kan
 
