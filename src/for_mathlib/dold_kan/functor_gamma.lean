@@ -30,7 +30,9 @@ def Γ_index_set (Δ : simplex_category) := Σ (Δ' : simplex_category), { α : 
 
 namespace Γ_index_set
 
-lemma ext {Δ : simplex_category} (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
+variables {Δ' Δ : simplex_category}
+
+lemma ext (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
   (h₂ : A₁.2.1 ≫ eq_to_hom h₁ = A₂.2.1) : A₁ = A₂ :=
 begin
   rcases A₁ with ⟨Δ₁, ⟨α₁, hα₁⟩⟩,
@@ -41,7 +43,7 @@ begin
   simpa only [eq_to_hom_refl, comp_id] using h₂,
 end
 
-instance {Δ : simplex_category} : fintype (Γ_index_set Δ) :=
+instance : fintype (Γ_index_set Δ) :=
 fintype.of_injective ((λ A, ⟨⟨A.1.len,
   nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
   Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
@@ -56,10 +58,14 @@ begin
   exact eq_of_heq h₂,
 end
 
+variable (Δ)
+
 @[simps]
 def id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
-lemma eq_id {Δ : simplex_category} {A : Γ_index_set Δ} (h : A.1.len = Δ.len) :
+variable {Δ}
+
+lemma eq_id {A : Γ_index_set Δ} (h : A.1.len = Δ.len) :
   A = id Δ :=
 begin
   rcases A with ⟨Δ', ⟨f, hf⟩⟩,
@@ -70,6 +76,11 @@ begin
     simp only [eq_to_hom_refl, comp_id],
     exact simplex_category.eq_id_of_epi f, },
 end
+
+@[simps]
+def pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
+  Γ_index_set Δ' :=
+⟨_, ⟨factor_thru_image (θ ≫ A.2.1), simplex_category.epi_of_mono_factorisation _⟩⟩
 
 end Γ_index_set
 
@@ -84,8 +95,6 @@ def is_d₀ {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop :=
   (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
 namespace is_d₀
-
-lemma test ( n : ℕ) (a : fin (n)) : a.succ ≠ 0 := fin.succ_ne_zero a
 
 lemma iff {j : ℕ} {i : fin (j+2)} : is_d₀ (simplex_category.δ i) ↔ i = 0 :=
 begin
@@ -123,16 +132,15 @@ begin
     { exact 0, }, },
 end
 
-lemma Γ_on_mono_on_id (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i]
-  (hi : Δ = Δ') : Γ_on_mono K i = eq_to_hom (by { congr, assumption, }) :=
+namespace Γ_on_mono
+
+variables (K K' : chain_complex C ℕ) (f : K ⟶ K') {Δ'' Δ' Δ : simplex_category}
+variables (i' : Δ'' ⟶ Δ') [mono i'] (i : Δ' ⟶ Δ) [mono i]
+
+lemma on_id (hi : Δ = Δ') : Γ_on_mono K i = eq_to_hom (by rw hi) :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
-lemma Γ_on_mono_on_eq_to_hom (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (hi : Δ = Δ') :
-  Γ_on_mono K (eq_to_hom hi.symm) = eq_to_hom (by { congr, assumption, }) :=
-Γ_on_mono_on_id K (eq_to_hom hi.symm) hi
-
-lemma Γ_on_mono_on_d0 (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i]
-  (hi : is_d₀ i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
+lemma on_d₀ (hi : is_d₀ i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
 begin
   unfold Γ_on_mono,
   split_ifs,
@@ -143,13 +151,13 @@ begin
   refl,
 end
 
-lemma Γ_on_mono_eq_zero (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i]
-  (h1 : ¬ Δ = Δ') (h2 : ¬is_d₀ i) : Γ_on_mono K i = 0 :=
+lemma eq_zero (h1 : ¬Δ = Δ') (h2 : ¬is_d₀ i) : Γ_on_mono K i = 0 :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
-lemma Γ_on_mono_naturality {K K' : chain_complex C ℕ} (f : K ⟶ K')
-  {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
-  Γ_on_mono K i ≫ f.f Δ'.len = f.f Δ.len ≫ Γ_on_mono K' i :=
+variables {K K'}
+
+@[simp, reassoc]
+lemma naturality : Γ_on_mono K i ≫ f.f Δ'.len = f.f Δ.len ≫ Γ_on_mono K' i :=
 begin
   unfold Γ_on_mono,
   split_ifs,
@@ -171,25 +179,25 @@ begin
     exact h, },
 end
 
-def Γ_on_mono_comp (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
-   (i' : Δ'' ⟶ Δ') (i : Δ' ⟶ Δ) [mono i] [mono i'] :
-   Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
+variable (K)
+
+def comp : Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
 begin
   /- case where i : Δ' ⟶ Δ is the identity -/
   by_cases h1 : Δ = Δ',
   { unfreezingI { subst h1, },
     simp only [simplex_category.eq_id_of_mono i,
-      comp_id, id_comp, Γ_on_mono_on_id K, eq_to_hom_refl], },
+      comp_id, id_comp, on_id K, eq_to_hom_refl], },
   /- case where i' : Δ'' ⟶ Δ' is the identity -/
   by_cases h2 : Δ' = Δ'',
   { unfreezingI { subst h2, },
     simp only [simplex_category.eq_id_of_mono i',
-      comp_id, id_comp, Γ_on_mono_on_id K, eq_to_hom_refl], },
+      comp_id, id_comp, on_id K, eq_to_hom_refl], },
   /- then the RHS is always zero -/
   cases simplex_category_non_epi_mono i h1 with k hk,
   cases simplex_category_non_epi_mono i' h2 with k' hk',
   have eq : Δ.len = Δ''.len + (k+k'+2) := by { rw hk' at hk, linarith, },
-  rw Γ_on_mono_eq_zero K (i' ≫ i) _ _, rotate,
+  rw eq_zero K (i' ≫ i) _ _, rotate,
   { by_contradiction,
     simpa only [self_eq_add_right,h ] using eq, },
   { by_contradiction,
@@ -200,29 +208,28 @@ begin
   either by definition, or because d ≫ d = 0 -/
   by_cases h3 : is_d₀ i,
   { by_cases h4 : is_d₀ i',
-    { rw [Γ_on_mono_on_d0 K i h3, Γ_on_mono_on_d0 K i' h4,
+    { rw [on_d₀ K i h3, on_d₀ K i' h4,
         homological_complex.d_comp_d], },
-    { simp only [Γ_on_mono_eq_zero K i' h2 h4, comp_zero], }, },
-  { simp only [Γ_on_mono_eq_zero K i h1 h3, zero_comp], },
+    { simp only [eq_zero K i' h2 h4, comp_zero], }, },
+  { simp only [eq_zero K i h1 h3, zero_comp], },
 end
+
+end Γ_on_mono
 
 def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ' ⟶ Δ) :
   Γ_termwise K Δ ⟶ Γ_termwise K Δ' :=
-begin
-  apply sigma.desc,
-  intro A,
-  let em := image.mono_factorisation (θ ≫ A.2.1),
-  let A' : Γ_index_set Δ' := ⟨em.I, ⟨em.e, simplex_category.epi_of_mono_factorisation _⟩⟩,
-  exact Γ_on_mono K em.m ≫ (sigma.ι (Γ_summand K Δ') A'),
-end
+sigma.desc (λ A, Γ_on_mono K (image.ι (θ ≫ A.2.1)) ≫ (sigma.ι (Γ_summand K Δ') (A.pull θ)))
 
 lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (h : e ≫ i = θ ≫ A.2.1) :
   (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
   Γ_on_mono K i ≫ (sigma.ι (Γ_summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩) :=
-by { simp only [Γ_simplicial, cofan.mk_ι_app, colimit.ι_desc],
-  congr'; rw simplex_category.mono_factorisation_eq e i h, }
+begin
+  simp only [Γ_simplicial, colimit.ι_desc, cofan.mk_ι_app],
+  dsimp only [Γ_index_set.pull, image, image.ι, factor_thru_image],
+  congr'; rw simplex_category.mono_factorisation_eq e i h,
+end
 
 namespace Γ₀_functor
 
@@ -236,7 +243,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     haveI : epi A.2.1 := A.2.2,
     have eq := Γ_simplicial_on_summand K A
       (show A.2.1 ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.2.1, by { simp only [comp_id, id_comp], }),
-    simp only [Γ_on_mono_on_id K (𝟙 A.1) (by refl), eq_to_hom_refl] at eq,
+    simp only [Γ_on_mono.on_id K (𝟙 A.1) (by refl), eq_to_hom_refl] at eq,
     erw [eq, id_comp, comp_id],
     congr,
     refine Γ_index_set.ext _ _ rfl _,
@@ -255,19 +262,17 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     { rw [← assoc, em.fac, assoc, em'.fac, ← assoc, unop_comp], },
     rw [Γ_simplicial_on_summand K A fac, ← assoc],
     congr',
-    rw Γ_on_mono_comp,
+    rw Γ_on_mono.comp,
   end }
 
 @[simps]
 def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
-{ app := λ Δ, limits.sigma.map (λ (A : Γ_index_set Δ.unop), (f.f A.1.len)),
+{ app := λ Δ, limits.sigma.map (λ (A : Γ_index_set Δ.unop), f.f A.1.len),
   naturality' := λ Δ' Δ θ, begin
     ext A,
-    simp only [obj_map, Γ_simplicial, ι_colim_map_assoc,
+    simpa only [obj_map, Γ_simplicial, ι_colim_map_assoc,
       discrete.nat_trans_app, cofan.mk_ι_app, image.as_ι, colimit.ι_desc_assoc,
-      ι_colim_map, colimit.ι_desc, assoc],
-    slice_rhs 1 2 { erw ← Γ_on_mono_naturality, },
-    rw [assoc],
+      ι_colim_map, colimit.ι_desc, assoc] using Γ_on_mono.naturality_assoc _ _ _,
   end, }
 
 end Γ₀_functor

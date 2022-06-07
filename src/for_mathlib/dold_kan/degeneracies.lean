@@ -35,7 +35,7 @@ begin
     intros j hj,
     let i := simplex_category.δ j.succ,
     erw Γ_simplicial_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
+    rw [Γ_on_mono.eq_zero K i _ _, zero_comp],
     { intro h,
       apply nat.succ_ne_self n,
       simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
@@ -58,7 +58,7 @@ begin
     intros j hj,
     let i := simplex_category.δ j.succ,
     erw Γ_simplicial_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    rw [Γ_on_mono_eq_zero K i _ _, zero_comp],
+    rw [Γ_on_mono.eq_zero K i _ _, zero_comp],
     { intro h,
       apply nat.succ_ne_self n,
       simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
@@ -74,7 +74,7 @@ lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
 begin
   erw Γ_simplicial_on_summand K ⟨Δ', ⟨𝟙 _, by apply_instance⟩⟩
     (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl),
-  erw [Γ_on_mono_on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
+  erw [Γ_on_mono.on_id K (𝟙 Δ') rfl, eq_to_hom_refl, id_comp],
 end
 
 lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n b q : ℕ} (hnbq : n+1=b+q) {φ : Y ⟶ X _[n+1]}

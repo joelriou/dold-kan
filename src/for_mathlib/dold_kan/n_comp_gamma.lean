@@ -85,11 +85,11 @@ begin
   { unfreezingI { subst h, },
     have h := simplex_category.eq_id_of_mono i,
     unfreezingI { subst h, },
-    simp only [Γ_on_mono_on_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
+    simp only [Γ_on_mono.on_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
     erw [X.map_id, comp_id], },
   by_cases hi : is_d₀ i,
   /- The case `i = δ 0` -/
-  { erw [Γ_on_mono_on_d0 _ i hi, ← P_infty.comm' n' n hi.left.symm],
+  { erw [Γ_on_mono.on_d₀ _ i hi, ← P_infty.comm' n' n hi.left.symm],
     have h' : n' = n+1 := hi.left,
     unfreezingI { subst h', },
     dsimp [alternating_face_map_complex.obj, chain_complex.of],
@@ -101,7 +101,7 @@ begin
     { simp only [finset.mem_univ, not_true, forall_false_left], },
     { simpa only [hi.eq_d₀, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
-  { rw [Γ_on_mono_eq_zero _ i _ hi, zero_comp], swap,
+  { rw [Γ_on_mono.eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',
       exact h (congr_arg simplex_category.len h'.symm), },
     rw P_infty_eq_zero_on,
