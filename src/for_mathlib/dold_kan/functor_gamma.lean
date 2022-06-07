@@ -83,30 +83,33 @@ def Γ_termwise (K : chain_complex C ℕ) (Δ : simplex_category) : C :=
 def is_d₀ {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop :=
   (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
-lemma is_d₀_iff {j : ℕ} {i : fin (j+2)} : is_d₀ (simplex_category.δ i) ↔ i = 0 :=
+namespace is_d₀
+
+lemma test ( n : ℕ) (a : fin (n)) : a.succ ≠ 0 := fin.succ_ne_zero a
+
+lemma iff {j : ℕ} {i : fin (j+2)} : is_d₀ (simplex_category.δ i) ↔ i = 0 :=
 begin
   split,
-  { rintro ⟨h₁,h₂⟩,
+  { rintro ⟨h₁, h₂⟩,
     by_contradiction,
-    erw fin.succ_above_ne_zero_zero h at h₂,
-    exact h₂ rfl, },
+    exact h₂ (fin.succ_above_ne_zero_zero h), },
   { intro h,
     subst h,
     split,
     { refl, },
-    { erw fin.succ_above_zero,
-      simp only [fin.one_eq_zero_iff, nat.succ_ne_zero, fin.succ_zero_eq_one,
-        ne.def, not_false_iff], }, }
+    { apply fin.succ_ne_zero, }, }
 end
 
-lemma eq_d₀_of_is_d₀ {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d₀ i) :
+lemma eq_d₀ {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d₀ i) :
   i = simplex_category.δ 0 :=
 begin
   cases simplex_category.eq_δ_of_mono i with j h,
   unfreezingI { subst h, },
-  rw is_d₀_iff at hi,
+  rw iff at hi,
   rw hi,
 end
+
+end is_d₀
 
 def Γ_on_mono (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
   K.X Δ.len ⟶ K.X Δ'.len :=

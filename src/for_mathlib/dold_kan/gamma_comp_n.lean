@@ -48,14 +48,14 @@ begin
     erw Γ_simplicial_on_summand K (Γ_index_set.id [j+1])
       (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
     erw Γ_on_mono_eq_zero K i (λ hj, by simpa only [simplex_category.len_mk, nat.succ_ne_self]
-      using congr_arg simplex_category.len hj) (by { rw is_d₀_iff, exact hb, }),
+      using congr_arg simplex_category.len hj) (by { rw is_d₀.iff, exact hb, }),
     simp only [smul_zero', zero_comp], },
   { intro h, exfalso, simpa only [finset.mem_univ, not_true] using h, },
   { simp only [fin.coe_zero, pow_zero, ← assoc, one_zsmul],
     let i := simplex_category.δ (0 : fin (j+2)),
     erw Γ_simplicial_on_summand K (Γ_index_set.id [j+1])
       (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    erw [Γ_on_mono_on_d0 K i (is_d₀_iff.mpr rfl), assoc],
+    erw [Γ_on_mono_on_d0 K i (is_d₀.iff.mpr rfl), assoc],
     simp only [N₁Γ₀_map_termwise, colimit.ι_desc, cofan.mk_ι_app, simplex_category.len_mk,
       eq_self_iff_true, eq_to_hom_refl, dite_eq_ite, if_true],
     erw comp_id,
@@ -266,14 +266,14 @@ abbreviation N₁Γ₀_iso_inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ 
           rw [Γ_on_mono_eq_zero K i, zero_comp, zsmul_zero],
           { intro h,
             exact nat.succ_ne_self j (congr_arg simplex_category.len h), },
-          { rw is_d₀_iff, exact hb', }, },
+          { rw is_d₀.iff, exact hb', }, },
         { simp only [finset.mem_univ, not_true, forall_false_left], },
         { simp only [fin.coe_zero, pow_zero, one_zsmul],
           let i := simplex_category.δ (0 : fin (j+2)),
           erw Γ_simplicial_on_summand K (Γ_index_set.id [j+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
           congr',
           apply Γ_on_mono_on_d0 K i,
-          erw is_d₀_iff, },
+          erw is_d₀.iff, },
       end },
     comm := begin
       ext n,
