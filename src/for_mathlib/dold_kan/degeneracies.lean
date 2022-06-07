@@ -218,12 +218,14 @@ begin
       P_infty_eq_zero_on_σ X i, comp_zero], }
 end
 
-lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A.1.len = n) :
+@[simp, reassoc]
+lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
   inclusion_Γ_summand K A ≫ P_infty.f n = 0 :=
 begin
   have h : ¬function.injective A.2.1.to_order_hom,
   { by_contradiction,
     apply hA,
+    rw Γ_index_set.eq_id_iff',
     simpa only [fintype.card_fin, add_left_inj] using
       (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
   haveI : epi A.2.1 := A.2.2,
