@@ -24,13 +24,11 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
-
 def Γ_index_set (Δ : simplex_category) := Σ (Δ' : simplex_category), { α : Δ ⟶ Δ' // epi α }
 
 namespace Γ_index_set
 
-variables {Δ' Δ : simplex_category}
+variables {Δ' Δ : simplex_category} (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ)
 
 lemma ext (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
   (h₂ : A₁.2.1 ≫ eq_to_hom h₁ = A₂.2.1) : A₁ = A₂ :=
@@ -44,31 +42,29 @@ begin
 end
 
 instance : fintype (Γ_index_set Δ) :=
-fintype.of_injective ((λ A, ⟨⟨A.1.len,
+  fintype.of_injective ((λ A, ⟨⟨A.1.len,
   nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
-  Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
+Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
 begin
   rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h,
   simp only at h,
-  rcases h with ⟨h₁, h₂⟩,
-  have h₃ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h₁, },
+  have h₃ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h.1, },
   subst h₃,
   refine ext _ _ rfl _,
   ext1, ext1,
-  exact eq_of_heq h₂,
+  exact eq_of_heq h.2,
 end
 
 variable (Δ)
 
 @[simps]
-def id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
+def id : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
-instance (Δ : simplex_category) : inhabited (Γ_index_set Δ) := ⟨id Δ⟩
+instance : inhabited (Γ_index_set Δ) := ⟨id Δ⟩
 
-variable {Δ}
+variables {Δ}
 
-lemma eq_id_iff (A : Γ_index_set Δ) :
-  A = id _ ↔ A.1 = Δ :=
+lemma eq_id_iff : A = id _ ↔ A.1 = Δ :=
 begin
   split,
   { intro h,
@@ -84,8 +80,7 @@ begin
       exact simplex_category.eq_id_of_epi f, }, },
 end
 
-lemma eq_id_iff' (A : Γ_index_set Δ) :
-  A = id _ ↔ A.1.len = Δ.len :=
+lemma eq_id_iff' : A = id _ ↔ A.1.len = Δ.len :=
 begin
   rw eq_id_iff,
   split,
@@ -96,24 +91,24 @@ begin
     exact h, },
 end
 
-def pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
-  Γ_index_set Δ' :=
-⟨_, ⟨factor_thru_image (θ ≫ A.2.1), infer_instance⟩⟩
+def pull : Γ_index_set Δ' := ⟨_, ⟨factor_thru_image (θ ≫ A.2.1), infer_instance⟩⟩
 
-lemma fac_pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
-  (A.pull θ).2.1 ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.snd.val := image.fac (θ ≫ A.2.1)
+lemma fac_pull : (A.pull θ).2.1 ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.snd.val :=
+image.fac (θ ≫ A.2.1)
 
 end Γ_index_set
 
-def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category)
-  (A : Γ_index_set Δ) : C := K.X A.1.len
+variables {C : Type*} [category C] [additive_category C]
+variables (K K' : chain_complex C ℕ) (f : K ⟶ K')
+variables (Δ'' Δ' Δ : simplex_category)
 
-def Γ_termwise (K : chain_complex C ℕ) (Δ : simplex_category) : C :=
-  ∐ (λ (A : Γ_index_set Δ), Γ_summand K Δ A)
+def Γ_summand (A : Γ_index_set Δ) : C := K.X A.1.len
 
+def Γ_termwise : C := ∐ (λ (A : Γ_index_set Δ), Γ_summand K Δ A)
+
+variables {Δ' Δ}
 @[nolint unused_arguments]
-def is_d₀ {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop :=
-  (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
+def is_d₀ (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
 namespace is_d₀
 
@@ -155,16 +150,13 @@ end
 
 namespace Γ_on_mono
 
-variables (K K' : chain_complex C ℕ) (f : K ⟶ K') {Δ'' Δ' Δ : simplex_category}
+variables {Δ'' Δ' Δ}
 variables (i' : Δ'' ⟶ Δ') [mono i'] (i : Δ' ⟶ Δ) [mono i]
 
 variable (Δ)
 lemma on_id : Γ_on_mono K (𝟙 Δ) = 𝟙 _ := by { unfold Γ_on_mono, tidy, }
 
 variable {Δ}
-
-lemma on_eq_to_hom (hi : Δ = Δ') : Γ_on_mono K i = eq_to_hom (by rw hi) :=
-by { unfold Γ_on_mono, split_ifs, refl, }
 
 lemma on_d₀ (hi : is_d₀ i) : Γ_on_mono K i = K.d Δ.len Δ'.len :=
 begin
@@ -177,7 +169,7 @@ begin
   refl,
 end
 
-lemma eq_zero (h1 : ¬Δ = Δ') (h2 : ¬is_d₀ i) : Γ_on_mono K i = 0 :=
+lemma eq_zero (h₁ : ¬Δ = Δ') (h₂ : ¬is_d₀ i) : Γ_on_mono K i = 0 :=
 by { unfold Γ_on_mono, split_ifs, refl, }
 
 variables {K K'}
@@ -196,13 +188,11 @@ end
 lemma simplex_category_non_epi_mono {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] (hi : ¬Δ=Δ'):
   ∃ (k : ℕ), Δ.len = Δ'.len + (k + 1) :=
 begin
-  cases le_iff_exists_add.mp (simplex_category.len_le_of_mono (show mono i, by apply_instance)) with k h,
+  cases le_iff_exists_add.mp (simplex_category.len_le_of_mono (infer_instance : mono i)) with k h,
   cases k,
   { exfalso,
-    rw [add_zero] at h,
     exact hi (simplex_category.ext Δ Δ' h), },
-  { use k,
-    exact h, },
+  { exact ⟨k, h⟩, },
 end
 
 variable (K)
