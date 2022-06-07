@@ -28,61 +28,50 @@ variables {C : Type*} [category C] [additive_category C]
 
 def Γ_index_set (Δ : simplex_category) := Σ (Δ' : simplex_category), { α : Δ ⟶ Δ' // epi α }
 
-@[ext]
-lemma Γ_index_set_ext {Δ : simplex_category} (A₁ A₂ : Γ_index_set Δ) (h1 : A₁.1 = A₂.1)
-  (h2 : A₁.2.1 ≫ eq_to_hom h1 = A₂.2.1) : A₁ = A₂ :=
+namespace Γ_index_set
+
+lemma ext {Δ : simplex_category} (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
+  (h₂ : A₁.2.1 ≫ eq_to_hom h₁ = A₂.2.1) : A₁ = A₂ :=
 begin
   rcases A₁ with ⟨Δ₁, ⟨α₁, hα₁⟩⟩,
   rcases A₂ with ⟨Δ₂, ⟨α₂, hα₂⟩⟩,
-  simp only at h1 h2,
-  ext1,
-  { exact h1, },
-  { subst h1,
-    simp only [eq_to_hom_refl, comp_id] at h2,
-    apply heq_of_eq,
-    ext1,
-    exact h2, },
+  simp only at h₁,
+  subst h₁,
+  congr,
+  simpa only [eq_to_hom_refl, comp_id] using h₂,
 end
 
 instance {Δ : simplex_category} : fintype (Γ_index_set Δ) :=
+fintype.of_injective ((λ A, ⟨⟨A.1.len,
+  nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
+  Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
 begin
-  apply fintype.of_injective
-    ((λ A, ⟨⟨A.1.len,
-      nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
-      Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1))))),
-  rintros ⟨Δ₁,α₁⟩ ⟨Δ₂,α₂⟩ h,
+  rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h,
   simp only at h,
-  cases h with h₁ h₂,
-  have h₁' : Δ₁ = Δ₂ := by { ext, simpa using h₁, },
-  subst h₁',
-  rw heq_iff_eq at h₂,
-  ext1,
-  { simp only [eq_to_hom_refl, comp_id],
-    ext1, ext1,
-    assumption, },
-  { refl, }
+  rcases h with ⟨h₁, h₂⟩,
+  have h₃ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h₁, },
+  subst h₃,
+  refine ext _ _ rfl _,
+  ext1, ext1,
+  exact eq_of_heq h₂,
 end
 
---@[simps]
---def Γ_index_id (n : ℕ) : Γ_index_set [n] := ⟨[n], ⟨𝟙 _, by apply_instance,⟩⟩
 @[simps]
-def Γ_index_id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
+def id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
-lemma eq_Γ_index_id {Δ : simplex_category} {A : Γ_index_set Δ} (h : A.1.len = Δ.len) :
-  A = Γ_index_id Δ :=
+lemma eq_id {Δ : simplex_category} {A : Γ_index_set Δ} (h : A.1.len = Δ.len) :
+  A = id Δ :=
 begin
   rcases A with ⟨Δ', ⟨f, hf⟩⟩,
-  have hΔ' : Δ' = Δ,
-  { apply simplex_category.ext,
-    exact h, },
-  subst hΔ',
-  simp only [Γ_index_id],
-  ext1,
+  have h' : Δ' = Δ := by { ext, exact h, },
+  subst h',
+  refine ext _ _ rfl _,
   { haveI := hf,
     simp only [eq_to_hom_refl, comp_id],
     exact simplex_category.eq_id_of_epi f, },
-  { refl, }
 end
+
+end Γ_index_set
 
 def Γ_summand (K : chain_complex C ℕ) (Δ : simplex_category)
   (A : Γ_index_set Δ) : C := K.X A.1.len
@@ -247,9 +236,8 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     simp only [Γ_on_mono_on_id K (𝟙 A.1) (by refl), eq_to_hom_refl] at eq,
     erw [eq, id_comp, comp_id],
     congr,
-    ext1,
+    refine Γ_index_set.ext _ _ rfl _,
     simp only [eq_to_hom_refl, comp_id],
-    refl,
   end,
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
     ext A,

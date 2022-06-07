@@ -186,7 +186,7 @@ def Γ₂N₂_nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂_iso.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id [n]) :=
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
 begin
   simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
     P_infty_eq_id_on_Γ_summand_assoc,
@@ -197,7 +197,7 @@ begin
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
+sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
   simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ_summand_assoc,
