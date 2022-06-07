@@ -96,7 +96,10 @@ end
 
 def pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
   Γ_index_set Δ' :=
-⟨_, ⟨factor_thru_image (θ ≫ A.2.1), simplex_category.epi_of_mono_factorisation _⟩⟩
+⟨_, ⟨factor_thru_image (θ ≫ A.2.1), infer_instance⟩⟩
+
+
+def fac_pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) := image.fac (θ ≫ A.2.1)
 
 end Γ_index_set
 
@@ -202,6 +205,7 @@ end
 
 variable (K)
 
+@[simp, reassoc]
 def comp : Γ_on_mono K i ≫ Γ_on_mono K i' = Γ_on_mono K (i' ≫ i) :=
 begin
   /- case where i : Δ' ⟶ Δ is the identity -/
@@ -241,44 +245,29 @@ def Γ_simplicial (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ
   Γ_termwise K Δ ⟶ Γ_termwise K Δ' :=
 sigma.desc (λ A, Γ_on_mono K (image.ι (θ ≫ A.2.1)) ≫ (sigma.ι (Γ_summand K Δ') (A.pull θ)))
 
+@[simp, reassoc]
 lemma Γ_simplicial_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
-  (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
-  (h : e ≫ i = θ ≫ A.2.1) :
-  (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
-  Γ_on_mono K i ≫ (sigma.ι (Γ_summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩) :=
-begin
-  simp only [Γ_simplicial, colimit.ι_desc, cofan.mk_ι_app],
-  dsimp only [Γ_index_set.pull, image, image.ι, factor_thru_image],
-  congr'; rw simplex_category.mono_factorisation_eq e i h,
-end
-
-/-lemma simplex_category.image_unique {Δ Δ' Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
-  {e : Δ ⟶ Δ'} [epi e] {i : Δ' ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
-  image φ = Δ' := sorry
-
-lemma simplex_category.image_mono_unique {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
-  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
-  image.ι φ = i:= sorry
-
-lemma simplex_category.image_epi_unique {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
-  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
-  factor_thru_image φ = e := sorry
-
-lemma Γ_simplicial_on_summand_new (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (fac : e ≫ i = θ ≫ A.2.1) :
   (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
-  Γ_on_mono K i ≫ (sigma.ι (Γ_summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩) :=
+  Γ_on_mono K i ≫ sigma.ι (Γ_summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩ :=
 begin
   simp only [Γ_simplicial, colimit.ι_desc, cofan.mk_ι_app, Γ_index_set.pull],
-  have pif := simplex_category.image_unique fac,
-  unfreezingI { subst pif, },
+  have h := simplex_category.image_eq fac,
+  unfreezingI { subst h, },
   congr,
-  { exact simplex_category.image_mono_unique fac, },
+  { exact simplex_category.image_ι_eq fac, },
   { dsimp only [Γ_index_set.pull],
     congr,
-    exact simplex_category.image_epi_unique fac, },
-end-/
+    exact simplex_category.factor_thru_image_eq fac, },
+end
+
+@[simp, reassoc]
+lemma Γ_simplicial_on_summand' (K : chain_complex C ℕ) {Δ' Δ : simplex_category}
+  (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
+  (sigma.ι (Γ_summand K Δ) A) ≫ Γ_simplicial K θ =
+  Γ_on_mono K (image.ι (θ ≫ A.2.1)) ≫ sigma.ι (Γ_summand K _) (A.pull θ) :=
+Γ_simplicial_on_summand K A (A.fac_pull θ)
 
 namespace Γ₀_functor
 
@@ -290,28 +279,19 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     ext A,
     cases A,
     haveI : epi A.2.1 := A.2.2,
-    have eq := Γ_simplicial_on_summand K A
-      (show A.2.1 ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.2.1, by { simp only [comp_id, id_comp], }),
-    simp only [Γ_on_mono.on_id K A.1] at eq,
-    erw [eq, id_comp, comp_id],
+    have fac : A.2.1 ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.2.1 := by rw [comp_id, id_comp],
+    erw [Γ_simplicial_on_summand K A fac, Γ_on_mono.on_id, id_comp, comp_id],
+    unfreezingI { rcases A with ⟨Δ', ⟨e, he⟩⟩, },
     congr,
-    refine Γ_index_set.ext _ _ rfl _,
-    simp only [eq_to_hom_refl, comp_id],
   end,
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
     ext A,
     cases A,
-    let em' := image.mono_factorisation (θ'.unop ≫ A.2.1),
-    haveI : epi em'.e := simplex_category.epi_of_mono_factorisation _,
-    slice_rhs 1 2 { rw Γ_simplicial_on_summand K A em'.fac, },
-    let em  := image.mono_factorisation (θ.unop ≫ em'.e),
-    haveI : epi em.e := simplex_category.epi_of_mono_factorisation _,
-    rw [assoc, Γ_simplicial_on_summand K ⟨em'.I, ⟨em'.e, by apply_instance⟩⟩ em.fac],
-    have fac : em.e ≫ (em.m ≫ em'.m) = (θ' ≫ θ).unop ≫ A.2.1,
-    { rw [← assoc, em.fac, assoc, em'.fac, ← assoc, unop_comp], },
-    rw [Γ_simplicial_on_summand K A fac, ← assoc],
-    congr',
-    rw Γ_on_mono.comp,
+    have fac : θ.unop ≫ θ'.unop ≫ A.2.1 = (θ' ≫ θ).unop ≫ A.2.1 := by rw [unop_comp, assoc],
+    rw [← image.fac (θ'.unop ≫ A.2.1), ← assoc,
+      ← image.fac (θ.unop ≫ factor_thru_image (θ'.unop ≫ A.snd.val)), assoc] at fac,
+    simpa only [Γ_simplicial_on_summand'_assoc K A θ'.unop, Γ_simplicial_on_summand' K _ θ.unop,
+      Γ_on_mono.comp_assoc, Γ_simplicial_on_summand K A fac],
   end }
 
 @[simps]

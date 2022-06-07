@@ -118,55 +118,34 @@ instance : has_strong_epi_mono_factorisations simplex_category :=
   has_strong_epi_mono_factorisations.mk
   (λ _ _ f, canonical_strong_epi_mono_factorisation f)
 
-lemma eq_of_is_iso {x y : simplex_category} {f : x ⟶ y} (hf : is_iso f) : x = y :=
+lemma image_eq {Δ Δ' Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ Δ'} [epi e] {i : Δ' ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  image φ = Δ' :=
 begin
+  haveI := strong_epi_of_epi e,
+  let eq := image.iso_strong_epi_mono e i fac,
   ext,
   apply le_antisymm,
-  { exact len_le_of_mono (show mono f, by apply_instance), },
-  { exact len_le_of_epi (show epi f, by apply_instance), },
+  { exact @len_le_of_epi  _ _ eq.hom infer_instance, },
+  { exact @len_le_of_mono  _ _ eq.hom infer_instance, },
 end
 
-lemma eq_eq_to_hom_of_is_iso {x y : simplex_category} {f : x ⟶ y} (hf : is_iso f) :
-  f = eq_to_hom (eq_of_is_iso hf) :=
+lemma image_ι_eq {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  image.ι φ = i :=
 begin
-  have h := eq_of_is_iso hf,
-  unfreezingI { subst h, },
-  exact eq_id_of_is_iso hf,
-end
-
-/- Two mono factorisations satisfying the universal property of
-the image are equal. -/
-def uniqueness_mono_factorisation {x y : simplex_category} {f : x ⟶ y}
-  (F F' : mono_factorisation f) (hF : is_image F) (hF' : is_image F') :
-  F = F' :=
-begin
-  let eqI := eq_eq_to_hom_of_is_iso (show is_iso (is_image.iso_ext hF hF').hom, by apply_instance),
-  have eqm := is_image.iso_ext_hom_m hF hF',
-  rw [eqI] at eqm,
-  ext1,
-  { exact eqm.symm, },
-end
-
-def mono_factorisation_eq
-  {x y z : simplex_category} {f : x ⟶ z} (e : x ⟶ y) (i : y ⟶ z)
-  [epi e] [mono i] (h : e ≫ i = f) :
-  image.mono_factorisation f = { I := y, m := i, e := e, fac' := h, } :=
-begin
-  apply uniqueness_mono_factorisation,
-  { exact image.is_image f, },
-  { exact strong_epi_mono_factorisation.to_mono_is_image
-    (strong_epi_mono_factorisation_of_epi_mono_factorisation f e i h), },
-end
-
-lemma epi_of_mono_factorisation
-  {x y : simplex_category} (f : x ⟶ y) :
-  epi (image.mono_factorisation f).e :=
-begin
-  rw uniqueness_mono_factorisation (image.mono_factorisation f)
-    (canonical_strong_epi_mono_factorisation f).to_mono_factorisation
-    (image.is_image f) (strong_epi_mono_factorisation.to_mono_is_image _),
-  haveI := (canonical_strong_epi_mono_factorisation f).e_strong_epi,
+  haveI := strong_epi_of_epi e,
+  rw ← image.iso_strong_epi_mono_hom_comp_ι e i fac,
+  conv_lhs { rw ← category.id_comp (image.ι φ), },
+  congr,
+  symmetry,
+  apply simplex_category.eq_id_of_is_iso,
   apply_instance,
 end
+
+lemma factor_thru_image_eq {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  factor_thru_image φ = e :=
+by rw [← cancel_mono i, fac, ← image_ι_eq fac, image.fac]
 
 end simplex_category
