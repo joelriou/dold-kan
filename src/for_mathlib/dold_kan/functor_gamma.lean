@@ -65,16 +65,33 @@ def id (Δ : simplex_category) : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_i
 
 variable {Δ}
 
-lemma eq_id {A : Γ_index_set Δ} (h : A.1 = Δ) :
-  A = id Δ :=
+lemma eq_id_iff (A : Γ_index_set Δ) :
+  A = id _ ↔ A.1 = Δ :=
 begin
-  rcases A with ⟨Δ', ⟨f, hf⟩⟩,
-  simp only at h,
-  subst h,
-  refine ext _ _ rfl _,
-  { haveI := hf,
-    simp only [eq_to_hom_refl, comp_id],
-    exact simplex_category.eq_id_of_epi f, },
+  split,
+  { intro h,
+    rw h,
+    refl, },
+  { intro h,
+    rcases A with ⟨Δ', ⟨f, hf⟩⟩,
+    simp only at h,
+    subst h,
+    refine ext _ _ rfl _,
+    { haveI := hf,
+      simp only [eq_to_hom_refl, comp_id],
+      exact simplex_category.eq_id_of_epi f, }, },
+end
+
+lemma eq_id_iff' (A : Γ_index_set Δ) :
+  A = id _ ↔ A.1.len = Δ.len :=
+begin
+  rw eq_id_iff,
+  split,
+  { intro h,
+    rw h, },
+  { intro h,
+    ext,
+    exact h, },
 end
 
 def pull (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :

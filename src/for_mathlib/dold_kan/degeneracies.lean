@@ -236,21 +236,6 @@ begin
   erw comp_zero,
 end
 
-/-lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {Δ : simplex_category} {A : Γ_index_set Δ}
-  (hA : ¬A.1 = Δ) :
-  inclusion_Γ_summand K A ≫ P_infty.f Δ.len = 0 :=
-begin
-  have h : ∃ (n : ℕ), Δ = [n] := ⟨Δ.len, rfl⟩,
-  cases h with n hn,
-  subst hn,
-  apply P_infty_eq_zero_on_Γ_summand_old,
-  intro h,
-  apply hA,
-  ext,
-  exact h,
-end
--/
-
 end dold_kan
 
 end algebraic_topology
