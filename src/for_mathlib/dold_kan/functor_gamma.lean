@@ -55,6 +55,8 @@ def e := A.2.1
 
 instance : epi A.e := A.2.2
 
+lemma ext' : A = ⟨A.1, ⟨A.e, A.2.2⟩⟩ := by tidy
+
 lemma ext (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
   (h₂ : A₁.e ≫ eq_to_hom h₁ = A₂.e) : A₁ = A₂ :=
 begin
@@ -368,9 +370,12 @@ def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
   end, }
 
 /-- The inclusion of a summand of `(Γ₀.obj K).obj Δ` -/
-abbreviation ι_Γ₀_summand (K : chain_complex C ℕ) {Δ : simplex_category}
+abbreviation ι_Γ₀_summand_old (K : chain_complex C ℕ) {Δ : simplex_category}
   (A : Γ_index_set Δ) : Γ₀.obj.summand K Δ A ⟶ K[Γ₀.obj K].X Δ.len :=
 sigma.ι (Γ₀.obj.summand K Δ) A
+abbreviation ι_Γ₀_summand (K : chain_complex C ℕ) {n : ℕ}
+  (A : Γ_index_set [n]) : Γ₀.obj.summand K [n] A ⟶ K[Γ₀.obj K].X n  :=
+sigma.ι (Γ₀.obj.summand K [n]) A
 
 /-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
 on the idempotent completions. It shall be an equivalence of categories

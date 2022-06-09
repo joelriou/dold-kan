@@ -44,14 +44,25 @@ begin
 end
 
 lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
+{n : ℕ} (A : Γ_index_set [n]) :
+  sigma.ι (Γ₀.obj.summand K A.1) (Γ_index_set.id A.1) ≫
+    Γ₀.obj.map K A.e =
+  ι_Γ₀_summand K A :=
+begin
+  rw [Γ₀.obj.map_on_summand K (Γ_index_set.id A.1)
+    (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl), Γ₀.obj.termwise.map_mono_id, A.ext'],
+  apply id_comp,
+end
+
+/-lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
   {Δ Δ' : simplex_category} (e : Δ ⟶ Δ') [epi e] :
-ι_Γ₀_summand K (Γ_index_set.id Δ') ≫ Γ₀.obj.map K e =
-  ι_Γ₀_summand K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
+ι_Γ₀_summand_old K (Γ_index_set.id Δ') ≫ Γ₀.obj.map K e =
+  ι_Γ₀_summand_old K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
 begin
   rw [Γ₀.obj.map_on_summand K (Γ_index_set.id Δ')
     (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl), Γ₀.obj.termwise.map_mono_id],
   apply id_comp,
-end
+end-/
 
 lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n b q : ℕ} (hnbq : n+1=b+q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish q (φ ≫ X.σ ⟨b,
@@ -226,10 +237,7 @@ begin
     rw Γ_index_set.eq_id_iff',
     simpa only [fintype.card_fin, add_left_inj] using
       (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
-  have eq : A = ⟨A.1, ⟨A.e, infer_instance⟩⟩ := Γ_index_set.ext _ _ rfl
-    (by simp only [eq_to_hom_refl, comp_id, Γ_index_set.e]),
-  rw eq,
-  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.e, },
+  erw ← inclusion_Γ_summand_decomp K A,
   rw [assoc, show Γ₀.obj.map K A.e = (Γ₀.obj K).map A.e.op, by refl],
   slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.e h, },
   erw comp_zero,
