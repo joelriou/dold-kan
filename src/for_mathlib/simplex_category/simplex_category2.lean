@@ -6,17 +6,44 @@ universes u v
 open category_theory
 open category_theory.limits
 
+namespace category_theory
+
+variables {C D : Type*} [category C] [category D]
+
+/-instance is_equivalence.strong_epi_map {F : C ⥤ D} [is_equivalence F] {P Q : C} {f : P ⟶ Q}
+  [h : strong_epi f] : strong_epi (F.map f) :=
+begin
+  refine ⟨infer_instance, _⟩,
+  intros X Y u v z,
+  introI,
+  intro fac,
+  let e := F.as_equivalence,
+  haveI : strong_epi (F.inv.map (F.map f)),
+  { change strong_epi ((F ⋙ F.inv).map f),
+    rw (show (F ⋙ F.inv).map f = e.unit_iso.inv.app P ≫ f ≫ e.unit_iso.hom.app Q,
+      by simp only [functor.comp_map, is_equivalence.inv_fun_map,
+        equivalence.equivalence_mk'_unit_inv]),
+    haveI : strong_epi (f ≫ e.unit_iso.hom.app Q) := strong_epi_comp _ _,
+    apply strong_epi_comp, },
+  have fac' : F.inv.map u ≫ F.inv.map z = F.inv.map (F.map f) ≫ F.inv.map v,
+  { simp only [← F.inv.map_comp, fac], },
+  have paf := arrow.lift (arrow.hom_mk' fac'),
+  let foo := (e.unit_iso.hom.app P) ≫ F.inv.map (F.map f),
+  sorry,
+end-/
+
+end category_theory
+
 namespace simplex_category
 
-def strong_epi_of_epi {X Y : simplex_category} (f : X ⟶ Y) [epi f] :
-  strong_epi f :=
-{ epi := by apply_instance,
+instance : strong_epi_category simplex_category := ⟨λ X Y f hf,
+{ epi := hf,
   has_lift := λ A B u v w hw comm,
   begin
     have comm' := λ (x : fin (X.len+1)), congr_arg (λ F, hom.to_order_hom F x) comm,
     simp only [hom.to_order_hom_mk, function.comp_app, order_hom.comp_coe,
       hom.comp, small_category_comp] at comm',
-    have surjectivity := epi_iff_surjective.mp (infer_instance : epi f),
+    have surjectivity := epi_iff_surjective.mp hf,
     let lift := function.inv_fun f.to_order_hom,
     have hlift : ∀ y, f.to_order_hom (lift y) = y := function.right_inverse_inv_fun surjectivity,
     let γ' := λ y, u.to_order_hom (lift y),
@@ -40,15 +67,7 @@ def strong_epi_of_epi {X Y : simplex_category} (f : X ⟶ Y) [epi f] :
     { lift := γ,
       fac_left' := by { ext1, ext1, ext1, exact hγ' x, },
       fac_right' := by { ext y, dsimp, rw [← hlift y, hγ', comm'], }, }⟩,
-  end }
-
-def strong_epi_mono_factorisation_of_epi_mono_factorisation
-  {x y z : simplex_category} (f : x ⟶ z) (e : x ⟶ y) (i : y ⟶ z)
-  [epi e] [mono i] (h : e ≫ i = f) : strong_epi_mono_factorisation f :=
-begin
-  haveI : strong_epi e := strong_epi_of_epi e,
-  exact { I := y, m := i, e := e, m_mono := by apply_instance, fac' := h, },
-end
+  end }⟩
 
 instance : has_strong_epi_mono_factorisations simplex_category :=
 begin

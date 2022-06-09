@@ -49,32 +49,32 @@ noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
+/-- All the `P q` coincide with `𝟙 _` in degree 0. -/
+lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
+begin
+  induction q with q hq,
+  { refl, },
+  { unfold P,
+    simp only [homological_complex.add_f_apply, homological_complex.comp_f,
+      homological_complex.id_f, id_comp, hq, Hσ_eq_zero, add_zero], },
+end
+
 /-- Q q is the complement projection associated to P q -/
 def Q (q : ℕ) : K[X] ⟶ K[X] := 𝟙 _ - P q
 
-lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel }
+lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel, }
 
 lemma P_add_Q_degreewise (q n : ℕ) : (P q).f n + (Q q).f n = 𝟙 (X _[n]) :=
-by simpa only [← homological_complex.add_f_apply, P_add_Q q]
+homological_complex.congr_hom (P_add_Q q) n
 
-lemma Q_eq_0 : (Q 0 : K[X] ⟶ _) = 0 := sub_self _
+lemma Q_eq_zero : (Q 0 : K[X] ⟶ _) = 0 := sub_self _
 
 lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
 by { unfold Q P, simp only [comp_add, comp_id], abel, }
 
 /-- All the `Q q` coincide with `0` in degree 0. -/
 lemma Q_deg0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
-begin
-  induction q with q hq,
-  { simpa only [Q_eq_0], },
-  { rw Q_eq,
-    simp only [Q_eq, hq, Hσ_eq_zero, homological_complex.sub_f_apply,
-      homological_complex.comp_f, comp_zero, sub_zero], }
-end
-
-/-- All the `P q` coincide with `𝟙 _` in degree 0. -/
-lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
-by conv_rhs { erw [← P_add_Q_degreewise q 0, Q_deg0_eq, add_zero], }
+by simp only [homological_complex.sub_f_apply, homological_complex.id_f, Q, P_deg0_eq, sub_self]
 
 /-- This lemma expresses the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
@@ -91,7 +91,7 @@ lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
 begin
   induction q with q hq,
   { unfold P,
-    erw comp_id, },
+    apply comp_id, },
   { unfold P,
     simp only [comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id, ← assoc,
@@ -125,7 +125,9 @@ def nat_trans_P (q : ℕ) :
 { app := λ X, P q,
   naturality' := λ X Y f, begin
     induction q with q hq,
-    { erw [id_comp, comp_id], },
+    { unfold P,
+      dsimp only [alternating_face_map_complex],
+      rw [id_comp, comp_id], },
     { unfold P,
       simp only [add_comp, comp_add, assoc, comp_id, hq],
       congr' 1,
@@ -143,7 +145,9 @@ lemma map_P {D : Type*} [category D] [preadditive D]
   ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) = G.map ((P q : K[X] ⟶ _).f n) :=
 begin
   induction q with q hq,
-  { erw [G.map_id], refl, },
+  { unfold P,
+    symmetry,
+    apply G.map_id, },
   { unfold P,
     simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply,
       comp_id, functor.map_add, functor.map_comp, hq, map_Hσ], }
