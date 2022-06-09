@@ -50,8 +50,11 @@ namespace Γ_index_set
 
 variables {Δ' Δ : simplex_category} (A : Γ_index_set Δ)
 
+def e := A.2.1
+instance : epi A.e := A.2.2
+
 lemma ext (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
-  (h₂ : A₁.2.1 ≫ eq_to_hom h₁ = A₂.2.1) : A₁ = A₂ :=
+  (h₂ : A₁.e ≫ eq_to_hom h₁ = A₂.e) : A₁ = A₂ :=
 begin
   rcases A₁ with ⟨Δ₁, ⟨α₁, hα₁⟩⟩,
   rcases A₂ with ⟨Δ₂, ⟨α₂, hα₂⟩⟩,
@@ -63,7 +66,7 @@ end
 
 instance : fintype (Γ_index_set Δ) :=
   fintype.of_injective ((λ A, ⟨⟨A.1.len,
-  nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi A.2.2)⟩, A.2.1.to_order_hom⟩) :
+  nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi (infer_instance : epi A.e))⟩, A.e.to_order_hom⟩) :
 Γ_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
 begin
   rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h,
@@ -117,11 +120,11 @@ variable (θ : Δ' ⟶ Δ)
 /-- When `A : Γ_index_set Δ` and `θ : Δ' → Δ` is a morphism in `simplex_category`,
 the simplicial morphism `(Γ₀.obj _).map θ` sends the term of the direct sum corresponding
 to `A` to the term corresponding to `A.pull θ`. It is given by the epimorphism `e`, which
-appears in the epi-mono factorisation `θ ≫ A.2.1 = e ≫ m`. -/
-def pull : Γ_index_set Δ' := ⟨_, ⟨factor_thru_image (θ ≫ A.2.1), infer_instance⟩⟩
+appears in the epi-mono factorisation `θ ≫ A.e = e ≫ m`. -/
+def pull : Γ_index_set Δ' := ⟨_, ⟨factor_thru_image (θ ≫ A.e), infer_instance⟩⟩
 
-lemma fac_pull : (A.pull θ).2.1 ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.snd.val :=
-image.fac (θ ≫ A.2.1)
+lemma fac_pull : (A.pull θ).e ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.e :=
+image.fac (θ ≫ A.e)
 
 end Γ_index_set
 
@@ -129,6 +132,8 @@ variables {C : Type*} [category C] [additive_category C]
 variables (K K' : chain_complex C ℕ) (f : K ⟶ K')
 variables {Δ'' Δ' Δ : simplex_category}
 
+/-- `is_d₀ i` is a simple condition used to check whether a monomorphism in
+`simplex_category` is the coface maps `δ 0`. -/
 @[nolint unused_arguments]
 def is_d₀ (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
@@ -164,12 +169,19 @@ variables (Δ' Δ)
 
 namespace obj
 
+/-- In the definition of `(Γ₀.obj K).obj Δ` as a direct sum indexed by `A : Γ_index_set Δ`,
+the summand `summand K Δ A` is `K.X A.1.len`. -/
 def summand (A : Γ_index_set Δ) : C := K.X A.1.len
 
+/-- The functor `Γ₀` sends a chain complex `K` to the simplicial object which
+sends `Δ` to the direct sum of the objects `summand K Δ A` for all `A : Γ_index_set Δ` -/
 def obj₂ : C := ∐ (λ (A : Γ_index_set Δ), summand K Δ A)
 
 namespace termwise
 
+/-- A monomorphism `i : Δ' ⟶ Δ` induces a morphism `K.X Δ.len ⟶ K.X Δ'.len` which
+is the identity if `Δ = Δ'`, the differential on the complex `K` if `i = δ 0`, and
+zero otherwise. -/
 def map_mono (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
   K.X Δ.len ⟶ K.X Δ'.len :=
 begin
@@ -264,15 +276,19 @@ end
 
 end termwise
 
+/-- The simplicial morphism on the simplicial object `Γ₀.obj K` induced by
+a morphism `Δ' → Δ` in `simplex_category` is defined on each summand
+associated to an `A : Γ_index_set Δ` in terms of the epi-mono factorisation
+of `θ ≫ A.e`. -/
 def map (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ' ⟶ Δ) :
   obj₂ K Δ ⟶ obj₂ K Δ' :=
-sigma.desc (λ A, termwise.map_mono K (image.ι (θ ≫ A.2.1)) ≫
+sigma.desc (λ A, termwise.map_mono K (image.ι (θ ≫ A.e)) ≫
   (sigma.ι (summand K Δ') (A.pull θ)))
 
 @[reassoc]
 lemma map_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
-  (fac : e ≫ i = θ ≫ A.2.1) : (sigma.ι (summand K Δ) A) ≫ map K θ =
+  (fac : e ≫ i = θ ≫ A.e) : (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K i ≫ sigma.ι (summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩ :=
 begin
   simp only [map, colimit.ι_desc, cofan.mk_ι_app, Γ_index_set.pull],
@@ -289,7 +305,7 @@ end
 lemma map_on_summand' (K : chain_complex C ℕ) {Δ' Δ : simplex_category}
   (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
-  termwise.map_mono K (image.ι (θ ≫ A.2.1)) ≫ sigma.ι (summand K _) (A.pull θ) :=
+  termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
 map_on_summand K A (A.fac_pull θ)
 
 end obj
@@ -301,8 +317,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
   map_id' := λ Δ, begin
     ext A,
     cases A,
-    haveI : epi A.2.1 := A.2.2,
-    have fac : A.2.1 ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.2.1 := by rw [comp_id, id_comp],
+    have fac : A.e ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.e := by rw [comp_id, id_comp],
     erw [obj.map_on_summand K A fac, obj.termwise.map_mono_id, id_comp, comp_id],
     unfreezingI { rcases A with ⟨Δ', ⟨e, he⟩⟩, },
     congr,
@@ -310,9 +325,9 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
   map_comp' := λ Δ'' Δ' Δ θ' θ, begin
     ext A,
     cases A,
-    have fac : θ.unop ≫ θ'.unop ≫ A.2.1 = (θ' ≫ θ).unop ≫ A.2.1 := by rw [unop_comp, assoc],
-    rw [← image.fac (θ'.unop ≫ A.2.1), ← assoc,
-      ← image.fac (θ.unop ≫ factor_thru_image (θ'.unop ≫ A.snd.val)), assoc] at fac,
+    have fac : θ.unop ≫ θ'.unop ≫ A.e = (θ' ≫ θ).unop ≫ A.e := by rw [unop_comp, assoc],
+    rw [← image.fac (θ'.unop ≫ A.e), ← assoc,
+      ← image.fac (θ.unop ≫ factor_thru_image (θ'.unop ≫ A.e)), assoc] at fac,
     simpa only [obj.map_on_summand'_assoc K A θ'.unop, obj.map_on_summand' K _ θ.unop,
       obj.termwise.map_mono_comp_assoc, obj.map_on_summand K A fac],
   end }

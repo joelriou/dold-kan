@@ -16,13 +16,11 @@ open_locale simplicial dold_kan
 
 noncomputable theory
 
-universe v
-
 namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category.{v} C] [additive_category C]
+variables {C : Type*} [category C] [additive_category C]
 
 @[simp, reassoc]
 lemma P_infty_eq_id_on_Γ₀_summand (K : chain_complex C ℕ) (n : ℕ) :
@@ -222,19 +220,18 @@ end
 lemma P_infty_eq_zero_on_Γ₀_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
   ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
 begin
-  have h : ¬function.injective A.2.1.to_order_hom,
+  have h : ¬function.injective A.e.to_order_hom,
   { by_contradiction,
     apply hA,
     rw Γ_index_set.eq_id_iff',
     simpa only [fintype.card_fin, add_left_inj] using
       (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
-  haveI : epi A.2.1 := A.2.2,
-  have eq : A = ⟨A.1, ⟨A.2.1, A.2.2⟩⟩ := Γ_index_set.ext _ _ rfl
-    (by simp only [eq_to_hom_refl, comp_id]),
+  have eq : A = ⟨A.1, ⟨A.e, infer_instance⟩⟩ := Γ_index_set.ext _ _ rfl
+    (by simp only [eq_to_hom_refl, comp_id, Γ_index_set.e]),
   rw eq,
-  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },
-  rw [assoc, show Γ₀.obj.map K A.2.1 = (Γ₀.obj K).map A.2.1.op, by refl],
-  slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
+  slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.e, },
+  rw [assoc, show Γ₀.obj.map K A.e = (Γ₀.obj K).map A.e.op, by refl],
+  slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.e h, },
   erw comp_zero,
 end
 
