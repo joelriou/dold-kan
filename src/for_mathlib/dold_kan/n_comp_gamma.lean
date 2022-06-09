@@ -128,8 +128,10 @@ begin
   apply Γ_on_mono_comp_P_infty',
 end
 
+namespace Γ₂N₁
+
 @[simps]
-def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
+def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
     { app := λ Δ, sigma.desc (λ A,
@@ -170,20 +172,26 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
       P_infty_degreewise_is_a_projection_assoc, ← f.naturality_assoc, assoc],
   end }
 
+end Γ₂N₁
+
 @[simps]
 def Γ₂N₁_compat_Γ₂N₂ : to_karoubi (simplicial_object C) ⋙ N₂ ⋙ Γ₂ ≅ N₁ ⋙ Γ₂ :=
 eq_to_iso (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂))
 
+namespace Γ₂N₂
+
 @[simps]
-def Γ₂N₂_nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 _ :=
+def nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 _ :=
 (whiskering_left_to_karoubi_hom_equiv (N₂ ⋙ Γ₂) (𝟭 _)).inv_fun
-    (Γ₂N₁_compat_Γ₂N₂.hom ≫ Γ₂N₁_nat_trans)
+    (Γ₂N₁_compat_Γ₂N₂.hom ≫ Γ₂N₁.nat_trans)
+
+end Γ₂N₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
-(N₂Γ₂_iso.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
+(N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
 sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
 begin
-  simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
+  simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f, assoc,
     P_infty_eq_id_on_Γ₀_summand_assoc,
     ι_colim_map, discrete.nat_trans_app],
   dsimp [Γ_index_set.id],
@@ -192,10 +200,10 @@ begin
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
+sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
-  simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ₀_summand_assoc,
+  simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, P_infty_eq_id_on_Γ₀_summand_assoc,
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
   dsimp [Γ_index_set.id],
@@ -204,7 +212,7 @@ begin
 end
 
 lemma identity_N₂_objectwise (P : karoubi (simplicial_object C)) :
-N₂Γ₂_iso.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂_nat_trans.app P) = 𝟙 (N₂.obj P) :=
+N₂Γ₂.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂.nat_trans.app P) = 𝟙 (N₂.obj P) :=
 begin
   ext n,
   simpa only [assoc, karoubi.comp, homological_complex.comp_f, identity_N₂_objectwise_eq₁,
@@ -213,8 +221,8 @@ begin
 end
 
 lemma identity_N₂ :
-  ((𝟙 (N₂ : karoubi (simplicial_object C) ⥤ _ ) ◫ N₂Γ₂_iso.inv) ≫
-  (Γ₂N₂_nat_trans ◫ 𝟙 N₂) : N₂ ⟶ N₂) = 𝟙 N₂ :=
+  ((𝟙 (N₂ : karoubi (simplicial_object C) ⥤ _ ) ◫ N₂Γ₂.inv) ≫
+  (Γ₂N₂.nat_trans ◫ 𝟙 N₂) : N₂ ⟶ N₂) = 𝟙 N₂ :=
 begin
   ext1, ext1 P,
   dsimp,
@@ -222,13 +230,13 @@ begin
   exact identity_N₂_objectwise P,
 end
 
-instance : is_iso (Γ₂N₂_nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _ ) ⋙ _ ⟶ _) :=
+instance : is_iso (Γ₂N₂.nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _ ) ⋙ _ ⟶ _) :=
 begin
   have hN : reflects_isomorphisms (N₂ : karoubi (simplicial_object C) ⥤ _) := by apply_instance,
-  haveI : ∀ (P : karoubi (simplicial_object C)), is_iso (Γ₂N₂_nat_trans.app P), swap,
+  haveI : ∀ (P : karoubi (simplicial_object C)), is_iso (Γ₂N₂.nat_trans.app P), swap,
   { apply nat_iso.is_iso_of_is_iso_app, },
   intro P,
-  haveI : is_iso (N₂.map (Γ₂N₂_nat_trans.app P)), swap,
+  haveI : is_iso (N₂.map (Γ₂N₂.nat_trans.app P)), swap,
   { apply hN.reflects, },
   have h' := identity_N₂_objectwise P,
   erw [hom_comp_eq_id] at h',
@@ -237,12 +245,12 @@ begin
 end
 
 lemma Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans (X : simplicial_object C) :
-  Γ₂N₁_nat_trans.app X = (Γ₂N₁_compat_Γ₂N₂.app X).inv ≫
-    Γ₂N₂_nat_trans.app ((to_karoubi _).obj X) :=
+  Γ₂N₁.nat_trans.app X = (Γ₂N₁_compat_Γ₂N₂.app X).inv ≫
+    Γ₂N₂.nat_trans.app ((to_karoubi _).obj X) :=
 begin
   ext Δ A,
-  simp only [Γ₂N₁_nat_trans_app_f_app, colimit.ι_desc, cofan.mk_ι_app,
-    karoubi.comp, nat_trans.comp_app, assoc, Γ₂N₂_nat_trans_app_f_app,
+  simp only [Γ₂N₁.nat_trans_app_f_app, colimit.ι_desc, cofan.mk_ι_app,
+    karoubi.comp, nat_trans.comp_app, assoc, Γ₂N₂.nat_trans_app_f_app,
     Γ₂N₁_compat_Γ₂N₂, eq_to_iso, iso.app_inv, eq_to_hom_app, karoubi.eq_to_hom_f,
     eq_to_hom_refl, id_comp, to_karoubi_obj_p],
   dsimp,
@@ -251,9 +259,9 @@ begin
   simp only [P_infty_degreewise_is_a_projection_assoc],
 end
 
-instance : is_iso (Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
+instance : is_iso (Γ₂N₁.nat_trans : (N₁ : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
 begin
-  haveI : ∀ (X : simplicial_object C), is_iso (Γ₂N₁_nat_trans.app X),
+  haveI : ∀ (X : simplicial_object C), is_iso (Γ₂N₁.nat_trans.app X),
   { intro X,
     rw Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans,
     apply is_iso.comp_is_iso, },
@@ -261,12 +269,12 @@ begin
 end
 
 @[simps]
-def Γ₂N₂_iso : 𝟭 _ ≅ (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ :=
-(as_iso Γ₂N₂_nat_trans).symm
+def Γ₂N₂ : 𝟭 _ ≅ (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ :=
+(as_iso Γ₂N₂.nat_trans).symm
 
 @[simps]
-def Γ₂N₁_iso : to_karoubi _  ≅ (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ :=
-(as_iso Γ₂N₁_nat_trans).symm
+def Γ₂N₁ : to_karoubi _  ≅ (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ :=
+(as_iso Γ₂N₁.nat_trans).symm
 
 end dold_kan
 

@@ -31,11 +31,11 @@ def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := Γ�
 def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ) :=
 { functor := N,
   inverse := Γ,
-  unit_iso := Γ₂N₂_iso,
-  counit_iso := N₂Γ₂_iso,
+  unit_iso := Γ₂N₂,
+  counit_iso := N₂Γ₂,
   functor_unit_iso_comp' := λ P, begin
-    let α := N.map_iso (Γ₂N₂_iso.app P),
-    let β := N₂Γ₂_iso.app (N.obj P),
+    let α := N.map_iso (Γ₂N₂.app P),
+    let β := N₂Γ₂.app (N.obj P),
     symmetry,
     change 𝟙 _ = α.hom ≫ β.hom,
     rw [← iso.inv_comp_eq, comp_id, ← comp_id β.hom, ← iso.inv_comp_eq],
