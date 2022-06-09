@@ -25,9 +25,9 @@ namespace dold_kan
 variables {C : Type*} [category.{v} C] [additive_category C]
 
 @[simp, reassoc]
-lemma P_infty_eq_id_on_Γ_summand (K : chain_complex C ℕ) (n : ℕ) :
-  inclusion_Γ_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
-    inclusion_Γ_summand K (Γ_index_set.id [n]) :=
+lemma P_infty_eq_id_on_Γ₀_summand (K : chain_complex C ℕ) (n : ℕ) :
+  ι_Γ₀_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
+    ι_Γ₀_summand K (Γ_index_set.id [n]) :=
 begin
   rw P_infty_degreewise,
   cases n,
@@ -35,8 +35,8 @@ begin
   { apply P_is_identity_where_faces_vanish,
     intros j hj,
     let i := simplex_category.δ j.succ,
-    erw Γ_simplicial_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    rw [Γ_on_mono.eq_zero K i _ _, zero_comp],
+    erw Γ₀.obj.map_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+    rw [Γ₀.obj.termwise.map_mono_eq_zero K i _ _, zero_comp],
     { intro h,
       apply nat.succ_ne_self n,
       simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
@@ -47,11 +47,11 @@ end
 
 lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
   {Δ Δ' : simplex_category} (e : Δ ⟶ Δ') [epi e] :
-inclusion_Γ_summand K (Γ_index_set.id Δ') ≫ Γ_simplicial K e =
-  inclusion_Γ_summand K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
+ι_Γ₀_summand K (Γ_index_set.id Δ') ≫ Γ₀.obj.map K e =
+  ι_Γ₀_summand K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
 begin
-  rw [Γ_simplicial_on_summand K (Γ_index_set.id Δ')
-    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl), Γ_on_mono.on_id],
+  rw [Γ₀.obj.map_on_summand K (Γ_index_set.id Δ')
+    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl), Γ₀.obj.termwise.map_mono_id],
   apply id_comp,
 end
 
@@ -219,8 +219,8 @@ begin
 end
 
 @[simp, reassoc]
-lemma P_infty_eq_zero_on_Γ_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
-  inclusion_Γ_summand K A ≫ P_infty.f n = 0 :=
+lemma P_infty_eq_zero_on_Γ₀_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
+  ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
 begin
   have h : ¬function.injective A.2.1.to_order_hom,
   { by_contradiction,
@@ -233,7 +233,7 @@ begin
     (by simp only [eq_to_hom_refl, comp_id]),
   rw eq,
   slice_lhs 1 1 { dsimp, erw ← inclusion_Γ_summand_decomp K A.2.1, },
-  rw [assoc, show Γ_simplicial K A.2.1 = (Γ₀.obj K).map A.2.1.op, by refl],
+  rw [assoc, show Γ₀.obj.map K A.2.1 = (Γ₀.obj K).map A.2.1.op, by refl],
   slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.2.1 h, },
   erw comp_zero,
 end

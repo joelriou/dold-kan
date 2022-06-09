@@ -78,18 +78,18 @@ begin
 end
 
 lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category) ⟶ [n']) [mono i] :
-  Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n = P_infty.f n' ≫ X.map i.op :=
+  Γ₀.obj.termwise.map_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f n = P_infty.f n' ≫ X.map i.op :=
 begin
   /- We start with the case `i` is an identity -/
   by_cases n = n',
   { unfreezingI { subst h, },
     have h := simplex_category.eq_id_of_mono i,
     unfreezingI { subst h, },
-    simp only [Γ_on_mono.on_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
+    simp only [Γ₀.obj.termwise.map_mono_id, op_id, eq_to_hom_refl, eq_to_hom_trans, id_comp],
     erw [X.map_id, comp_id], },
   by_cases hi : is_d₀ i,
   /- The case `i = δ 0` -/
-  { erw [Γ_on_mono.on_d₀ _ i hi, ← P_infty.comm' n' n hi.left.symm],
+  { erw [Γ₀.obj.termwise.map_mono_d₀ _ i hi, ← P_infty.comm' n' n hi.left.symm],
     have h' : n' = n+1 := hi.left,
     unfreezingI { subst h', },
     dsimp [alternating_face_map_complex.obj, chain_complex.of],
@@ -101,7 +101,7 @@ begin
     { simp only [finset.mem_univ, not_true, forall_false_left], },
     { simpa only [hi.eq_d₀, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
-  { rw [Γ_on_mono.eq_zero _ i _ hi, zero_comp], swap,
+  { rw [Γ₀.obj.termwise.map_mono_eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',
       exact h (congr_arg simplex_category.len h'.symm), },
     rw P_infty_eq_zero_on,
@@ -118,7 +118,7 @@ begin
 end
 
 lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
-  Γ_on_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
+  Γ₀.obj.termwise.map_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
     X.map (eq_to_hom (by simp only [simplex_category.mk_len]) ≫ i.op ≫ eq_to_hom (by simp only [simplex_category.mk_len])) :=
 begin
   cases simplex_rewrite Δ with n h,
@@ -139,7 +139,7 @@ def Γ₂N₁_nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_ka
         cases A,
         slice_rhs 1 2 { erw colimit.ι_desc, },
         dsimp,
-        slice_lhs 1 2 { erw [Γ_simplicial_on_summand' _ A], },
+        slice_lhs 1 2 { erw [Γ₀.obj.map_on_summand' _ A], },
         slice_lhs 2 3 { erw colimit.ι_desc, },
         erw cofan.mk_ι_app,
         slice_lhs 1 2 { erw Γ_on_mono_comp_P_infty, },
@@ -181,10 +181,10 @@ def Γ₂N₂_nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂_iso.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
+sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
 begin
   simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
-    P_infty_eq_id_on_Γ_summand_assoc,
+    P_infty_eq_id_on_Γ₀_summand_assoc,
     ι_colim_map, discrete.nat_trans_app],
   dsimp [Γ_index_set.id],
   simp only [← P_infty_degreewise_naturality_assoc,
@@ -192,10 +192,10 @@ begin
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ_summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
+sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂_nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
-  simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ_summand_assoc,
+  simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ₀_summand_assoc,
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
   dsimp [Γ_index_set.id],
