@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import algebraic_topology.alternating_face_map_complex
+import for_mathlib.alternating_face_map_complex
 
 /-!
 

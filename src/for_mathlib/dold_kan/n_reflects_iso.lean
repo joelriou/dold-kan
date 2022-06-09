@@ -40,7 +40,7 @@ begin
   have h  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
   have h' := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
   simp only [N₁_obj_p, N₁_map_f, homological_complex.comp_f, chain_complex.of_hom_f,
-    karoubi.id_eq, karoubi.comp, alternating_face_map_complex_map,
+    karoubi.id_eq, karoubi.comp, alternating_face_map_complex_map_f,
     alternating_face_map_complex.map] at h h',
   dsimp at h h',
   /- we have to construct an inverse to f in degree n, by induction on n -/
@@ -137,7 +137,8 @@ begin
   { intros P Q f,
     ext n,
     dsimp [F3, F5],
-    simp [karoubi_P_infty_f, ← nat_trans.comp_app f.f Q.p, congr_app (karoubi.comp_p f) (op [n])], },
+    simp [karoubi_P_infty_f, ← nat_trans.comp_app f.f Q.p,
+      congr_app (karoubi.comp_p f) (op [n])], },
   { intro P,
     apply homological_complex.ext,
     { intros i j hij,
@@ -166,8 +167,7 @@ begin
       refl, },
     { ext n,
       { dsimp,
-        simp only [comp_id, id_comp],
-        rw [karoubi_P_infty_f, P_infty_degreewise_naturality], },
+        simp only [karoubi_P_infty_f, comp_id, id_comp, P_infty_degreewise_naturality], },
       { refl, }, }, }
 end
 

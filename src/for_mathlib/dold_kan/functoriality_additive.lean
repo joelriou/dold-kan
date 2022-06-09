@@ -51,9 +51,7 @@ begin
     { dsimp,
       erw [homological_complex.eq_to_hom_f, ← algebraic_topology.dold_kan.map_P_infty_degreewise,
       comp_id, id_comp], },
-    { have h := congr_obj (map_alternating_face_map_complex F) X,
-      dsimp at ⊢ h,
-      simpa only [← h], }, },
+    { exact congr_obj (map_alternating_face_map_complex F).symm X, }, },
 end
 
 lemma functoriality_N :
