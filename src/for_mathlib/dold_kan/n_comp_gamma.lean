@@ -192,7 +192,7 @@ lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : �
 sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
 begin
   simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f, assoc,
-    P_infty_eq_id_on_Γ₀_summand_assoc,
+    ι_Γ₀_summand_id_comp_P_infty_assoc,
     ι_colim_map, discrete.nat_trans_app],
   dsimp [Γ_index_set.id],
   simp only [← P_infty_degreewise_naturality_assoc,
@@ -203,7 +203,7 @@ lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : �
 sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
-  simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, P_infty_eq_id_on_Γ₀_summand_assoc,
+  simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, ι_Γ₀_summand_id_comp_P_infty_assoc,
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
   dsimp [Γ_index_set.id],

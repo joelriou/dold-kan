@@ -23,7 +23,7 @@ namespace dold_kan
 variables {C : Type*} [category C] [additive_category C]
 
 @[simp, reassoc]
-lemma P_infty_eq_id_on_Γ₀_summand (K : chain_complex C ℕ) (n : ℕ) :
+lemma ι_Γ₀_summand_id_comp_P_infty (K : chain_complex C ℕ) (n : ℕ) :
   ι_Γ₀_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
     ι_Γ₀_summand K (Γ_index_set.id [n]) :=
 begin
@@ -42,27 +42,6 @@ begin
       erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
       exact h₂ rfl, }, },
 end
-
-lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
-{n : ℕ} (A : Γ_index_set [n]) :
-  sigma.ι (Γ₀.obj.summand K A.1) (Γ_index_set.id A.1) ≫
-    Γ₀.obj.map K A.e =
-  ι_Γ₀_summand K A :=
-begin
-  rw [Γ₀.obj.map_on_summand K (Γ_index_set.id A.1)
-    (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl), Γ₀.obj.termwise.map_mono_id, A.ext'],
-  apply id_comp,
-end
-
-/-lemma inclusion_Γ_summand_decomp (K : chain_complex C ℕ)
-  {Δ Δ' : simplex_category} (e : Δ ⟶ Δ') [epi e] :
-ι_Γ₀_summand_old K (Γ_index_set.id Δ') ≫ Γ₀.obj.map K e =
-  ι_Γ₀_summand_old K ⟨Δ', ⟨e, infer_instance⟩⟩ :=
-begin
-  rw [Γ₀.obj.map_on_summand K (Γ_index_set.id Δ')
-    (show e ≫ 𝟙 _ = e ≫ 𝟙 _, by refl), Γ₀.obj.termwise.map_mono_id],
-  apply id_comp,
-end-/
 
 lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n b q : ℕ} (hnbq : n+1=b+q) {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : higher_faces_vanish q (φ ≫ X.σ ⟨b,
@@ -228,19 +207,15 @@ begin
 end
 
 @[simp, reassoc]
-lemma P_infty_eq_zero_on_Γ₀_summand (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
+lemma ι_Γ₀_summand_comp_P_infty_eq_zero (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
   ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
 begin
-  have h : ¬function.injective A.e.to_order_hom,
-  { by_contradiction,
-    apply hA,
-    rw Γ_index_set.eq_id_iff',
-    simpa only [fintype.card_fin, add_left_inj] using
-      (fintype.card_of_bijective ⟨h, simplex_category.epi_iff_surjective.mp A.snd.property⟩).symm, },
-  erw ← inclusion_Γ_summand_decomp K A,
-  rw [assoc, show Γ₀.obj.map K A.e = (Γ₀.obj K).map A.e.op, by refl],
-  slice_lhs 2 3 { erw P_infty_eq_zero_on_degeneracies _ A.e h, },
-  erw comp_zero,
+  rw [← eq_ι_Γ₀_summand K A, assoc, P_infty_eq_zero_on_degeneracies _ A.e, comp_zero],
+  intro h,
+  apply hA,
+  rw Γ_index_set.eq_id_iff',
+  simpa only [fintype.card_fin, add_left_inj] using (fintype.card_of_bijective
+    ⟨h, simplex_category.epi_iff_surjective.mp (infer_instance : epi A.e)⟩).symm,
 end
 
 end dold_kan

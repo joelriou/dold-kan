@@ -289,9 +289,11 @@ def map (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ' ⟶ Δ) 
 sigma.desc (λ A, termwise.map_mono K (image.ι (θ ≫ A.e)) ≫
   (sigma.ι (summand K Δ') (A.pull θ)))
 
+variables {Δ Δ'}
+
 @[reassoc]
-lemma map_on_summand (K : chain_complex C ℕ) {Δ'' Δ' Δ : simplex_category}
-  (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ} {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
+lemma map_on_summand (A : Γ_index_set Δ) {θ : Δ' ⟶ Δ}
+  {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (fac : e ≫ i = θ ≫ A.e) : (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K i ≫ sigma.ι (summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩ :=
 begin
@@ -306,8 +308,7 @@ begin
 end
 
 @[reassoc]
-lemma map_on_summand' (K : chain_complex C ℕ) {Δ' Δ : simplex_category}
-  (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
+lemma map_on_summand' (A : Γ_index_set Δ) (θ : Δ' ⟶ Δ) :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
 map_on_summand K A (A.fac_pull θ)
@@ -369,13 +370,24 @@ def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
 
-/-- The inclusion of a summand of `(Γ₀.obj K).obj Δ` -/
-abbreviation ι_Γ₀_summand_old (K : chain_complex C ℕ) {Δ : simplex_category}
-  (A : Γ_index_set Δ) : Γ₀.obj.summand K Δ A ⟶ K[Γ₀.obj K].X Δ.len :=
-sigma.ι (Γ₀.obj.summand K Δ) A
-abbreviation ι_Γ₀_summand (K : chain_complex C ℕ) {n : ℕ}
+def ι_Γ₀_summand' (A : Γ_index_set Δ) : Γ₀.obj.summand K Δ A
+⟶ (Γ₀.obj K).obj (op Δ) := sigma.ι _ A
+
+/-- The inclusion of a summand of `K[Γ₀.obj K].X n` -/
+abbreviation ι_Γ₀_summand {n : ℕ}
   (A : Γ_index_set [n]) : Γ₀.obj.summand K [n] A ⟶ K[Γ₀.obj K].X n  :=
 sigma.ι (Γ₀.obj.summand K [n]) A
+
+lemma eq_ι_Γ₀_summand {n : ℕ} (A : Γ_index_set [n]) :
+  sigma.ι (Γ₀.obj.summand K A.1) (Γ_index_set.id A.1) ≫
+    (Γ₀.obj K).map A.e.op = ι_Γ₀_summand K A :=
+begin
+  rw [Γ₀.obj_map, quiver.hom.unop_op,
+    Γ₀.obj.map_on_summand K (Γ_index_set.id A.1)
+    (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
+    Γ₀.obj.termwise.map_mono_id, A.ext'],
+  apply id_comp,
+end
 
 /-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
 on the idempotent completions. It shall be an equivalence of categories

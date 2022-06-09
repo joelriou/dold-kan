@@ -233,10 +233,10 @@ abbreviation hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
       erw [comp_id],
       by_cases A = Γ_index_set.id [n],
       { subst h,
-        simp only [P_infty_eq_id_on_Γ₀_summand_assoc,
+        simp only [ι_Γ₀_summand_id_comp_P_infty_assoc,
           map_termwise_eq_id, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
           simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
-      { rw [P_infty_eq_zero_on_Γ₀_summand_assoc K h, zero_comp, map_termwise_eq_zero K h], },
+      { rw [ι_Γ₀_summand_comp_P_infty_eq_zero_assoc K h, zero_comp, map_termwise_eq_zero K h], },
     end },
   naturality' := λ K L f, begin
     ext n A,
@@ -248,12 +248,12 @@ abbreviation hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
     by_cases A = Γ_index_set.id [n],
     { subst h,
       dsimp,
-      simp only [P_infty_eq_id_on_Γ₀_summand_assoc, ι_colim_map_assoc, discrete.nat_trans_app,
-        colimit.ι_desc, cofan.mk_ι_app, map_termwise_eq_id],
-      erw [id_comp, comp_id],
-      refl, },
+      simp only [ι_Γ₀_summand_id_comp_P_infty_assoc, ι_colim_map_assoc, discrete.nat_trans_app,
+        colimit.ι_desc, cofan.mk_ι_app, map_termwise_eq_id, id_comp],
+      dsimp [Γ_index_set.id],
+      rw comp_id, },
     { dsimp,
-      rw [P_infty_eq_zero_on_Γ₀_summand_assoc K h, map_termwise_eq_zero K h,
+      rw [ι_Γ₀_summand_comp_P_infty_eq_zero_assoc K h, map_termwise_eq_zero K h,
         zero_comp, zero_comp], },
   end, }
 
@@ -286,14 +286,13 @@ abbreviation inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
     comm := begin
       ext n,
       dsimp,
-      slice_rhs 2 3 { erw P_infty_eq_id_on_Γ₀_summand, },
-      simp only [discrete.nat_trans_app, ι_colim_map, id_comp],
+      simp only [ι_Γ₀_summand_id_comp_P_infty, discrete.nat_trans_app, ι_colim_map, id_comp],
     end },
   naturality' := λ K L f, begin
     ext n,
     simp only [karoubi.comp, homological_complex.comp_f],
-    erw [← assoc, P_infty_eq_id_on_Γ₀_summand, ι_colim_map, discrete.nat_trans_app],
-    refl,
+    dsimp,
+    simpa only [ι_Γ₀_summand_id_comp_P_infty_assoc, ι_colim_map, discrete.nat_trans_app],
   end }
 
 end N₁Γ₀
@@ -310,8 +309,8 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
     dsimp at ⊢ A,
     by_cases A = Γ_index_set.id [n],
     { subst h,
-      simp only [P_infty_eq_id_on_Γ₀_summand, N₁Γ₀.map_termwise_eq_id, id_comp], },
-    { simp only [P_infty_eq_zero_on_Γ₀_summand K h, N₁Γ₀.map_termwise_eq_zero K h, zero_comp], },
+      simp only [ι_Γ₀_summand_id_comp_P_infty, N₁Γ₀.map_termwise_eq_id, id_comp], },
+    { simp only [ι_Γ₀_summand_comp_P_infty_eq_zero K h, N₁Γ₀.map_termwise_eq_zero K h, zero_comp], },
   end,
   inv_hom_id' := begin
     ext K n,
