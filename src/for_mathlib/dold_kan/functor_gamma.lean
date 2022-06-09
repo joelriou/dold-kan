@@ -50,7 +50,9 @@ namespace Γ_index_set
 
 variables {Δ' Δ : simplex_category} (A : Γ_index_set Δ)
 
+/-- The epimorphism in `simplex_category` associated to `A : Γ_index_set Δ` -/
 def e := A.2.1
+
 instance : epi A.e := A.2.2
 
 lemma ext (A₁ A₂ : Γ_index_set Δ) (h₁ : A₁.1 = A₂.1)
@@ -310,6 +312,7 @@ map_on_summand K A (A.fac_pull θ)
 
 end obj
 
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on objects. -/
 @[simps]
 def obj (K : chain_complex C ℕ) : simplicial_object C :=
 { obj := λ Δ, obj.obj₂ K (unop Δ),
@@ -332,6 +335,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
       obj.termwise.map_mono_comp_assoc, obj.map_on_summand K A fac],
   end }
 
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on objects. -/
 @[simps]
 def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
 { app := λ Δ, limits.sigma.map (λ (A : Γ_index_set Δ.unop), f.f A.1.len),
@@ -344,6 +348,9 @@ def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
 
 end Γ₀
 
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which is
+the inverse functor of the Dold-Kan equivalence in the category abelian
+categories, or more generally pseudoabelian categories. -/
 @[simps]
 def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
 { obj := Γ₀.obj,
@@ -360,10 +367,14 @@ def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
 
+/-- The inclusion of a summand of `(Γ₀.obj K).obj Δ` -/
 abbreviation ι_Γ₀_summand (K : chain_complex C ℕ) {Δ : simplex_category}
   (A : Γ_index_set Δ) : Γ₀.obj.summand K Δ A ⟶ K[Γ₀.obj K].X Δ.len :=
 sigma.ι (Γ₀.obj.summand K Δ) A
 
+/-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
+on the idempotent completions. It shall be an equivalence of categories
+for any additive category `C`. -/
 @[simps]
 def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
 (category_theory.idempotents.functor_extension'' _ _).obj Γ₀
