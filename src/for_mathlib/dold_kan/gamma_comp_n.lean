@@ -233,7 +233,7 @@ abbreviation N₁Γ₀_iso_hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C 
       { subst h,
         simp only [P_infty_eq_id_on_Γ_summand_assoc,
           N₁Γ₀_map_termwise_eq_id, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
-          Γ_index_set.id_fst, simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
+          simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
       { rw [P_infty_eq_zero_on_Γ_summand_assoc K h, zero_comp, N₁Γ₀_map_termwise_eq_zero K h], },
     end },
   naturality' := λ K L f, begin

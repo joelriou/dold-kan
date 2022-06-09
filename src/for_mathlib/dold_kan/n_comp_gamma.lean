@@ -186,7 +186,7 @@ begin
   simp only [N₂Γ₂_iso_inv_app_f_f, N₂_obj_p_f, assoc,
     P_infty_eq_id_on_Γ_summand_assoc,
     ι_colim_map, discrete.nat_trans_app],
-  dsimp,
+  dsimp [Γ_index_set.id],
   simp only [← P_infty_degreewise_naturality_assoc,
     P_infty_degreewise_is_a_projection_assoc, app_idem_assoc],
 end
@@ -198,7 +198,7 @@ begin
   simp only [N₂_map_f_f, Γ₂N₂_nat_trans_app_f_app, P_infty_eq_id_on_Γ_summand_assoc,
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
-  dsimp,
+  dsimp [Γ_index_set.id],
   simp only [P_infty_degreewise_naturality_assoc,
     P_infty_degreewise_is_a_projection_assoc, app_idem],
 end

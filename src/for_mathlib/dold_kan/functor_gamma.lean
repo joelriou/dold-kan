@@ -57,7 +57,6 @@ end
 
 variable (Δ)
 
-@[simps]
 def id : Γ_index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
 instance : inhabited (Γ_index_set Δ) := ⟨id Δ⟩
