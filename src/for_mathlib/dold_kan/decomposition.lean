@@ -21,7 +21,7 @@ namespace algebraic_topology
 namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
-variables {X : simplicial_object C}
+variables {X X' : simplicial_object C}
 
 /-- This is the decreasing involution of `fin (n+1)` which appears in `decomposition_Q`. -/
 def reverse_fin {n : ℕ} (i : fin (n+1)) : fin (n+1):= ⟨n-i, nat.sub_lt_succ n i⟩
@@ -101,21 +101,21 @@ structure morph_components (n : ℕ) (Z : C) :=
 
 namespace morph_components
 
-variable {X}
-/-- The morphism `X _[n+1] ⟶ Z ` associated to a `morph_components X n Z`-/
-def φ {Z : C} {n : ℕ} (f : morph_components X n Z) :
+variables {X} {n : ℕ} {Z Z' : C} (f : morph_components X n Z) (g : X' ⟶ X) (h : Z ⟶ Z')
+/-- The morphism `X _[n+1] ⟶ Z ` associated to `f : morph_components X n Z`. -/
+def φ {Z : C} (f : morph_components X n Z) :
   X _[n+1] ⟶ Z := P_infty.f (n+1) ≫ f.a +
   ∑ (i : fin (n+1)), ((P i).f (n+1) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i)))
 
-variable (X)
+variables (X n)
 /-- the canonical `morph_components` whose associated morphism is the identity
 (see `F_id`) thanks to `decomposition_Q n (n+1)` -/
 @[simps]
-def id (n : ℕ) : morph_components X n (X _[n+1]) :=
+def id : morph_components X n (X _[n+1]) :=
 { a := P_infty.f (n+1),
   b := λ i, X.σ i, }
 
-lemma φ_id (n : ℕ) : (id X n).φ = 𝟙 _ :=
+lemma φ_id : (id X n).φ = 𝟙 _ :=
 begin
   simp only [← P_add_Q_degreewise (n+1) (n+1), φ],
   congr' 1,
@@ -125,32 +125,28 @@ begin
     simpa only [finset.mem_univ, finset.mem_filter, true_and, true_iff] using fin.is_lt i, },
 end
 
-variable {X}
+variables {X n}
 
-/-- A `morph_components` can be postcomposed with a map `Z ⟶ Z'`. -/
+/-- A `morph_components` can be postcomposed with a morphism. -/
 @[simps]
-def post_comp {n : ℕ} {Z Z' : C}
-  (f : morph_components X n Z) (g : Z ⟶ Z') : morph_components X n Z' :=
-{ a := f.a ≫ g,
-  b := λ i, f.b i ≫ g }
+def post_comp : morph_components X n Z' :=
+{ a := f.a ≫ h,
+  b := λ i, f.b i ≫ h }
 
-lemma post_comp_φ {n : ℕ} {Z Z' : C} (f : morph_components X n Z)
-  (g : Z ⟶ Z') : (f.post_comp g).φ = f.φ ≫ g :=
+lemma post_comp_φ :
+  (f.post_comp h).φ = f.φ ≫ h :=
 begin
   unfold φ post_comp,
   simp only [add_comp, sum_comp, assoc],
 end
 
-/-- A `morph_components` can be precomposed with a map `X' ⟶ X`. -/
+/-- A `morph_components` can be precomposed with a morphism of simplicial objects. -/
 @[simps]
-def pre_comp {X' X : simplicial_object C} {n : ℕ} {Z : C}
-  (g : X' ⟶ X) (f : morph_components X n Z) : morph_components X' n Z :=
+def pre_comp : morph_components X' n Z :=
 { a := g.app (op [n+1]) ≫ f.a,
   b := λ i, g.app (op [n]) ≫ f.b i }
 
-lemma pre_comp_φ {X' X : simplicial_object C} {n : ℕ} {Z : C}
-  (g : X' ⟶ X) (f : morph_components X n Z) :
-  (f.pre_comp g).φ = g.app (op [n+1]) ≫ f.φ :=
+lemma pre_comp_φ : (f.pre_comp g).φ = g.app (op [n+1]) ≫ f.φ :=
 begin
   unfold φ pre_comp,
   simp only [P_infty_degreewise, comp_add],

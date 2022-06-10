@@ -167,6 +167,25 @@ variables {J C}
 lemma app_idem (P : karoubi (J ⥤ C)) (X : J) :
   P.p.app X ≫ P.p.app X = P.p.app X := congr_app P.idem X
 
+namespace nat_trans
+
+@[simp, reassoc]
+lemma app_p_comp {P Q : karoubi (J ⥤ C)} (f : P ⟶ Q) (X : J) :
+  P.p.app X ≫ f.f.app X = f.f.app X :=
+congr_app (p_comp f) X
+
+@[simp, reassoc]
+lemma app_comp_p {P Q : karoubi (J ⥤ C)} (f : P ⟶ Q) (X : J) :
+  f.f.app X ≫ Q.p.app X = f.f.app X :=
+congr_app (comp_p f) X
+
+@[reassoc]
+lemma app_p_comm {P Q : karoubi (J ⥤ C)} (f : P ⟶ Q) (X : J) :
+  P.p.app X ≫ f.f.app X = f.f.app X ≫ Q.p.app X :=
+congr_app (p_comm f) X
+
+end nat_trans
+
 end idempotents
 
 end category_theory

@@ -166,8 +166,13 @@ def inclusion_hom [preadditive C] (P Q : karoubi C) : add_monoid_hom (P ⟶ Q) (
 
 @[simp]
 lemma sum_hom [preadditive C] {P Q : karoubi C} {α : Type*} (s : finset α) (f : α → (P ⟶ Q)) :
-  (∑ x in s, f x).f = ∑ x in s, (f x).f  :=
+  (∑ x in s, f x).f = ∑ x in s, (f x).f :=
 add_monoid_hom.map_sum (inclusion_hom P Q) f s
+
+@[simp]
+lemma zsmul_hom [preadditive C] {P Q : karoubi C} (f : P ⟶ Q) (n : ℤ) :
+  (n • f).f = n • f.f :=
+map_zsmul (inclusion_hom P Q) n f
 
 end karoubi
 
