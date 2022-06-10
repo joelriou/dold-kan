@@ -23,6 +23,8 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
+open morph_components
+
 instance : reflects_isomorphisms
   (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
 begin
@@ -30,55 +32,36 @@ begin
   intros X Y f,
   introI,
   /- restating the result in a way that allows induction on the degree n -/
-  haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ), swap,
-  { exact nat_iso.is_iso_of_is_iso_app f, },
-  intro Δ,
-  let m := simplex_category.len (unop Δ),
-  rw [show Δ = op [m], by { simp only [op_unop, simplex_category.mk_len], }],
-  generalize : m = n, clear m Δ,
-  /- rewriting some assumptions in a more practical form -/
+  suffices : ∀ (n : ℕ), is_iso (f.app (op [n])),
+  { haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ) := λ Δ, this Δ.unop.len,
+    apply nat_iso.is_iso_of_is_iso_app, },
+  /- restating the assumption in a more practical form -/
   have h  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
   have h' := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
-  simp only [N₁_obj_p, N₁_map_f, homological_complex.comp_f, chain_complex.of_hom_f,
-    karoubi.id_eq, karoubi.comp, alternating_face_map_complex_map_f,
-    alternating_face_map_complex.map] at h h',
-  dsimp at h h',
+  have h'' := λ n, karoubi.homological_complex.p_comm_degreewise_assoc (inv (N₁.map f)) (n)
+    (f.app (op [n])),
+  simp only [N₁_map_f, karoubi.comp, homological_complex.comp_f,
+    alternating_face_map_complex.map_f, N₁_obj_p, karoubi.id_eq, assoc] at h h' h'',
   /- we have to construct an inverse to f in degree n, by induction on n -/
+  intro n,
   induction n with n hn,
   /- degree 0 -/
   { use (inv (N₁.map f)).f.f 0,
-    split,
-    have eq := h 0, swap,
-    have eq := h' 0,
-    all_goals
-    { simp only [P_infty_degreewise, P_deg0_eq] at eq,
-      erw id_comp at eq,
-      exact eq, }, },
-  /- isomorphism in degree n+1 of an isomorphism in degree n -/
+    have h₀ := h 0,
+    have h'₀ := h' 0,
+    dsimp at h₀ h'₀,
+    simp only [id_comp, comp_id] at h₀ h'₀,
+    split; assumption, },
+  /- induction step -/
   { haveI := hn,
-    use F
+    use φ
       { a := P_infty.f (n+1) ≫ (inv (N₁.map f)).f.f (n+1),
         b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
-    split,
-    { rw [← F_id, ← comp_F],
-      simp only [comp_morph_components, morph_components_id],
-      congr' 2,
-      { erw [← assoc, P_infty_degreewise_naturality],
-        exact h (n+1), },
-      { ext,
-        rw ← assoc,
-        simp only [id_comp, is_iso.hom_inv_id], }, },
-    { rw [← F_id, ← F_comp],
-      simp only [morph_components_comp, morph_components_id],
-      congr' 2,
-      { have eq := homological_complex.congr_hom (karoubi.p_comp (inv (N₁.map f))) (n+1),
-        have eq' := homological_complex.congr_hom (karoubi.comp_p (inv (N₁.map f))) (n+1),
-        simp only [homological_complex.comp_f] at eq eq',
-        erw [eq, ← eq', assoc],
-        exact h' (n+1), },
-      { ext,
-        erw [assoc, f.naturality, ← assoc, is_iso.inv_hom_id, id_comp],
-        refl, }, }, }
+    simp only [← φ_id, ← pre_comp_φ, pre_comp, morph_components.id,
+      ← post_comp_φ, post_comp, P_infty_degreewise_naturality_assoc,
+      is_iso.hom_inv_id_assoc, assoc, is_iso.inv_hom_id_assoc,
+      simplicial_object.naturality_σ, h, h', h''],
+    split; refl, },
 end
 
 lemma karoubi_alternating_face_map_complex_d (X : karoubi (simplicial_object C)) (n : ℕ) :

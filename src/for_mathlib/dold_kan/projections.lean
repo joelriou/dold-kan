@@ -67,6 +67,7 @@ lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel, }
 lemma P_add_Q_degreewise (q n : ℕ) : (P q).f n + (Q q).f n = 𝟙 (X _[n]) :=
 homological_complex.congr_hom (P_add_Q q) n
 
+@[simp]
 lemma Q_eq_zero : (Q 0 : K[X] ⟶ _) = 0 := sub_self _
 
 lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
@@ -136,6 +137,7 @@ def nat_trans_P (q : ℕ) :
       exact (nat_trans_Hσ q).naturality' f, }
   end }
 
+@[simp, reassoc]
 lemma P_degreewise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
   f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
 homological_complex.congr_hom ((nat_trans_P q).naturality f) n

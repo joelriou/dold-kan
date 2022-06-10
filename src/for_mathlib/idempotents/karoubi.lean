@@ -86,6 +86,7 @@ by rw [f.comm, ← assoc, P.idem]
 lemma comp_p {P Q : karoubi C} (f : hom P Q) : f.f ≫ Q.p = f.f :=
 by rw [f.comm, assoc, assoc, Q.idem]
 
+@[reassoc]
 lemma p_comm {P Q : karoubi C} (f : hom P Q) : P.p ≫ f.f = f.f ≫ Q.p :=
 by rw [p_comp, comp_p]
 

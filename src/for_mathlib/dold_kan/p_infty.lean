@@ -51,6 +51,10 @@ begin
     exact Hσφ_eq_zero (nat.succ_le_iff.mp hqn) (higher_faces_vanish_P q n), }
 end
 
+lemma Q_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
+  ((Q (q+1)).f n : X _[n] ⟶ _ ) = (Q q).f n :=
+by simp only [Q, homological_complex.sub_f_apply, P_is_eventually_constant hqn]
+
 /-- Definition of P_infty from the P q -/
 def P_infty : K[X] ⟶ K[X] := chain_complex.of_hom _ _ _ _ _ _
     (λ n, ((P n).f n : X _[n] ⟶ _ ))
@@ -61,6 +65,9 @@ begin
   erw chain_complex.of_d at eq,
   exact eq,
 end
+
+@[simp]
+lemma P_infty_deg0_eq : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
 
 lemma P_infty_degreewise (n : ℕ) :
   (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := by refl
