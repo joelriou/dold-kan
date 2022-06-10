@@ -27,7 +27,7 @@ variables {C : Type*} [category C] [additive_category C]
 lemma ι_Γ₀_summand_comp_P_infty_eq_zero (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
   ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
 begin
-  rw [← eq_ι_Γ₀_summand K A, assoc, P_infty_eq_zero_on_degeneracies _ A.e, comp_zero],
+  rw [← eq_ι_Γ₀_summand K A, assoc, P_infty_on_degeneracies _ A.e, comp_zero],
   intro h,
   apply hA,
   rw Γ_index_set.eq_id_iff',
