@@ -23,6 +23,39 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
+@[simp, reassoc]
+lemma ι_Γ₀_summand_comp_P_infty_eq_zero (K : chain_complex C ℕ) {n : ℕ} {A : Γ_index_set [n]} (hA : ¬A = Γ_index_set.id [n]) :
+  ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
+begin
+  rw [← eq_ι_Γ₀_summand K A, assoc, P_infty_eq_zero_on_degeneracies _ A.e, comp_zero],
+  intro h,
+  apply hA,
+  rw Γ_index_set.eq_id_iff',
+  simpa only [fintype.card_fin, add_left_inj] using (fintype.card_of_bijective
+    ⟨h, simplex_category.epi_iff_surjective.mp (infer_instance : epi A.e)⟩).symm,
+end
+
+@[simp, reassoc]
+lemma ι_Γ₀_summand_id_comp_P_infty (K : chain_complex C ℕ) (n : ℕ) :
+  ι_Γ₀_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
+    ι_Γ₀_summand K (Γ_index_set.id [n]) :=
+begin
+  rw P_infty_degreewise,
+  cases n,
+  { erw [P_deg0_eq, comp_id], },
+  { apply P_is_identity_where_faces_vanish,
+    intros j hj,
+    let i := simplex_category.δ j.succ,
+    erw Γ₀.obj.map_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
+    rw [Γ₀.obj.termwise.map_mono_eq_zero K i _ _, zero_comp],
+    { intro h,
+      apply nat.succ_ne_self n,
+      simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
+    { rintro ⟨h₁, h₂⟩,
+      erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
+      exact h₂ rfl, }, },
+end
+
 namespace N₁Γ₀
 
 def map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : Γ_index_set [n]) :
