@@ -386,6 +386,11 @@ begin
   apply id_comp,
 end
 
+lemma ι_Γ₀_summand_comp_map_mono {n' n : ℕ} (i : [n'] ⟶ [n]) [mono i]:
+  ι_Γ₀_summand K (Γ_index_set.id [n]) ≫ (Γ₀.obj K).map i.op =
+    Γ₀.obj.termwise.map_mono K i ≫ ι_Γ₀_summand K (Γ_index_set.id [n']) :=
+Γ₀.obj.map_on_summand K _ rfl
+
 /-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
 on the idempotent completions. It shall be an equivalence of categories
 for any additive category `C`. -/

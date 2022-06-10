@@ -45,15 +45,15 @@ begin
   { erw [P_deg0_eq, comp_id], },
   { apply P_is_identity_where_faces_vanish,
     intros j hj,
-    let i := simplex_category.δ j.succ,
-    erw Γ₀.obj.map_on_summand K (Γ_index_set.id [n+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
-    rw [Γ₀.obj.termwise.map_mono_eq_zero K i _ _, zero_comp],
+    have eq := ι_Γ₀_summand_comp_map_mono K (simplex_category.δ j.succ),
+    rw [Γ₀.obj.termwise.map_mono_eq_zero K, zero_comp] at eq, rotate,
     { intro h,
       apply nat.succ_ne_self n,
-      simpa only [simplex_category.len_mk] using congr_arg simplex_category.len h, },
-    { rintro ⟨h₁, h₂⟩,
-      erw fin.succ_above_below j.succ 0 (fin.succ_pos j) at h₂,
-      exact h₂ rfl, }, },
+      exact congr_arg simplex_category.len h, },
+    { intro h,
+      simp only [is_d₀.iff] at h,
+      exact fin.succ_ne_zero j h, },
+    exact eq, },
 end
 
 namespace N₁Γ₀
