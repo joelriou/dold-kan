@@ -64,8 +64,8 @@ begin
   rcases A₂ with ⟨Δ₂, ⟨α₂, hα₂⟩⟩,
   simp only at h₁,
   subst h₁,
-  congr,
-  simpa only [eq_to_hom_refl, comp_id] using h₂,
+  simp only [eq_to_hom_refl, comp_id, Γ_index_set.e] at h₂,
+  congr',
 end
 
 instance : fintype (Γ_index_set Δ) :=
@@ -369,9 +369,6 @@ def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
     simp only [Γ₀.map_app, homological_complex.comp_f, discrete.nat_trans_app,
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
-
-def ι_Γ₀_summand' (A : Γ_index_set Δ) : Γ₀.obj.summand K Δ A
-⟶ (Γ₀.obj K).obj (op Δ) := sigma.ι _ A
 
 /-- The inclusion of a summand of `K[Γ₀.obj K].X n` -/
 abbreviation ι_Γ₀_summand {n : ℕ}
