@@ -40,9 +40,9 @@ lemma ι_Γ₀_summand_id_comp_P_infty (K : chain_complex C ℕ) (n : ℕ) :
   ι_Γ₀_summand K (Γ_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _ ).f n =
     ι_Γ₀_summand K (Γ_index_set.id [n]) :=
 begin
-  rw P_infty_degreewise,
+  rw P_infty_f,
   cases n,
-  { erw [P_deg0_eq, comp_id], },
+  { erw [P_f_0_eq, comp_id], },
   { apply P_is_identity_where_faces_vanish,
     intros j hj,
     have eq := ι_Γ₀_summand_comp_map_mono K (simplex_category.δ j.succ),

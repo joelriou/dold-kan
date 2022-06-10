@@ -91,7 +91,7 @@ lemma hε : compatibility.υ (eq_to_iso hN₁) =
   preadditive.dold_kan.equivalence.inverse) :=
 begin
   ext1, ext1, ext1, ext1 X,
-  erw [nat_trans.comp_app, Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans],
+  erw [nat_trans.comp_app, compatibility_Γ₂N₁_Γ₂N₂_nat_trans],
   dsimp [compatibility.υ],
   simp only [id_comp, comp_id],
   slice_lhs 2 3 { erw [← nat_trans.comp_app, is_iso.hom_inv_id], },

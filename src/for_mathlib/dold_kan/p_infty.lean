@@ -44,7 +44,7 @@ lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
   ((P (q+1)).f n : X _[n] ⟶ _ ) = (P q).f n :=
 begin
   cases n,
-  { simp only [P_deg0_eq], },
+  { simp only [P_f_0_eq], },
   { unfold P,
     simp only [add_right_eq_self, comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id],
@@ -69,21 +69,21 @@ end
 @[simp]
 lemma P_infty_deg0_eq : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
 
-lemma P_infty_degreewise (n : ℕ) :
+lemma P_infty_f (n : ℕ) :
   (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := by refl
 
 @[simp, reassoc]
-lemma P_infty_degreewise_is_a_projection (n : ℕ) :
+lemma P_infty_f_idem (n : ℕ) :
   (P_infty.f n : X _[n] ⟶ _) ≫ (P_infty.f n) = P_infty.f n :=
-by simp only [P_infty_degreewise, P_degreewise_is_a_projection]
+by simp only [P_infty_f, P_f_idem]
 
-lemma P_infty_is_a_projection : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
-by { ext n, exact P_infty_degreewise_is_a_projection n, }
+lemma P_infty_idem : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
+by { ext n, exact P_infty_f_idem n, }
 
 @[simp, reassoc]
-lemma P_infty_degreewise_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+lemma P_infty_f_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
   f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
-P_degreewise_naturality n n f
+P_f_naturality n n f
 
 variable (C)
 
@@ -93,21 +93,21 @@ the functor `alternating_face_map_complex C`. -/
 def nat_trans_P_infty :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
 { app := λ _, P_infty,
-  naturality' := λ X Y f, by { ext n, exact P_infty_degreewise_naturality n f, }, }
+  naturality' := λ X Y f, by { ext n, exact P_infty_f_naturality n f, }, }
 
 /-- The natural transformation in each degree that is induced by `nat_trans_P_infty`. -/
 @[simps]
-def nat_trans_P_infty_degreewise (n : ℕ) :=
+def nat_trans_P_infty_f (n : ℕ) :=
 nat_trans_P_infty C ◫ 𝟙 (homological_complex.eval _ _ n)
 
 variable {C}
 
 @[simp]
-lemma map_P_infty_degreewise {D : Type*} [category D] [preadditive D]
+lemma map_P_infty_f {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (n : ℕ) :
   (P_infty : K[((whiskering C D).obj G).obj X] ⟶ _).f n =
   G.map ((P_infty : alternating_face_map_complex.obj X ⟶ _).f n) :=
-by simp only [P_infty_degreewise, map_P]
+by simp only [P_infty_f, map_P]
 
 /-- Given an object `Y : karoubi (simplicial_object C)`, this lemma
 computes `P_infty` for the associated object in `simplicial_object (karoubi C)`
@@ -130,23 +130,23 @@ begin
   { exact h₁₂, },
   -- The proof proceeds by obtaining relations h₃₂, h₄₃, h₁₄.
   have h₃₂ : (P₃.f n).f = P₂.f n :=
-    karoubi.hom_ext.mp (map_P_infty_degreewise (to_karoubi C) Y₂ n),
+    karoubi.hom_ext.mp (map_P_infty_f (to_karoubi C) Y₂ n),
   have h₄₃ : P₄.f n = P₃.f n,
-  { have eq := nat_trans_P_infty_degreewise_app (karoubi C) n,
+  { have eq := nat_trans_P_infty_f_app (karoubi C) n,
     erw [← eq Y₃, ← eq Y₄],
     congr,
     exact congr_obj (to_karoubi_comp_karoubi_functor_category_embedding _ _) Y₂, },
   let τ₁ := 𝟙 (karoubi_functor_category_embedding (simplex_categoryᵒᵖ) C),
-  let τ₂ := nat_trans_P_infty_degreewise (karoubi C) n,
+  let τ₂ := nat_trans_P_infty_f (karoubi C) n,
   let τ := τ₁ ◫ τ₂,
   have h₁₄ := idempotents.nat_trans_eq' τ Y,
-  dsimp [τ, τ₁, τ₂, nat_trans_P_infty_degreewise] at h₁₄,
+  dsimp [τ, τ₁, τ₂, nat_trans_P_infty_f] at h₁₄,
   erw [id_comp, id_comp, comp_id, comp_id] at h₁₄,
   erw [h₁₄, ← h₃₂, ← h₄₃],
   simp only [karoubi_functor_category_embedding.map_app_f, karoubi.decomp_id_p_f,
     karoubi.decomp_id_i_f, karoubi.comp],
   let π : Y₄ ⟶ Y₄ := (to_karoubi _ ⋙ karoubi_functor_category_embedding _ _).map Y.p,
-  have eq := karoubi.hom_ext.mp (P_infty_degreewise_naturality n π),
+  have eq := karoubi.hom_ext.mp (P_infty_f_naturality n π),
   simp only [karoubi.comp] at eq,
   erw [← eq, ← assoc],
   congr,

@@ -179,7 +179,7 @@ lemma σ_comp_P_infty (X : simplicial_object C)
   {n : ℕ} (i : fin (n+1)) :
   (X.σ i) ≫ P_infty.f (n+1) = 0 :=
 begin
-  rw P_infty_degreewise,
+  rw P_infty_f,
   apply σ_comp_P_q_eq_zero X i,
   simp only [zero_le, le_add_iff_nonneg_left],
 end

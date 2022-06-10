@@ -50,7 +50,7 @@ end
 /- TODO: Compare this isomorphism with the mostly obvious natural transformation that
 can be constructed from the original definition of the normalized Moore complex using kernels.
 
-lemma compatibility_N_degreewise (F : A ⥤ B) [functor.additive F]
+lemma compatibility_N_app (F : A ⥤ B) [functor.additive F]
   (X : simplicial_object A) :
   ((functoriality_N F).inv.app X) ≫
     ((inclusion_of_Moore_complex B).app (((simplicial_object.whiskering A B).obj F).obj X)) =

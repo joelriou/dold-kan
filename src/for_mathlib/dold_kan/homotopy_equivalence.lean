@@ -76,11 +76,11 @@ def P_infty_is_homotopic_to_id :
     cases n,
     { have h := (P_is_homotopic_to_id X 2).comm 0,
       simp only [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,
-        zero_add, homological_complex.id_f, P_infty_degreewise, P_deg0_eq] at h ⊢,
+        zero_add, homological_complex.id_f, P_infty_f, P_f_0_eq] at h ⊢,
       erw ← h, },
     { have h := (P_is_homotopic_to_id X (n+2)).comm (n+1),
       simp only [homotopy.d_next_succ_chain_complex, homotopy.prev_d_chain_complex,
-        homological_complex.id_f, P_infty_degreewise] at h ⊢,
+        homological_complex.id_f, P_infty_f] at h ⊢,
       erw [homotopies_P_id_are_eventually_constant X (lt_add_one (n+1)), ← h],
       rw ← P_is_eventually_constant (rfl.le : n+1 ≤ n+1), },
   end }

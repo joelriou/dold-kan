@@ -56,8 +56,8 @@ begin
     use φ
       { a := P_infty.f (n+1) ≫ (inv (N₁.map f)).f.f (n+1),
         b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
-    simp only [morph_components.id, ← φ_id, ← pre_comp_φ, pre_comp, ← post_comp_φ, post_comp,
-      P_infty_degreewise_naturality_assoc, is_iso.hom_inv_id_assoc, assoc,
+    simp only [morph_components.id, ← φ_id, ← pre_comp_φ, pre_comp, ← post_comp_φ,
+      post_comp, P_infty_f_naturality_assoc, is_iso.hom_inv_id_assoc, assoc,
       is_iso.inv_hom_id_assoc, simplicial_object.naturality_σ, h₁, h₂, h₃],
     split; refl, },
 end
@@ -87,8 +87,8 @@ begin
     simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id, assoc,
       karoubi_chain_complex_equivalence_functor_obj_X_p, N₂_obj_p_f,
       homological_complex.eq_to_hom_f, karoubi_P_infty_f, nat_trans.app_p_comm,
-      P_infty_degreewise_naturality, P_infty_degreewise_naturality_assoc,
-      P_infty_degreewise_is_a_projection_assoc, nat_trans.app_comp_p], },
+      P_infty_f_naturality, P_infty_f_naturality_assoc,
+      P_infty_f_idem_assoc, nat_trans.app_comp_p], },
   { intro P,
     apply homological_complex.ext,
     { intros i j hij,
@@ -104,7 +104,7 @@ begin
         karoubi_alternating_face_map_complex_d, app_idem_assoc], },
     { ext n,
       { dsimp,
-        simp only [comp_id, id_comp, karoubi_P_infty_f, P_infty_degreewise_naturality], },
+        simp only [comp_id, id_comp, karoubi_P_infty_f, P_infty_f_naturality], },
       { refl, }, }, },
 end
 

@@ -14,9 +14,9 @@ In this file, we construct endomorphisms `P q : K[X] ⟶ K[X]` for all
 `q : ℕ`. We study how they behave with respect to face maps with the lemmas
 `higher_faces_vanish_P` and `P_is_identity_where_faces_vanish`.
 
-Then, we show that they are projections (see `P_degreewise_is_a_projection`
-and `P_is_a_projection`).  They are natural transformations (see `nat_trans_P`
-and `P_degreewise_naturality`) and are compatible with the application
+Then, we show that they are projections (see `P_f_idem`
+and `P_idem`).  They are natural transformations (see `nat_trans_P`
+and `P_f_naturality`) and are compatible with the application
 of additive functors (see `map_P`).
 
 By passing to the limit, these endomorphisms `P q` shall be used in `p_infty.lean`
@@ -50,7 +50,7 @@ noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
 /-- All the `P q` coincide with `𝟙 _` in degree 0. -/
-lemma P_deg0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
+lemma P_f_0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
   induction q with q hq,
   { refl, },
@@ -64,7 +64,7 @@ def Q (q : ℕ) : K[X] ⟶ K[X] := 𝟙 _ - P q
 
 lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel, }
 
-lemma P_add_Q_degreewise (q n : ℕ) : (P q).f n + (Q q).f n = 𝟙 (X _[n]) :=
+lemma P_add_Q_f (q n : ℕ) : (P q).f n + (Q q).f n = 𝟙 (X _[n]) :=
 homological_complex.congr_hom (P_add_Q q) n
 
 @[simp]
@@ -74,8 +74,8 @@ lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
 by { unfold Q P, simp only [comp_add, comp_id], abel, }
 
 /-- All the `Q q` coincide with `0` in degree 0. -/
-lemma Q_deg0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
-by simp only [homological_complex.sub_f_apply, homological_complex.id_f, Q, P_deg0_eq, sub_self]
+lemma Q_f_0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
+by simp only [homological_complex.sub_f_apply, homological_complex.id_f, Q, P_f_0_eq, sub_self]
 
 /-- This lemma expresses the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
@@ -109,16 +109,16 @@ begin
       simp only [eq, zero_comp], }, },
 end
 
-lemma P_degreewise_is_a_projection (q n : ℕ) :
+lemma P_f_idem (q n : ℕ) :
   ((P q).f n : X _[n] ⟶ _) ≫ ((P q).f n) = (P q).f n :=
 begin
   cases n,
-  { rw [P_deg0_eq q, comp_id], },
+  { rw [P_f_0_eq q, comp_id], },
   { exact P_is_identity_where_faces_vanish (higher_faces_vanish_P q n), }
 end
 
-lemma P_is_a_projection (q : ℕ) : (P q : K[X] ⟶ K[X]) ≫ P q = P q :=
-by { ext n, exact P_degreewise_is_a_projection q n, }
+lemma P_idem (q : ℕ) : (P q : K[X] ⟶ K[X]) ≫ P q = P q :=
+by { ext n, exact P_f_idem q n, }
 
 /-- For each q, P q is a natural transformation. -/
 def nat_trans_P (q : ℕ) :
@@ -138,7 +138,7 @@ def nat_trans_P (q : ℕ) :
   end }
 
 @[simp, reassoc]
-lemma P_degreewise_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+lemma P_f_naturality (q n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
   f.app (op [n]) ≫ (P q).f n = (P q).f n ≫ f.app (op [n]) :=
 homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 

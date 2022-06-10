@@ -73,7 +73,7 @@ begin
   rcases h₄ with ⟨k, ⟨hk₁, hk₂⟩⟩,
   rcases simplex_category.eq_comp_δ_of_not_surjective' i k hk₂ with ⟨θ, hθ⟩,
   haveI : mono θ := mono_of_mono_fac hθ.symm,
-  erw [P_infty_degreewise, hθ, op_comp, X.map_comp, ← assoc, ← k.succ_pred hk₁,
+  erw [P_infty_f, hθ, op_comp, X.map_comp, ← assoc, ← k.succ_pred hk₁,
     higher_faces_vanish_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
 end
 
@@ -159,7 +159,7 @@ def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
       slice_rhs 1 2 { erw ι_colim_map, },
       simp only [discrete.nat_trans_app, cofan.mk_ι_app, colimit.ι_desc,
         eq_to_hom_map, assoc, comp_id, functor.map_comp],
-      slice_rhs 1 2 { erw P_infty_degreewise_is_a_projection, },
+      slice_rhs 1 2 { erw P_infty_f_idem, },
       simp only [assoc],
     end },
   naturality' := λ X Y f, begin
@@ -168,14 +168,14 @@ def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
       cofan.mk_ι_app, subtype.val_eq_coe, functor.comp_map, karoubi.comp, nat_trans.comp_app,
       Γ₂_map_f_app, N₁_map_f, alternating_face_map_complex.map, alternating_face_map_complex_map_f,
       homological_complex.comp_f, chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f,
-      colimit.ι_desc_assoc, nat_trans.naturality, P_infty_degreewise_naturality_assoc,
-      P_infty_degreewise_is_a_projection_assoc, ← f.naturality_assoc, assoc],
+      colimit.ι_desc_assoc, nat_trans.naturality, P_infty_f_naturality_assoc,
+      P_infty_f_idem_assoc, ← f.naturality_assoc, assoc],
   end }
 
 end Γ₂N₁
 
 @[simps]
-def Γ₂N₁_compat_Γ₂N₂ : to_karoubi (simplicial_object C) ⋙ N₂ ⋙ Γ₂ ≅ N₁ ⋙ Γ₂ :=
+def compatibility_Γ₂N₁_Γ₂N₂ : to_karoubi (simplicial_object C) ⋙ N₂ ⋙ Γ₂ ≅ N₁ ⋙ Γ₂ :=
 eq_to_iso (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂))
 
 namespace Γ₂N₂
@@ -183,7 +183,7 @@ namespace Γ₂N₂
 @[simps]
 def nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 _ :=
 (whiskering_left_to_karoubi_hom_equiv (N₂ ⋙ Γ₂) (𝟭 _)).inv_fun
-    (Γ₂N₁_compat_Γ₂N₂.hom ≫ Γ₂N₁.nat_trans)
+    (compatibility_Γ₂N₁_Γ₂N₂.hom ≫ Γ₂N₁.nat_trans)
 
 end Γ₂N₂
 
@@ -195,8 +195,7 @@ begin
     ι_Γ₀_summand_id_comp_P_infty_assoc,
     ι_colim_map, discrete.nat_trans_app],
   dsimp [Γ_index_set.id],
-  simp only [← P_infty_degreewise_naturality_assoc,
-    P_infty_degreewise_is_a_projection_assoc, app_idem_assoc],
+  simp only [← P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem_assoc],
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
@@ -207,8 +206,7 @@ begin
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
   dsimp [Γ_index_set.id],
-  simp only [P_infty_degreewise_naturality_assoc,
-    P_infty_degreewise_is_a_projection_assoc, app_idem],
+  simp only [P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem],
 end
 
 lemma identity_N₂_objectwise (P : karoubi (simplicial_object C)) :
@@ -216,8 +214,8 @@ N₂Γ₂.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂.nat_trans.app P) = 𝟙 (
 begin
   ext n,
   simpa only [assoc, karoubi.comp, homological_complex.comp_f, identity_N₂_objectwise_eq₁,
-    identity_N₂_objectwise_eq₂, P_infty_degreewise_naturality_assoc,
-    P_infty_degreewise_is_a_projection_assoc, app_idem],
+    identity_N₂_objectwise_eq₂, P_infty_f_naturality_assoc,
+    P_infty_f_idem_assoc, app_idem],
 end
 
 lemma identity_N₂ :
@@ -244,26 +242,26 @@ begin
   apply_instance,
 end
 
-lemma Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans (X : simplicial_object C) :
-  Γ₂N₁.nat_trans.app X = (Γ₂N₁_compat_Γ₂N₂.app X).inv ≫
+lemma compatibility_Γ₂N₁_Γ₂N₂_nat_trans (X : simplicial_object C) :
+  Γ₂N₁.nat_trans.app X = (compatibility_Γ₂N₁_Γ₂N₂.app X).inv ≫
     Γ₂N₂.nat_trans.app ((to_karoubi _).obj X) :=
 begin
   ext Δ A,
   simp only [Γ₂N₁.nat_trans_app_f_app, colimit.ι_desc, cofan.mk_ι_app,
     karoubi.comp, nat_trans.comp_app, assoc, Γ₂N₂.nat_trans_app_f_app,
-    Γ₂N₁_compat_Γ₂N₂, eq_to_iso, iso.app_inv, eq_to_hom_app, karoubi.eq_to_hom_f,
+    compatibility_Γ₂N₁_Γ₂N₂, eq_to_iso, iso.app_inv, eq_to_hom_app, karoubi.eq_to_hom_f,
     eq_to_hom_refl, id_comp, to_karoubi_obj_p],
   dsimp,
   simp only [comp_id, ι_colim_map_assoc, discrete.nat_trans_app],
   erw [colimit.ι_desc, cofan.mk_ι_app],
-  simp only [P_infty_degreewise_is_a_projection_assoc],
+  simp only [P_infty_f_idem_assoc],
 end
 
 instance : is_iso (Γ₂N₁.nat_trans : (N₁ : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
 begin
   haveI : ∀ (X : simplicial_object C), is_iso (Γ₂N₁.nat_trans.app X),
   { intro X,
-    rw Γ₂N₁_nat_trans_compatible_with_Γ₂N₂_nat_trans,
+    rw compatibility_Γ₂N₁_Γ₂N₂_nat_trans,
     apply is_iso.comp_is_iso, },
   apply nat_iso.is_iso_of_is_iso_app,
 end

@@ -58,15 +58,15 @@ begin
   ext n,
   simp only [homological_complex.comp_f],
   cases n,
-  { erw [P_deg0_eq, comp_id], },
-  { rw [P_infty_degreewise],
+  { erw [P_f_0_eq, comp_id], },
+  { rw [P_infty_f],
     exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
 end
 
 lemma P_infty_factors_thru_Moore_complex_degreewise (n : ℕ) :
   subobject.factors (normalized_Moore_complex.obj_X X n) (P_infty.f n) :=
 begin
-  rw [P_infty_degreewise],
+  rw [P_infty_f],
   cases n; rw [normalized_Moore_complex.obj_X],
   { apply top_factors, },
   { rw finset_inf_factors,
@@ -99,7 +99,7 @@ begin
   rw [assoc],
   dsimp [P_infty_into_Moore_subcomplex],
   simp only [factor_thru_arrow],
-  exact P_infty_degreewise_is_a_projection n,
+  exact P_infty_f_idem n,
 end
 
 lemma P_infty_comp_P_infty_into_Moore_subcomplex (X : simplicial_object A) :
@@ -117,7 +117,7 @@ begin
   ext1 n,
   dsimp [P_infty_into_Moore_subcomplex],
   simp only [assoc, factor_thru_arrow, factor_thru_arrow_assoc],
-  apply P_infty_degreewise_naturality,
+  apply P_infty_f_naturality,
 end
 
 lemma P_infty_into_Moore_subcomplex_naturality {X Y : simplicial_object A} (f : X ⟶ Y) :

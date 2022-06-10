@@ -46,15 +46,15 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
 { obj := λ X,
   { X := alternating_face_map_complex.obj X,
     p := P_infty,
-    idem := P_infty_is_a_projection, },
+    idem := P_infty_idem, },
   map := λ X Y f,
   { f := P_infty ≫ alternating_face_map_complex.map f,
     comm := begin
       ext n,
       simp only [homological_complex.comp_f, alternating_face_map_complex.map,
         chain_complex.of_hom_f],
-      slice_rhs 3 4 { erw P_infty_degreewise_naturality, },
-      simp only [← assoc, P_infty_degreewise_is_a_projection],
+      slice_rhs 3 4 { erw P_infty_f_naturality, },
+      simp only [← assoc, P_infty_f_idem],
     end, },
   map_id' := λ X, begin
     ext n,
@@ -65,8 +65,8 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
     ext n,
     simp only [karoubi.comp, homological_complex.comp_f, nat_trans.comp_app,
       alternating_face_map_complex.map, chain_complex.of_hom_f],
-    slice_rhs 2 3 { erw P_infty_degreewise_naturality, },
-    slice_rhs 1 2 { erw P_infty_degreewise_is_a_projection, },
+    slice_rhs 2 3 { erw P_infty_f_naturality, },
+    slice_rhs 1 2 { erw P_infty_f_idem, },
     rw assoc,
   end }
 

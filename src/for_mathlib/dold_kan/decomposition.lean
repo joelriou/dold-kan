@@ -117,9 +117,9 @@ def id : morph_components X n (X _[n+1]) :=
 
 lemma φ_id : (id X n).φ = 𝟙 _ :=
 begin
-  simp only [← P_add_Q_degreewise (n+1) (n+1), φ],
+  simp only [← P_add_Q_f (n+1) (n+1), φ],
   congr' 1,
-  { simp only [id, P_infty_degreewise, P_degreewise_is_a_projection], },
+  { simp only [id, P_infty_f, P_f_idem], },
   { convert (decomposition_Q n (n+1)).symm,
     ext i,
     simpa only [finset.mem_univ, finset.mem_filter, true_and, true_iff] using fin.is_lt i, },
@@ -149,10 +149,10 @@ def pre_comp : morph_components X' n Z :=
 lemma pre_comp_φ : (f.pre_comp g).φ = g.app (op [n+1]) ≫ f.φ :=
 begin
   unfold φ pre_comp,
-  simp only [P_infty_degreewise, comp_add],
+  simp only [P_infty_f, comp_add],
   congr' 1,
-  { simp only [P_degreewise_naturality_assoc], },
-  { simp only [comp_sum, P_degreewise_naturality_assoc, simplicial_object.naturality_δ_assoc], }
+  { simp only [P_f_naturality_assoc], },
+  { simp only [comp_sum, P_f_naturality_assoc, simplicial_object.naturality_δ_assoc], }
 end
 
 end morph_components
