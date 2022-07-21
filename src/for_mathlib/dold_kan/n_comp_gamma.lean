@@ -98,7 +98,7 @@ begin
     { intros b hb hb',
       simp only [preadditive.comp_zsmul],
       erw [P_infty_eq_zero_on X (simplex_category.δ b) h (by { rw is_d₀.iff, exact hb', }), zsmul_zero], },
-    { simp only [finset.mem_univ, not_true, forall_false_left], },
+    { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
     { simpa only [hi.eq_d₀, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
   { rw [Γ₀.obj.termwise.map_mono_eq_zero _ i _ hi, zero_comp], swap,

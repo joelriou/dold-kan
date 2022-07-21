@@ -121,6 +121,8 @@ end
 
 variable (θ : Δ' ⟶ Δ)
 
+instance : epi (factor_thru_image θ) := sorry
+
 /-- When `A : Γ_index_set Δ` and `θ : Δ' → Δ` is a morphism in `simplex_category`,
 the simplicial morphism `(Γ₀.obj _).map θ` sends the term of the direct sum corresponding
 to `A` to the term corresponding to `A.pull θ`. It is given by the epimorphism `e`, which

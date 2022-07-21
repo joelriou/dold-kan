@@ -295,9 +295,8 @@ abbreviation inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
 { app := λ K,
   { f :=
     { f := λ n, sigma.ι (Γ₀.obj.summand K [n]) (Γ_index_set.id [n]),
-      comm' := λ i j hij, begin
-        have h : j+1 = i := hij,
-        subst h,
+      comm' := begin
+        rintros i j (rfl : j+1 = i),
         erw [chain_complex.of_d, preadditive.comp_sum],
         erw finset.sum_eq_single (0 : fin (j+2)), rotate,
         { intros b hb hb',
@@ -308,7 +307,7 @@ abbreviation inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
           { intro h,
             exact nat.succ_ne_self j (congr_arg simplex_category.len h), },
           { rw is_d₀.iff, exact hb', }, },
-        { simp only [finset.mem_univ, not_true, forall_false_left], },
+        { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
         { simp only [fin.coe_zero, pow_zero, one_zsmul],
           let i := simplex_category.δ (0 : fin (j+2)),
           erw Γ₀.obj.map_on_summand K (Γ_index_set.id [j+1]) (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by rw [id_comp, comp_id]),
