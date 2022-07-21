@@ -48,7 +48,7 @@ begin
   { unfold P,
     simp only [add_right_eq_self, comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id],
-    exact (higher_faces_vanish_P q n).comp_Hσ_eq_zero
+    exact (higher_faces_vanish.of_P q n).comp_Hσ_eq_zero
       (nat.succ_le_iff.mp hqn), },
 end
 

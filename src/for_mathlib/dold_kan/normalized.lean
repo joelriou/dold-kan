@@ -60,7 +60,7 @@ begin
   cases n,
   { erw [P_f_0_eq, comp_id], },
   { rw [P_infty_f],
-    exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
+    exact (higher_faces_vanish_on_Moore_complex n).comp_P_eq_self, },
 end
 
 lemma P_infty_factors_thru_Moore_complex_degreewise (n : ℕ) :
@@ -72,7 +72,7 @@ begin
   { rw finset_inf_factors,
     intros i hi,
     apply kernel_subobject_factors,
-    exact (higher_faces_vanish_P (n+1) n) i (le_add_self), }
+    exact (higher_faces_vanish.of_P (n+1) n) i (le_add_self), }
 end
 
 /-- P_infty factors through the normalized_Moore_complex -/
@@ -136,7 +136,7 @@ begin
   simp only [homological_complex.comp_f],
   cases n,
   { erw comp_id, },
-  { exact P_is_identity_where_faces_vanish (higher_faces_vanish_on_Moore_complex n), },
+  { exact (higher_faces_vanish_on_Moore_complex n).comp_P_eq_self, },
 end
 
 lemma inclusion_of_Moore_complex_comp_P_infty_degreewise (X : simplicial_object A) (n : ℕ):

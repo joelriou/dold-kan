@@ -74,7 +74,7 @@ begin
   rcases simplex_category.eq_comp_δ_of_not_surjective' i k hk₂ with ⟨θ, hθ⟩,
   haveI : mono θ := mono_of_mono_fac hθ.symm,
   erw [P_infty_f, hθ, op_comp, X.map_comp, ← assoc, ← k.succ_pred hk₁,
-    higher_faces_vanish_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
+    higher_faces_vanish.of_P (m+1) m (k.pred hk₁) le_add_self, zero_comp],
 end
 
 lemma Γ_on_mono_comp_P_infty' (X : simplicial_object C) {n n' : ℕ} (i : ([n] : simplex_category) ⟶ [n']) [mono i] :

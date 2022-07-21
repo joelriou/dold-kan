@@ -43,7 +43,7 @@ begin
   rw P_infty_f,
   cases n,
   { erw [P_f_0_eq, comp_id], },
-  { apply P_is_identity_where_faces_vanish,
+  { apply higher_faces_vanish.comp_P_eq_self,
     intros j hj,
     have eq := ι_Γ₀_summand_comp_map_mono K (simplex_category.δ j.succ),
     rw [Γ₀.obj.termwise.map_mono_eq_zero K, zero_comp] at eq, rotate,

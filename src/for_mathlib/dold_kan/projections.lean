@@ -44,7 +44,6 @@ variables {X : simplicial_object C}
 
 /-- This is the inductive definition of the projections `P q : K[X] ⟶ K[X]`,
 with `P 0 := 𝟙 _` and `P (q+1) := P q ≫ (𝟙 _ + Hσ q)`. -/
-@[simp]
 noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | 0     := 𝟙 _
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
@@ -77,17 +76,15 @@ by { unfold Q P, simp only [comp_add, comp_id], abel, }
 lemma Q_f_0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
 by simp only [homological_complex.sub_f_apply, homological_complex.id_f, Q, P_f_0_eq, sub_self]
 
+namespace higher_faces_vanish
+
 /-- This lemma expresses the vanishing of
 `(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
-lemma higher_faces_vanish_P : Π (q : ℕ),
-  Π (n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
+lemma of_P : Π (q n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0     := λ n j hj₁, by { exfalso, have hj₂ := fin.is_lt j, linarith, }
-| (q+1) := λ n, begin
-    unfold P,
-    exact (higher_faces_vanish_P q n).induction,
-  end
+| (q+1) := λ n, by { unfold P, exact (of_P q n).induction, }
 
-lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
+lemma comp_P_eq_self {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (P q).f (n+1) = φ :=
 begin
   induction q with q hq,
@@ -109,6 +106,8 @@ begin
       simp only [eq, zero_comp], }, },
 end
 
+end higher_faces_vanish
+
 lemma comp_P_eq_self_iff {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} :
   φ ≫ (P q).f (n+1) = φ ↔ higher_faces_vanish q φ :=
 begin
@@ -116,8 +115,8 @@ begin
   { intro hφ,
     rw ← hφ,
     apply higher_faces_vanish.of_comp,
-    apply higher_faces_vanish_P, },
-  { exact P_is_identity_where_faces_vanish, },
+    apply higher_faces_vanish.of_P, },
+  { exact higher_faces_vanish.comp_P_eq_self, },
 end
 
 lemma P_f_idem (q n : ℕ) :
@@ -125,7 +124,7 @@ lemma P_f_idem (q n : ℕ) :
 begin
   cases n,
   { rw [P_f_0_eq q, comp_id], },
-  { exact P_is_identity_where_faces_vanish (higher_faces_vanish_P q n), }
+  { exact (higher_faces_vanish.of_P q n).comp_P_eq_self, }
 end
 
 lemma P_idem (q : ℕ) : (P q : K[X] ⟶ K[X]) ≫ P q = P q :=

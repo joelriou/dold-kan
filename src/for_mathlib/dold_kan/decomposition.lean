@@ -77,7 +77,7 @@ begin
           exact lt_add_one q, },
         { exact nat.lt.step hi, }, }, },
       { have hnaq' : n = a+q := by linarith,
-        simpa only [fin.coe_mk, (higher_faces_vanish_P q n).comp_Hσ_eq hnaq',
+        simpa only [fin.coe_mk, (higher_faces_vanish.of_P q n).comp_Hσ_eq hnaq',
         reverse_fin_eq q' hnaq', neg_neg], },
       { simp only [finset.mem_filter, fin.coe_mk, lt_self_iff_false,
           and_false, not_false_iff], }, }, }
