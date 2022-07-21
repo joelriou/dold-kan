@@ -48,7 +48,8 @@ begin
   { unfold P,
     simp only [add_right_eq_self, comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id],
-    exact Hσφ_eq_zero (nat.succ_le_iff.mp hqn) (higher_faces_vanish_P q n), }
+    exact (higher_faces_vanish_P q n).comp_Hσ_eq_zero
+      (nat.succ_le_iff.mp hqn), },
 end
 
 lemma Q_is_eventually_constant {q n : ℕ} (hqn : n≤q) :

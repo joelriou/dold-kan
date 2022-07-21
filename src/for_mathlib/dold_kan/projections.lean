@@ -84,7 +84,7 @@ lemma higher_faces_vanish_P : Π (q : ℕ),
 | 0     := λ n j hj₁, by { exfalso, have hj₂ := fin.is_lt j, linarith, }
 | (q+1) := λ n, begin
     unfold P,
-    exact higher_faces_vanish_induction (higher_faces_vanish_P q n),
+    exact (higher_faces_vanish_P q n).induction,
   end
 
 lemma P_is_identity_where_faces_vanish {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
@@ -96,17 +96,28 @@ begin
   { unfold P,
     simp only [comp_add, homological_complex.comp_f,
       homological_complex.add_f_apply, comp_id, ← assoc,
-      hq (downgrade_vanishing v), add_right_eq_self],
+      hq v.of_succ, add_right_eq_self],
     by_cases hqn : n<q,
-    { exact Hσφ_eq_zero hqn (downgrade_vanishing v), },
+    { exact v.of_succ.comp_Hσ_eq_zero hqn, },
     { cases nat.le.dest (not_lt.mp hqn) with a ha,
       have hnaq : n=a+q := by linarith,
-      simp only [Hσφ_eq_neg_σδφ hnaq (downgrade_vanishing v), neg_eq_zero, ← assoc],
+      simp only [v.of_succ.comp_Hσ_eq hnaq, neg_eq_zero, ← assoc],
       have eq := v ⟨a, by linarith⟩ _, swap,
       { have foo := nat.succ_eq_add_one,
         simp only [hnaq, fin.coe_mk, nat.succ_eq_add_one, add_assoc], },
       simp only [fin.succ_mk] at eq,
       simp only [eq, zero_comp], }, },
+end
+
+lemma comp_P_eq_self_iff {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]} :
+  φ ≫ (P q).f (n+1) = φ ↔ higher_faces_vanish q φ :=
+begin
+  split,
+  { intro hφ,
+    rw ← hφ,
+    apply higher_faces_vanish.of_comp,
+    apply higher_faces_vanish_P, },
+  { exact P_is_identity_where_faces_vanish, },
 end
 
 lemma P_f_idem (q n : ℕ) :
