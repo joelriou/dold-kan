@@ -37,8 +37,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [preadditive C]
-variables {X : simplicial_object C}
+variables {C : Type*} [category C] [preadditive C] {X : simplicial_object C}
 
 lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
   ((P (q+1)).f n : X _[n] ⟶ _ ) = (P q).f n :=
@@ -96,6 +95,9 @@ def nat_trans_P_infty :
 { app := λ _, P_infty,
   naturality' := λ X Y f, by { ext n, exact P_infty_f_naturality n f, }, }
 
+--lemma nat_trans_P_infty_f_app (n : ℕ) (Y : simplicial_object C) :
+--  ((nat_trans_P_infty C).app Y).f n = P_infty.f n := rfl
+
 /-- The natural transformation in each degree that is induced by `nat_trans_P_infty`. -/
 @[simps]
 def nat_trans_P_infty_f (n : ℕ) :=
@@ -130,20 +132,18 @@ begin
   suffices h₁₂ : (P₁.f n).f = Y.p.app (op [n]) ≫ P₂.f n,
   { exact h₁₂, },
   -- The proof proceeds by obtaining relations h₃₂, h₄₃, h₁₄.
-  have h₃₂ : (P₃.f n).f = P₂.f n :=
-    karoubi.hom_ext.mp (map_P_infty_f (to_karoubi C) Y₂ n),
+  have h₃₂ : (P₃.f n).f = P₂.f n := karoubi.hom_ext.mp (map_P_infty_f (to_karoubi C) Y₂ n),
   have h₄₃ : P₄.f n = P₃.f n,
-  { have eq := nat_trans_P_infty_f_app (karoubi C) n,
-    erw [← eq Y₃, ← eq Y₄],
-    congr,
-    exact congr_obj (to_karoubi_comp_karoubi_functor_category_embedding _ _) Y₂, },
+  { have h := congr_obj (to_karoubi_comp_karoubi_functor_category_embedding _ _) Y₂,
+    simp only [← nat_trans_P_infty_f_app],
+    congr', },
   let τ₁ := 𝟙 (karoubi_functor_category_embedding (simplex_categoryᵒᵖ) C),
   let τ₂ := nat_trans_P_infty_f (karoubi C) n,
   let τ := τ₁ ◫ τ₂,
   have h₁₄ := idempotents.nat_trans_eq' τ Y,
   dsimp [τ, τ₁, τ₂, nat_trans_P_infty_f] at h₁₄,
-  erw [id_comp, id_comp, comp_id, comp_id] at h₁₄,
-  erw [h₁₄, ← h₃₂, ← h₄₃],
+  rw [id_comp, id_comp, comp_id, comp_id] at h₁₄,
+  rw [h₁₄, ← h₃₂, ← h₄₃],
   simp only [karoubi_functor_category_embedding.map_app_f, karoubi.decomp_id_p_f,
     karoubi.decomp_id_i_f, karoubi.comp],
   let π : Y₄ ⟶ Y₄ := (to_karoubi _ ⋙ karoubi_functor_category_embedding _ _).map Y.p,

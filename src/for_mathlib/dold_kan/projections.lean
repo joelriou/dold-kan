@@ -6,16 +6,19 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.faces
 
-/-
+/-!
 
 # Construction of projections for the Dold-Kan correspondence
 
+TODO (@joelriou) continue adding the various files referenced below
+
 In this file, we construct endomorphisms `P q : K[X] ⟶ K[X]` for all
 `q : ℕ`. We study how they behave with respect to face maps with the lemmas
-`higher_faces_vanish_P` and `P_is_identity_where_faces_vanish`.
+`higher_faces_vanish.of_P`, `higher_faces_vanish.comp_P_eq_self` and
+`comp_P_eq_self_iff`.
 
 Then, we show that they are projections (see `P_f_idem`
-and `P_idem`).  They are natural transformations (see `nat_trans_P`
+and `P_idem`). They are natural transformations (see `nat_trans_P`
 and `P_f_naturality`) and are compatible with the application
 of additive functors (see `map_P`).
 
@@ -39,8 +42,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [preadditive C]
-variables {X : simplicial_object C}
+variables {C : Type*} [category C] [preadditive C] {X : simplicial_object C}
 
 /-- This is the inductive definition of the projections `P q : K[X] ⟶ K[X]`,
 with `P 0 := 𝟙 _` and `P (q+1) := P q ≫ (𝟙 _ + Hσ q)`. -/
@@ -49,6 +51,7 @@ noncomputable def P : ℕ → (K[X] ⟶ K[X])
 | (q+1) := P q ≫ (𝟙 _ + Hσ q)
 
 /-- All the `P q` coincide with `𝟙 _` in degree 0. -/
+@[simp]
 lemma P_f_0_eq (q : ℕ) : ((P q).f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ :=
 begin
   induction q with q hq,
@@ -58,7 +61,7 @@ begin
       homological_complex.id_f, id_comp, hq, Hσ_eq_zero, add_zero], },
 end
 
-/-- Q q is the complement projection associated to P q -/
+/-- `Q q` is the complement projection associated to `P q` -/
 def Q (q : ℕ) : K[X] ⟶ K[X] := 𝟙 _ - P q
 
 lemma P_add_Q (q : ℕ) : P q + Q q = 𝟙 K[X] := by { rw Q, abel, }
@@ -73,17 +76,19 @@ lemma Q_eq (q : ℕ) : (Q (q+1) : K[X] ⟶ _) = Q q - P q ≫ Hσ q :=
 by { unfold Q P, simp only [comp_add, comp_id], abel, }
 
 /-- All the `Q q` coincide with `0` in degree 0. -/
+@[simp]
 lemma Q_f_0_eq (q : ℕ) : ((Q q).f 0 : X _[0] ⟶ X _[0]) = 0 :=
 by simp only [homological_complex.sub_f_apply, homological_complex.id_f, Q, P_f_0_eq, sub_self]
 
 namespace higher_faces_vanish
 
 /-- This lemma expresses the vanishing of
-`(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when k≠0 and k≥n-q+2 -/
+`(P q).f (n+1) ≫ X.δ k : X _[n+1] ⟶ X _[n]` when `k≠0` and `k≥n-q+2` -/
 lemma of_P : Π (q n : ℕ), higher_faces_vanish q (((P q).f (n+1) : X _[n+1] ⟶ X _[n+1]))
 | 0     := λ n j hj₁, by { exfalso, have hj₂ := fin.is_lt j, linarith, }
 | (q+1) := λ n, by { unfold P, exact (of_P q n).induction, }
 
+@[reassoc]
 lemma comp_P_eq_self {Y : C} {n q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) : φ ≫ (P q).f (n+1) = φ :=
 begin
@@ -91,17 +96,15 @@ begin
   { unfold P,
     apply comp_id, },
   { unfold P,
-    simp only [comp_add, homological_complex.comp_f,
-      homological_complex.add_f_apply, comp_id, ← assoc,
-      hq v.of_succ, add_right_eq_self],
+    simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply,
+      comp_id, ← assoc, hq v.of_succ, add_right_eq_self],
     by_cases hqn : n<q,
     { exact v.of_succ.comp_Hσ_eq_zero hqn, },
     { cases nat.le.dest (not_lt.mp hqn) with a ha,
       have hnaq : n=a+q := by linarith,
       simp only [v.of_succ.comp_Hσ_eq hnaq, neg_eq_zero, ← assoc],
-      have eq := v ⟨a, by linarith⟩ _, swap,
-      { have foo := nat.succ_eq_add_one,
-        simp only [hnaq, fin.coe_mk, nat.succ_eq_add_one, add_assoc], },
+      have eq := v ⟨a, by linarith⟩
+        (by simp only [hnaq, fin.coe_mk, nat.succ_eq_add_one, add_assoc]),
       simp only [fin.succ_mk] at eq,
       simp only [eq, zero_comp], }, },
 end
@@ -119,6 +122,7 @@ begin
   { exact higher_faces_vanish.comp_P_eq_self, },
 end
 
+@[simp, reassoc]
 lemma P_f_idem (q n : ℕ) :
   ((P q).f n : X _[n] ⟶ _) ≫ ((P q).f n) = (P q).f n :=
 begin
@@ -127,10 +131,11 @@ begin
   { exact (higher_faces_vanish.of_P q n).comp_P_eq_self, }
 end
 
+@[simp, reassoc]
 lemma P_idem (q : ℕ) : (P q : K[X] ⟶ K[X]) ≫ P q = P q :=
 by { ext n, exact P_f_idem q n, }
 
-/-- For each q, P q is a natural transformation. -/
+/-- For each `q`, `P q` is a natural transformation. -/
 def nat_trans_P (q : ℕ) :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
 { app := λ X, P q,
@@ -154,11 +159,10 @@ homological_complex.congr_hom ((nat_trans_P q).naturality f) n
 
 lemma map_P {D : Type*} [category D] [preadditive D]
   (G : C ⥤ D) [G.additive] (X : simplicial_object C) (q n : ℕ) :
-  ((P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n) = G.map ((P q : K[X] ⟶ _).f n) :=
+  G.map ((P q : K[X] ⟶ _).f n) = (P q : K[((whiskering C D).obj G).obj X] ⟶ _).f n :=
 begin
   induction q with q hq,
   { unfold P,
-    symmetry,
     apply G.map_id, },
   { unfold P,
     simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply,
