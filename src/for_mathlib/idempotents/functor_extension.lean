@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import for_mathlib.functor_misc
 import for_mathlib.idempotents.karoubi
+import for_mathlib.functor_misc
 import category_theory.natural_isomorphism
 
 /-!
@@ -37,6 +37,16 @@ begin
   conv { to_lhs, rw [← id_comp (φ.app P), ← F.map_id], },
   congr,
   apply decomp_id,
+end
+
+lemma nat_trans_ext {F G : karoubi C ⥤ D} (φ₁ φ₂ : F ⟶ G)
+  (h : (𝟙 (to_karoubi C)) ◫ φ₁ = (𝟙 (to_karoubi C)) ◫ φ₂) : φ₁ = φ₂ :=
+begin
+  ext P,
+  rw [nat_trans_eq φ₁, nat_trans_eq φ₂],
+  congr' 2,
+  have eq := congr_app h P.X,
+  simpa only [nat_trans.hcomp_app, nat_trans.id_app, G.map_id, comp_id] using congr_app h P.X,
 end
 
 namespace functor_extension₁
@@ -118,9 +128,12 @@ begin
       to_karoubi_obj_p, F.map_id X], },
 end
 
+namespace karoubi_universal₁
+
 @[simps]
-def functor_extension₁_counit_iso :
-(whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) ⋙ functor_extension₁ C D ≅ 𝟭 _ :=
+def counit_iso :
+  (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) ⋙
+    functor_extension₁ C D ≅ 𝟭 _ :=
 nat_iso.of_components (λ G,
 { hom :=
   { app := λ P,
@@ -164,12 +177,14 @@ begin
   refl,
 end
 
+end karoubi_universal₁
+
 @[simps]
 def karoubi_universal₁ : (C ⥤ karoubi D) ≌ (karoubi C ⥤ karoubi D) :=
 { functor := functor_extension₁ C D,
   inverse := (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C),
   unit_iso := eq_to_iso (functor_extension₁_comp_whiskering_left_to_karoubi C D).symm,
-  counit_iso := (functor_extension₁_counit_iso C D),
+  counit_iso := karoubi_universal₁.counit_iso C D,
   functor_unit_iso_comp' := λ F, begin
     ext P,
     simpa only [eq_to_iso.hom, eq_to_hom_app, eq_to_hom_map, eq_to_hom_refl, id_comp]
