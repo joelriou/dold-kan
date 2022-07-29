@@ -86,9 +86,9 @@ def whiskering_left_to_karoubi_iso_equiv
   right_inv := λ ψ, by { ext X, simp only [equiv.to_fun_as_coe, equiv.apply_symm_apply,
     equiv.inv_fun_as_coe], } }
 
-lemma karoubi_universal'_inverse_preimage (F G : karoubi C ⥤ karoubi D)
-  (φ : ((karoubi_universal' C D).inverse).obj F ⟶ ((karoubi_universal' C D).inverse).obj G) :
-  (karoubi_universal' C D).inverse.preimage φ = (whiskering_left_to_karoubi_hom_equiv F G).inv_fun φ :=
+lemma karoubi_universal₁_inverse_preimage (F G : karoubi C ⥤ karoubi D)
+  (φ : ((karoubi_universal₁ C D).inverse).obj F ⟶ ((karoubi_universal₁ C D).inverse).obj G) :
+  (karoubi_universal₁ C D).inverse.preimage φ = (whiskering_left_to_karoubi_hom_equiv F G).inv_fun φ :=
 begin
   apply functor.map_injective (((whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C))),
   erw functor.image_preimage,

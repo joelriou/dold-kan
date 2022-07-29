@@ -73,7 +73,7 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
 /-- The extension of `N₁` to the Karoubi envelope of `simplicial_object C`. -/
 @[simps]
 def N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
-(functor_extension' _ _).obj N₁
+(functor_extension₁ _ _).obj N₁
 
 end dold_kan
 

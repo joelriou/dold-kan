@@ -176,7 +176,7 @@ end Γ₂N₁
 
 @[simps]
 def compatibility_Γ₂N₁_Γ₂N₂ : to_karoubi (simplicial_object C) ⋙ N₂ ⋙ Γ₂ ≅ N₁ ⋙ Γ₂ :=
-eq_to_iso (congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂))
+eq_to_iso (functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi _ _) (N₁ ⋙ Γ₂))
 
 namespace Γ₂N₂
 

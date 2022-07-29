@@ -166,7 +166,7 @@ begin
   let F : simplicial_object A ⥤ _ := idempotents.dold_kan.N,
   let hF : is_equivalence F := is_equivalence.of_equivalence idempotents.dold_kan.equivalence,
   letI : is_equivalence (N : simplicial_object A ⥤ _ ) :=
-    is_equivalence_of_iso comparison_N.symm hF,
+    is_equivalence.of_iso comparison_N.symm hF,
   exact N.as_equivalence,
 end
 

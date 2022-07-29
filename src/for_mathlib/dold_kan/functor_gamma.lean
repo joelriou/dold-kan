@@ -398,7 +398,7 @@ on the idempotent completions. It shall be an equivalence of categories
 for any additive category `C`. -/
 @[simps]
 def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
-(category_theory.idempotents.functor_extension'' _ _).obj Γ₀
+(category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
 
 end dold_kan
 

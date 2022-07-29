@@ -21,7 +21,7 @@ namespace simplicial_object
 
 @[simps]
 def karoubi_whiskering (C D : Type*) [category C] [category D] :=
-simplicial_object.whiskering C D ⋙ functor_extension'' _ _
+simplicial_object.whiskering C D ⋙ functor_extension₂ _ _
 
 end simplicial_object
 
@@ -51,7 +51,7 @@ begin
     { dsimp,
       erw [homological_complex.eq_to_hom_f, ← algebraic_topology.dold_kan.map_P_infty_f,
       comp_id, id_comp], },
-    { exact congr_obj (map_alternating_face_map_complex F).symm X, }, },
+    { exact functor.congr_obj (map_alternating_face_map_complex F).symm X, }, },
 end
 
 lemma functoriality_N :
@@ -60,15 +60,15 @@ lemma functoriality_N :
 begin
   dsimp [functor.map_karoubi_homological_complex,
     simplicial_object.karoubi_whiskering],
-  simp only [functor_extension'', functor.comp_obj, N, N₂],
-  erw ← functor_extension'_comp _ _ _ N₁ (F.map_homological_complex _ ⋙ to_karoubi _),
-  erw ← functor_extension'_comp _ _ _
+  simp only [functor_extension₂, functor.comp_obj, N, N₂],
+  erw ← functor_extension₁_comp _ _ _ N₁ (F.map_homological_complex _ ⋙ to_karoubi _),
+  erw ← functor_extension₁_comp _ _ _
     ((simplicial_object.whiskering C D).obj F ⋙ to_karoubi _) N₁,
   congr' 1,
-  have h := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi _ _)
+  have h := functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi _ _)
     (N₁ : simplicial_object D ⥤ _),
   simp only [functor.comp_obj, whiskering_left, functor.id] at h,
-  erw [functor.assoc, h],
+  erw [functor.assoc_eq, h],
   apply functoriality_N₁,
 end
 

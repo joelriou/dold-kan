@@ -145,20 +145,18 @@ lemma to_karoubi_comp_karoubi_functor_category_embedding :
   (to_karoubi _) ⋙ karoubi_functor_category_embedding J C =
   (whiskering_right J _ _).obj (to_karoubi C) :=
 begin
-  apply functor.ext,
+  refine functor.ext _ _ ,
+  { intro X,
+    refine functor.ext (λ j, rfl) _,
+    { intros j j' φ,
+      ext,
+      dsimp,
+      simpa only [comp_id, id_comp], },  },
   { intros X Y f,
     ext j,
     dsimp [to_karoubi],
     simp only [eq_to_hom_app, eq_to_hom_refl, id_comp],
     erw [comp_id], },
-  { intro X,
-    apply functor.ext,
-    { intros j j' φ,
-      ext,
-      dsimp,
-      simpa only [comp_id, id_comp], },
-    { intro j,
-      refl, }, }
 end
 
 variables {J C}

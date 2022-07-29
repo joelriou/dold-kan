@@ -308,7 +308,7 @@ variables {D : Type*} [category D] [preadditive D]
 @[simps]
 def map_karoubi_homological_complex (F : C ⥤ D) [F.additive] (c : complex_shape ι) :
   karoubi (homological_complex C c) ⥤ karoubi (homological_complex D c) :=
-(functor_extension'' _ _).obj (functor.map_homological_complex F c)
+(functor_extension₂ _ _).obj (functor.map_homological_complex F c)
 
 lemma map_homological_complex_karoubi_compatibility
   (F : C ⥤ D) [F.additive] (c : complex_shape ι) :

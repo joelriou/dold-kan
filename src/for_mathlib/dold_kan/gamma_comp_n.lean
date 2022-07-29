@@ -353,10 +353,10 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
 
 def N₂Γ₂_to_karoubi : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
 begin
-  have h := congr_obj (functor_extension''_comp_whiskering_left_to_karoubi (chain_complex C ℕ) (simplicial_object C)) Γ₀,
-  have h' := congr_obj (functor_extension'_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N₁,
+  have h := functor.congr_obj (functor_extension₂_comp_whiskering_left_to_karoubi (chain_complex C ℕ) (simplicial_object C)) Γ₀,
+  have h' := functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N₁,
   dsimp at h h',
-  erw [← functor.assoc, h, functor.assoc, h'],
+  erw [← functor.assoc_eq, h, functor.assoc_eq, h'],
 end
 
 @[simps]
@@ -365,7 +365,7 @@ def N₂Γ₂ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
 ((eq_to_iso N₂Γ₂_to_karoubi).trans N₁Γ₀)
 
 lemma N₂Γ₂_compatible_with_N₁Γ₀ (K: chain_complex C ℕ) :
-  N₂Γ₂.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact congr_obj N₂Γ₂_to_karoubi K, })
+  N₂Γ₂.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact functor.congr_obj N₂Γ₂_to_karoubi K, })
     ≫ N₁Γ₀.hom.app K :=
 begin
   dsimp only [N₂Γ₂, N₁Γ₀, whiskering_left_to_karoubi_iso_equiv],

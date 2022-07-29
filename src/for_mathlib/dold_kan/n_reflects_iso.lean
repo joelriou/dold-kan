@@ -95,7 +95,7 @@ begin
       have h : j+1=i := hij,
       subst h,
       ext,
-      dsimp [N₂, N₁, functor_extension'.obj, karoubi_chain_complex_equivalence,
+      dsimp [N₂, N₁, functor_extension₁.obj, karoubi_chain_complex_equivalence,
         karoubi_homological_complex.functor.obj, karoubi_karoubi.inverse],
       have h := (alternating_face_map_complex.map P.p).comm (j+1) j,
       dsimp at h,

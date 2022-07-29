@@ -34,7 +34,7 @@ variables {eA} {e'}
 def equivalence₁ : A ≌ B' :=
 begin
   letI : is_equivalence F :=
-    is_equivalence_of_iso hF (is_equivalence.of_equivalence (equivalence₀ eA e')),
+    is_equivalence.of_iso hF (is_equivalence.of_equivalence (equivalence₀ eA e')),
   exact F.as_equivalence,
 end
 
@@ -138,7 +138,7 @@ include hG
 def equivalence : A ≌ B :=
 begin
   letI : is_equivalence G := begin
-    refine is_equivalence_of_iso _ (is_equivalence.of_equivalence (equivalence₂ eB hF).symm),
+    refine is_equivalence.of_iso _ (is_equivalence.of_equivalence (equivalence₂ eB hF).symm),
     calc eB.functor ⋙ e'.inverse ⋙ eA.inverse
       ≅ (eB.functor ⋙ e'.inverse) ⋙ eA.inverse : by refl
     ... ≅ (G ⋙ eA.functor) ⋙ eA.inverse : iso_whisker_right hG _
