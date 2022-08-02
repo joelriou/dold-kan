@@ -122,6 +122,11 @@ variable [has_finite_coproducts C]
 @[simp]
 def sum := sigma_obj (summand N Δ)
 
+variable {Δ}
+
+@[simp]
+def ι_sum (A : splitting_index_set Δ) : N A.1.len ⟶ sum N Δ := sigma.ι _ A
+
 variables {N X}
 
 @[simp]
