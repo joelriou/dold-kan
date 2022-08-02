@@ -133,7 +133,7 @@ end splitting
 variable [has_finite_coproducts C]
 
 structure splitting (X : simplicial_object C) :=
-(N : ℕ → C) (ι : Π n, N n ⟶ X _[n]) [mono_ι : ∀ n, mono (ι n)]
+(N : ℕ → C) (ι : Π n, N n ⟶ X _[n]) (mono_ι : ∀ n, mono (ι n))
 (is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map ι Δ))
 
 namespace splitting
