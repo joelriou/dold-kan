@@ -13,6 +13,7 @@ open category_theory
 open category_theory.category
 open category_theory.limits
 open category_theory.idempotents
+open simplex_category
 open opposite
 open_locale simplicial dold_kan
 
@@ -189,23 +190,23 @@ end Γ₂N₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) :=
+sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (splitting_index_set.id [n]) :=
 begin
   simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f, assoc,
     ι_Γ₀_summand_id_comp_P_infty_assoc,
     ι_colim_map, discrete.nat_trans_app],
-  dsimp [Γ_index_set.id],
+  dsimp [splitting_index_set.id],
   simp only [← P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem_assoc],
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (Γ_index_set.id [n]) ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n =
+sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (splitting_index_set.id [n]) ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n =
 P_infty.f n ≫ P.p.app (op [n]) :=
 begin
   simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, ι_Γ₀_summand_id_comp_P_infty_assoc,
     ι_colim_map_assoc, discrete.nat_trans_app, assoc],
   erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
-  dsimp [Γ_index_set.id],
+  dsimp [splitting_index_set.id],
   simp only [P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem],
 end
 

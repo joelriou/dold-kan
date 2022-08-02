@@ -33,7 +33,7 @@ def e := A.2.1
 
 instance : epi A.e := A.2.2
 
---lemma ext' : A = ⟨A.1, ⟨A.e, A.2.2⟩⟩ := by tidy
+lemma ext' : A = ⟨A.1, ⟨A.e, A.2.2⟩⟩ := by tidy
 
 lemma ext (A₁ A₂ : splitting_index_set Δ) (h₁ : A₁.1 = A₂.1)
   (h₂ : A₁.e ≫ eq_to_hom h₁ = A₂.e) : A₁ = A₂ :=
@@ -98,8 +98,6 @@ begin
 end
 
 variable (θ : Δ' ⟶ Δ)
-
---instance : epi (factor_thru_image θ) := sorry
 
 end splitting_index_set
 
