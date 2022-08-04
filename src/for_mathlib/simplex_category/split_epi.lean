@@ -1,4 +1,5 @@
-import category_theory.limits.shapes.strong_epi
+--import category_theory.limits.shapes.strong_epi
+import category_theory.limits.shapes.images
 import algebraic_topology.simplex_category
 import tactic.equiv_rw
 
@@ -28,11 +29,11 @@ lemma strong_epi_of_split_epi
           arrow.hom_mk'_right, fac, split_epi.id_assoc f], },
   end, }
 
-namespace functor
-
 variables {C D : Type*} [category C] [category D] (F : C ⥤ D) {X Y : C} (f : X ⟶ Y)
 
-lemma epi_iff_map [hF₁ : preserves_epimorphisms F] [hF₂ : reflects_epimorphisms F] :
+namespace functor
+
+lemma epi_iff_epi_map [hF₁ : preserves_epimorphisms F] [hF₂ : reflects_epimorphisms F] :
   epi f ↔ epi (F.map f) :=
 begin
   split,
@@ -41,7 +42,7 @@ begin
   { exact F.epi_of_epi_map, },
 end
 
-lemma mono_iff_map [hF₁ : preserves_monomorphisms F] [hF₂ : reflects_monomorphisms F] :
+lemma mono_iff_mono_map [hF₁ : preserves_monomorphisms F] [hF₂ : reflects_monomorphisms F] :
   mono f ↔ mono (F.map f) :=
 begin
   split,
@@ -70,6 +71,47 @@ def split_epi_equiv [full F] [faithful F] : split_epi f ≃ split_epi (F.map f) 
   left_inv := by tidy,
   right_inv := by tidy, }
 
+lemma strong_epi_iff_strong_epi_map [is_equivalence F] :
+  strong_epi f ↔ strong_epi (F.map f) :=
+begin
+  /- weaker assuption : F a un adjoint à droite qui préserve et reflète les mono -/
+  sorry
+end
+
+open limits
+
+def preimage_strong_epi_mono_factorisation (s : strong_epi_mono_factorisation (F.map f))
+  [is_equivalence F] :
+  strong_epi_mono_factorisation f :=
+begin
+  haveI : mono (F.preimage (F.as_equivalence.counit_iso.hom.app _ ≫ s.m)),
+  { simp only [F.mono_iff_mono_map, as_equivalence_counit, image_preimage],
+    apply mono_comp, },
+  haveI : strong_epi (F.preimage (s.e ≫ F.as_equivalence.counit_iso.inv.app _)),
+  { simp only [F.strong_epi_iff_strong_epi_map, image_preimage, as_equivalence_counit],
+    apply strong_epi_comp, },
+  exact
+  { I := F.inv.obj s.I,
+    m := F.preimage (F.as_equivalence.counit_iso.hom.app _ ≫ s.m),
+    e := F.preimage (s.e ≫ F.as_equivalence.counit_iso.inv.app _),
+    m_mono := infer_instance,
+    fac' := begin
+      apply F.map_injective,
+      simp only [map_comp, image_preimage, category.assoc, iso.inv_hom_id_app_assoc,
+        mono_factorisation.fac],
+    end, }
+end
+
+lemma has_strong_epi_mono_factorisations_imp [is_equivalence F]
+  [h : has_strong_epi_mono_factorisations D] :
+  has_strong_epi_mono_factorisations C :=
+⟨λ X Y f, begin
+  apply nonempty.intro,
+  apply F.preimage_strong_epi_mono_factorisation,
+  let H := h.has_fac,
+  exact (H (F.map f)).some,
+end⟩
+
 end functor
 
 end category_theory
@@ -91,6 +133,14 @@ lemma skeletal_equivalence.functor.surjective_iff_map
 by rw [skeletal_equivalence.functor.map_eq,
     function.surjective.of_comp_iff' ulift.up_bijective, function.surjective.of_comp_iff _ ulift.down_surjective]
 
+lemma skeletal_equivalence.functor.injective_iff_map
+  {Δ₁ Δ₂ : simplex_category} (f : Δ₁ ⟶ Δ₂) :
+  function.injective f.to_order_hom ↔
+  function.injective
+  (simplex_category.skeletal_equivalence.{u}.functor.map f) :=
+by rw [skeletal_equivalence.functor.map_eq, function.injective.of_comp_iff ulift.up_injective,
+  function.injective.of_comp_iff' _ ulift.down_bijective]
+
 end simplex_category
 
 namespace NonemptyFinLinOrd
@@ -101,7 +151,7 @@ begin
   have eq := simplex_category.skeletal_equivalence.counit_iso.hom.naturality f,
   simp only [← cancel_mono (simplex_category.skeletal_equivalence.counit_iso.inv.app B),
     category.assoc, iso.hom_inv_id_app, category.comp_id, functor.id_map] at eq,
-  rw [simplex_category.skeletal_equivalence.inverse.epi_iff_map,
+  rw [simplex_category.skeletal_equivalence.inverse.epi_iff_epi_map,
     simplex_category.epi_iff_surjective,
     simplex_category.skeletal_equivalence.functor.surjective_iff_map,
     ← functor.comp_map, eq, coe_comp, coe_comp,
@@ -135,9 +185,55 @@ begin
     simpa only [hφ] using f.monotone (le_of_lt h), },
 end
 
+instance : strong_epi_category NonemptyFinLinOrd.{u} :=
+⟨λ X Y f, begin
+  introI,
+  haveI : split_epi f := split_epi_of_epi f,
+  apply strong_epi_of_split_epi,
+end⟩
+
+lemma mono_iff_injective {A B : NonemptyFinLinOrd.{u}} {f : A ⟶ B} :
+  mono f ↔ function.injective f :=
+begin
+  have eq := simplex_category.skeletal_equivalence.counit_iso.hom.naturality f,
+  simp only [← cancel_mono (simplex_category.skeletal_equivalence.counit_iso.inv.app B),
+    category.assoc, iso.hom_inv_id_app, category.comp_id, functor.id_map] at eq,
+  rw [simplex_category.skeletal_equivalence.inverse.mono_iff_mono_map,
+    simplex_category.mono_iff_injective,
+    simplex_category.skeletal_equivalence.functor.injective_iff_map,
+    ← functor.comp_map, eq, coe_comp, coe_comp,
+    function.injective.of_comp_iff', function.injective.of_comp_iff],
+  { apply function.bijective.injective,
+    apply concrete_category.bijective_of_is_iso, },
+  { apply concrete_category.bijective_of_is_iso, },
+end
+
+@[protected, simps]
+def strong_epi_mono_factorisation {X Y : NonemptyFinLinOrd.{u}} (f : X ⟶ Y) :
+  limits.strong_epi_mono_factorisation f :=
+begin
+  let I : NonemptyFinLinOrd.{u} := ⟨set.image (coe_fn f) ⊤, ⟨⟩⟩,
+  let e : X ⟶ I := ⟨λ x, ⟨f x, ⟨x, by tidy⟩⟩, λ x₁ x₂ h, f.monotone h⟩,
+  let m : I ⟶ Y := ⟨λ y, y, by tidy⟩,
+  haveI : epi e,
+  { rw epi_iff_surjective, tidy, },
+  haveI : strong_epi e := strong_epi_of_epi e,
+  haveI : mono m,
+  { rw mono_iff_injective, tidy, },
+  exact
+  { I := I,
+    m := m,
+    e := e, },
+end
+
+instance : limits.has_strong_epi_mono_factorisations NonemptyFinLinOrd.{u} :=
+⟨λ X Y f, nonempty.intro (NonemptyFinLinOrd.strong_epi_mono_factorisation f)⟩
+
 end NonemptyFinLinOrd
 
 namespace simplex_category
+
+open category_theory.limits
 
 lemma split_epi_of_epi {Δ₁ Δ₂ : simplex_category}
   (θ : Δ₁ ⟶ Δ₂) [epi θ] : split_epi θ :=
@@ -145,5 +241,15 @@ begin
   equiv_rw simplex_category.skeletal_equivalence.functor.split_epi_equiv _,
   apply NonemptyFinLinOrd.split_epi_of_epi,
 end
+
+instance : strong_epi_category simplex_category :=
+⟨λ X Y f, begin
+  introI,
+  haveI : split_epi f := split_epi_of_epi f,
+  apply strong_epi_of_split_epi,
+end⟩
+
+instance : limits.has_strong_epi_mono_factorisations simplex_category :=
+simplex_category.skeletal_functor.has_strong_epi_mono_factorisations_imp
 
 end simplex_category
