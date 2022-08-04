@@ -8,7 +8,8 @@ import category_theory.additive.basic
 import for_mathlib.idempotents.functor_extension
 import algebra.homology.homological_complex
 import algebraic_topology.simplicial_object
-import for_mathlib.simplex_category.simplex_category2
+import for_mathlib.simplex_category.split_epi
+import category_theory.limits.shapes.images
 import for_mathlib.dold_kan.notations
 import for_mathlib.split_simplicial_object
 

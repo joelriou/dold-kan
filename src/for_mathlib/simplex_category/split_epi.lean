@@ -1,4 +1,3 @@
---import category_theory.limits.shapes.strong_epi
 import category_theory.limits.shapes.images
 import algebraic_topology.simplex_category
 import tactic.equiv_rw
@@ -249,7 +248,40 @@ instance : strong_epi_category simplex_category :=
   apply strong_epi_of_split_epi,
 end⟩
 
-instance : limits.has_strong_epi_mono_factorisations simplex_category :=
-simplex_category.skeletal_functor.has_strong_epi_mono_factorisations_imp
+@[protected]
+lemma has_strong_epi_mono_factorisations : has_strong_epi_mono_factorisations simplex_category :=
+simplex_category.skeletal_functor.has_strong_epi_mono_factorisations_imp.{0}
+
+attribute [instance] has_strong_epi_mono_factorisations
+
+lemma image_eq {Δ Δ' Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ Δ'} [epi e] {i : Δ' ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  image φ = Δ' :=
+begin
+  haveI := strong_epi_of_epi e,
+  let eq := image.iso_strong_epi_mono e i fac,
+  ext,
+  apply le_antisymm,
+  { exact @len_le_of_epi  _ _ eq.hom infer_instance, },
+  { exact @len_le_of_mono  _ _ eq.hom infer_instance, },
+end
+
+lemma image_ι_eq {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  image.ι φ = i :=
+begin
+  haveI := strong_epi_of_epi e,
+  rw ← image.iso_strong_epi_mono_hom_comp_ι e i fac,
+  conv_lhs { rw ← category.id_comp (image.ι φ), },
+  congr,
+  symmetry,
+  apply simplex_category.eq_id_of_is_iso,
+  apply_instance,
+end
+
+lemma factor_thru_image_eq {Δ Δ'' : simplex_category } {φ : Δ ⟶ Δ''}
+  {e : Δ ⟶ image φ} [epi e] {i : image φ ⟶ Δ''} [mono i] (fac : e ≫ i = φ) :
+  factor_thru_image φ = e :=
+by rw [← cancel_mono i, fac, ← image_ι_eq fac, image.fac]
 
 end simplex_category

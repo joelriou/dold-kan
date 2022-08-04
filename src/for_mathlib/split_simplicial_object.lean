@@ -6,9 +6,8 @@ Authors: Joël Riou
 
 import algebraic_topology.simplicial_object
 import category_theory.limits.shapes.images
-import for_mathlib.simplex_category.simplex_category2
+import for_mathlib.simplex_category.split_epi
 import category_theory.limits.shapes.finite_products
-
 
 noncomputable theory
 
