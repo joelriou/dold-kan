@@ -73,8 +73,61 @@ def split_epi_equiv [full F] [faithful F] : split_epi f ≃ split_epi (F.map f) 
 lemma strong_epi_iff_strong_epi_map [is_equivalence F] :
   strong_epi f ↔ strong_epi (F.map f) :=
 begin
-  /- weaker assuption : F a un adjoint à droite qui préserve et reflète les mono -/
-  sorry
+  /- weaker assumption : F a un adjoint à droite qui préserve et reflète les mono -/
+  split,
+  { introI hf,
+    constructor,
+    { rw ← F.epi_iff_epi_map,
+      apply_instance, },
+    { introsI W Z u v g hg fac,
+      let W' := F.inv.obj W,
+      let Z' := F.inv.obj Z,
+      let g' : W' ⟶ Z' := F.inv.map g,
+      let u' : X ⟶ W' := F.preimage (u ≫ F.as_equivalence.counit_iso.inv.app W),
+      let v' : Y ⟶ Z' := F.preimage (v ≫ F.as_equivalence.counit_iso.inv.app Z),
+      have fac' : u' ≫ g' = f ≫ v',
+      { apply F.map_injective,
+        simp only [reassoc_of fac, map_comp, image_preimage, is_equivalence.fun_inv_map,
+          category.assoc, iso.inv_hom_id_app_assoc], },
+      have H := hf.2,
+      haveI := H fac',
+      refine ⟨nonempty.intro
+      { lift := F.map (arrow.lift (arrow.hom_mk' fac')) ≫ F.as_equivalence.counit_iso.hom.app W,
+        fac_left' := begin
+          dsimp,
+          simp only [← F.map_comp_assoc, arrow.lift_mk'_left, u',
+            as_equivalence_counit, image_preimage, category.assoc, iso.inv_hom_id_app],
+          dsimp,
+          simp only [category.comp_id],
+        end,
+        fac_right' := begin
+          have eq := F.as_equivalence.counit_iso.hom.naturality g,
+          dsimp at eq ⊢,
+          simp only [category.assoc, ← eq, ← F.map_comp_assoc, arrow.lift_mk'_right, v',
+            as_equivalence_counit, image_preimage, category.assoc, iso.inv_hom_id_app],
+          dsimp,
+          simp only [category.comp_id],
+        end, }⟩, }, },
+  { introI hf,
+    constructor,
+    { rw F.epi_iff_epi_map,
+      apply_instance, },
+    { introsI W Z u v g hg fac,
+      have fac' : F.map u ≫ F.map g = F.map f ≫ F.map v,
+      { simp only [← F.map_comp, fac], },
+      have H := hf.2,
+      haveI := H fac',
+      refine ⟨nonempty.intro
+      { lift := F.preimage (arrow.lift (arrow.hom_mk' fac')),
+        fac_left' := begin
+          apply F.map_injective,
+          simp only [map_comp, image_preimage, arrow.lift_mk'_left, arrow.hom_mk'_left],
+        end,
+        fac_right' := begin
+          apply F.map_injective,
+          simp only [arrow.mk_hom, map_comp, image_preimage, arrow.lift_mk'_right,
+            arrow.hom_mk'_right],
+        end, }⟩, }, },
 end
 
 open limits

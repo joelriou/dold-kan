@@ -8,7 +8,7 @@ import category_theory.additive.basic
 import for_mathlib.idempotents.functor_extension
 import algebra.homology.homological_complex
 import algebraic_topology.simplicial_object
-import for_mathlib.simplex_category.split_epi
+import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.images
 import for_mathlib.dold_kan.notations
 import for_mathlib.split_simplicial_object
@@ -46,7 +46,12 @@ namespace simplex_category
 namespace splitting_index_set
 
 variables {Δ' Δ : simplex_category} (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
-instance : epi (factor_thru_image θ) := sorry
+
+instance : strong_epi (factor_thru_image θ) :=
+strong_epi_factor_thru_image_of_strong_epi_mono_factorisation
+  (has_strong_epi_mono_factorisations.has_fac θ).some
+
+instance : epi (factor_thru_image θ) := strong_epi.epi
 
 /-- When `A : Γ_index_set Δ` and `θ : Δ' → Δ` is a morphism in `simplex_category`,
 the simplicial morphism `(Γ₀.obj _).map θ` sends the term of the direct sum corresponding
