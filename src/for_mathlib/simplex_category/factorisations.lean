@@ -197,7 +197,7 @@ end simplex_category
 
 namespace NonemptyFinLinOrd
 
-lemma epi_iff_surjective {A B : NonemptyFinLinOrd.{u}} {f : A ⟶ B} :
+lemma epi_iff_surjective {A B : NonemptyFinLinOrd.{u}} (f : A ⟶ B) :
   epi f ↔ function.surjective f :=
 begin
   have eq := simplex_category.skeletal_equivalence.counit_iso.hom.naturality f,
@@ -213,15 +213,14 @@ begin
     apply concrete_category.bijective_of_is_iso, },
 end
 
-lemma split_epi_of_epi {A B : NonemptyFinLinOrd.{u}} (f : A ⟶ B) [hf : epi f] :
-  split_epi f :=
-begin
-  have H : ∀ (b : B), nonempty (f⁻¹' { b }),
+instance : split_epi_category NonemptyFinLinOrd.{u} :=
+⟨λ X Y f hf, begin
+  have H : ∀ (y : Y), nonempty (f⁻¹' { y }),
   { rw epi_iff_surjective at hf,
-    intro b,
-    exact nonempty.intro ⟨(hf b).some, (hf b).some_spec⟩, },
-  let φ : B → A := λ b, (H b).some.1,
-  have hφ : ∀ (b : B), f (φ b) = b := λ b, (H b).some.2,
+    intro y,
+    exact nonempty.intro ⟨(hf y).some, (hf y).some_spec⟩, },
+  let φ : Y → X := λ y, (H y).some.1,
+  have hφ : ∀ (y : Y), f (φ y) = y := λ y, (H y).some.2,
   refine ⟨⟨φ, _⟩, _⟩, swap,
   { ext b,
     apply hφ, },
@@ -235,7 +234,7 @@ begin
       { exfalso,
         simpa only [h₂, lt_self_iff_false] using h, }, },
     simpa only [hφ] using f.monotone (le_of_lt h), },
-end
+end⟩
 
 instance : strong_epi_category NonemptyFinLinOrd.{u} :=
 ⟨λ X Y f, begin
@@ -287,12 +286,12 @@ namespace simplex_category
 
 open category_theory.limits
 
-lemma split_epi_of_epi {Δ₁ Δ₂ : simplex_category}
-  (θ : Δ₁ ⟶ Δ₂) [epi θ] : split_epi θ :=
-begin
-  equiv_rw simplex_category.skeletal_equivalence.functor.split_epi_equiv _,
-  apply NonemptyFinLinOrd.split_epi_of_epi,
-end
+instance : split_epi_category simplex_category :=
+⟨λ X Y f, begin
+  introI,
+  equiv_rw simplex_category.skeletal_equivalence.{0}.functor.split_epi_equiv _,
+  apply split_epi_of_epi,
+end⟩
 
 instance : strong_epi_category simplex_category :=
 ⟨λ X Y f, begin
