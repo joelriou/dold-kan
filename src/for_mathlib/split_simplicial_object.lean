@@ -8,6 +8,7 @@ import algebraic_topology.simplicial_object
 import category_theory.limits.shapes.images
 import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.finite_products
+import algebraic_topology.simplicial_set
 
 noncomputable theory
 
@@ -16,6 +17,8 @@ open category_theory.category
 open category_theory.limits
 open opposite
 open_locale simplicial
+
+universe u
 
 namespace simplex_category
 
@@ -177,3 +180,28 @@ end
 end splitting
 
 end simplicial_object
+
+namespace sSet
+
+variables {C : Type*} [category C]
+
+def tensor (X : sSet.{u}) (Y : C)
+  [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)] : simplicial_object C :=
+{ obj := λ Δ, sigma_obj (λ (x : X.obj Δ), Y),
+  map := λ Δ₁ Δ₂ θ, sigma.desc (λ x, sigma.ι (λ (y : X.obj Δ₂), Y) (X.map θ x)),
+  map_id' := λ Δ, begin
+    ext,
+    discrete_cases,
+    erw [colimit.ι_desc, cofan.mk_ι_app, comp_id, X.map_id],
+    refl,
+  end,
+  map_comp' := λ Δ₁ Δ₂ Δ₃ θ θ', begin
+    ext,
+    discrete_cases,
+    simp only [colimit.ι_desc, cofan.mk_ι_app, colimit.ι_desc_assoc],
+    congr,
+    rw [X.map_comp],
+    refl,
+  end, }
+
+end sSet
