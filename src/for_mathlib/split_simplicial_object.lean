@@ -140,7 +140,7 @@ end splitting
 variable [has_finite_coproducts C]
 
 structure splitting (X : simplicial_object C) :=
-(N : ℕ → C) (ι : Π n, N n ⟶ X _[n]) (mono_ι : ∀ n, mono (ι n))
+(N : ℕ → C) (ι : Π n, N n ⟶ X _[n])-- (mono_ι : ∀ n, mono (ι n))
 (is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map ι Δ))
 
 namespace splitting
@@ -185,6 +185,11 @@ namespace sSet
 
 variables {C : Type*} [category C]
 
+class degreewise_finite (X : sSet.{u}) := (finite' : ∀ (Δ : simplex_categoryᵒᵖ), fintype (X.obj Δ))
+
+restate_axiom degreewise_finite.finite'
+attribute [instance] degreewise_finite.finite
+
 def tensor (X : sSet.{u}) (Y : C)
   [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)] : simplicial_object C :=
 { obj := λ Δ, sigma_obj (λ (x : X.obj Δ), Y),
@@ -203,5 +208,36 @@ def tensor (X : sSet.{u}) (Y : C)
     rw [X.map_comp],
     refl,
   end, }
+instance (n : ℕ) : degreewise_finite Δ[n] :=
+⟨begin
+  intro,
+end⟩
+
+instance has_coproduct_of_degreewise_finite
+  (X : sSet.{u}) [degreewise_finite X] (Δ : simplex_categoryᵒᵖ) [has_finite_coproducts C]
+  (Y : C) : has_coproduct (λ (x : X.obj Δ), Y) := infer_instance
+
+def tensor_yoneda_adjunction [has_finite_coproducts C]
+  (n : ℕ) (Y : C) (X : simplicial_object C) :
+  (Δ[n].tensor Y ⟶ X) ≃ (Y ⟶ X.obj (op [n])) := sorry
 
 end sSet
+
+namespace simplicial_object
+
+namespace splitting
+
+variables {C : Type*} [category C] [has_finite_coproducts C]
+  {X : simplicial_object C} (s : splitting X)
+
+structure candidate_sk (n : ℕ) := (Y : simplicial_object C) (i : s.N n ⟶ Y.obj (op [n]))
+
+def sk : Π (n : ℕ), candidate_sk s n
+| 0 :=
+  { Y := Δ[0].tensor (s.N 0),
+    i := (sSet.tensor_yoneda_adjunction 0 (s.N 0) _).to_fun (𝟙 _), }
+| (n+1) := sorry
+
+end splitting
+
+end simplicial_object
