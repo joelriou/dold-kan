@@ -190,6 +190,7 @@ class degreewise_finite (X : sSet.{u}) := (finite' : ∀ (Δ : simplex_category�
 restate_axiom degreewise_finite.finite'
 attribute [instance] degreewise_finite.finite
 
+@[simps]
 def tensor (X : sSet.{u}) (Y : C)
   [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)] : simplicial_object C :=
 { obj := λ Δ, sigma_obj (λ (x : X.obj Δ), Y),
@@ -208,9 +209,25 @@ def tensor (X : sSet.{u}) (Y : C)
     rw [X.map_comp],
     refl,
   end, }
+
+def tensor_ι {X : sSet.{u}} {Δ : simplex_categoryᵒᵖ} (x : X.obj Δ) (Y : C)
+  [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)] :
+  Y ⟶ (X.tensor Y).obj Δ :=
+sigma.ι _ x
+
+@[simp, reassoc]
+lemma tensor_ι_comp_map {X : sSet.{u}} {Δ Δ' : simplex_categoryᵒᵖ} (x : X.obj Δ) (Y : C)
+  [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)]
+  (θ : Δ ⟶ Δ') :
+  tensor_ι x Y ≫ (X.tensor Y).map θ = tensor_ι (X.map θ x) Y :=
+begin
+  dsimp [tensor_ι],
+  simp only [colimit.ι_desc, cofan.mk_ι_app],
+end
+
 instance (n : ℕ) : degreewise_finite Δ[n] :=
 ⟨begin
-  intro,
+  sorry,
 end⟩
 
 instance has_coproduct_of_degreewise_finite
@@ -219,7 +236,33 @@ instance has_coproduct_of_degreewise_finite
 
 def tensor_yoneda_adjunction [has_finite_coproducts C]
   (n : ℕ) (Y : C) (X : simplicial_object C) :
-  (Δ[n].tensor Y ⟶ X) ≃ (Y ⟶ X.obj (op [n])) := sorry
+  (Δ[n].tensor Y ⟶ X) ≃ (Y ⟶ X.obj (op [n])) :=
+{ to_fun := λ f, tensor_ι (by exact 𝟙 [n]) Y ≫ f.app (op [n]),
+  inv_fun := λ g,
+  { app := λ Δ, sigma.desc (λ s, g ≫ X.map (quiver.hom.op s)),
+    naturality' := λ Δ₁ Δ₂ θ, begin
+      ext s,
+      discrete_cases,
+      simpa only [tensor_map, colimit.ι_desc_assoc, cofan.mk_ι_app, colimit.ι_desc, assoc,
+        ← X.map_comp],
+  end, },
+  left_inv := λ g, begin
+    ext Δ s,
+    discrete_cases,
+    simp only [cofan.mk_ι_app, colimit.ι_desc, assoc,
+      ← g.naturality, tensor_ι_comp_map_assoc],
+    dsimp only [standard_simplex],
+    simpa only [simplex_category.hom.comp, simplex_category.hom.id,
+      simplex_category.small_category_id, yoneda_obj_map,
+      quiver.hom.unop_op, simplex_category.small_category_comp,
+      simplex_category.hom.to_order_hom_mk, order_hom.id_comp,
+      simplex_category.hom.mk_to_order_hom],
+  end,
+  right_inv := λ f, begin
+    dsimp only [tensor_ι],
+    simp only [colimit.ι_desc, cofan.mk_ι_app],
+    erw [op_id, X.map_id, comp_id],
+  end, }
 
 end sSet
 
