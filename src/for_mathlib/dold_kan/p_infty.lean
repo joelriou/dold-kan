@@ -129,8 +129,7 @@ begin
   let P₃ : K[Y₃] ⟶ _ := P_infty,
   let P₄ : K[Y₄] ⟶ _ := P_infty,
   -- The statement of lemma relates P₁ and P₂.
-  suffices h₁₂ : (P₁.f n).f = Y.p.app (op [n]) ≫ P₂.f n,
-  { exact h₁₂, },
+  change (P₁.f n).f = Y.p.app (op [n]) ≫ P₂.f n,
   -- The proof proceeds by obtaining relations h₃₂, h₄₃, h₁₄.
   have h₃₂ : (P₃.f n).f = P₂.f n := karoubi.hom_ext.mp (map_P_infty_f (to_karoubi C) Y₂ n),
   have h₄₃ : P₄.f n = P₃.f n,
