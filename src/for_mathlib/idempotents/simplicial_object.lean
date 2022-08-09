@@ -5,7 +5,7 @@ Authors: Joël Riou
 -/
 
 import algebraic_topology.simplicial_object
-import for_mathlib.idempotents.functor_categories
+import category_theory.idempotents.functor_categories
 
 /-!
 

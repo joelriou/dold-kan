@@ -6,8 +6,9 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.functor_n
 import for_mathlib.dold_kan.decomposition
-import for_mathlib.idempotents.karoubi_karoubi
+import category_theory.idempotents.karoubi_karoubi
 import for_mathlib.idempotents.homological_complex
+import for_mathlib.idempotents.karoubi_misc
 
 open category_theory
 open category_theory.category
@@ -86,9 +87,9 @@ begin
       karoubi_functor_category_embedding.map],
     simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id, assoc,
       karoubi_chain_complex_equivalence_functor_obj_X_p, N₂_obj_p_f,
-      homological_complex.eq_to_hom_f, karoubi_P_infty_f, nat_trans.app_p_comm,
+      homological_complex.eq_to_hom_f, karoubi_P_infty_f, app_p_comm,
       P_infty_f_naturality, P_infty_f_naturality_assoc,
-      P_infty_f_idem_assoc, nat_trans.app_comp_p], },
+      P_infty_f_idem_assoc, app_comp_p], },
   { intro P,
     apply homological_complex.ext,
     { intros i j hij,

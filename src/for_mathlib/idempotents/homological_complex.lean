@@ -6,7 +6,7 @@ Authors: Joël Riou
 import for_mathlib.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
-import for_mathlib.idempotents.functor_extension
+import for_mathlib.idempotents.functor_extension2
 
 noncomputable theory
 

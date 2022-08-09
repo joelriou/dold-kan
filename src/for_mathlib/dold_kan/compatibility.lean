@@ -5,7 +5,7 @@ Authors: Joël Riou
 -/
 
 import category_theory.equivalence
-import for_mathlib.idempotents.functor_extension
+import category_theory.idempotents.functor_extension
 
 open category_theory
 open category_theory.category

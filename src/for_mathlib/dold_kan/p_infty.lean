@@ -5,8 +5,8 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.dold_kan.projections
-import for_mathlib.idempotents.functor_categories
-import for_mathlib.idempotents.functor_extension
+import category_theory.idempotents.functor_categories
+import category_theory.idempotents.functor_extension
 
 /-
 

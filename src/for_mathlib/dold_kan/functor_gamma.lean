@@ -5,7 +5,7 @@ Authors: Joël Riou
 -/
 
 import category_theory.additive.basic
-import for_mathlib.idempotents.functor_extension
+import for_mathlib.idempotents.functor_extension2
 import algebra.homology.homological_complex
 import algebraic_topology.simplicial_object
 import for_mathlib.simplex_category.factorisations
