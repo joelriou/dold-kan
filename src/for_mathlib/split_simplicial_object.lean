@@ -225,10 +225,15 @@ begin
   simp only [colimit.ι_desc, cofan.mk_ι_app],
 end
 
-instance (n : ℕ) : degreewise_finite Δ[n] :=
-⟨begin
-  sorry,
-end⟩
+lemma simplex_category.hom.fintype (Δ₁ Δ₂ : simplex_category) : fintype (Δ₁ ⟶ Δ₂) :=
+begin
+  refine fintype.of_injective (λ f, f.to_order_hom.to_fun) _,
+  intros f₁ f₂ eq,
+  ext : 2,
+  exact eq,
+end
+
+instance (n : ℕ) : degreewise_finite Δ[n] := ⟨λ Δ, simplex_category.hom.fintype _ _⟩
 
 instance has_coproduct_of_degreewise_finite
   (X : sSet.{u}) [degreewise_finite X] (Δ : simplex_categoryᵒᵖ) [has_finite_coproducts C]
@@ -275,11 +280,11 @@ variables {C : Type*} [category C] [has_finite_coproducts C]
 
 structure candidate_sk (n : ℕ) := (Y : simplicial_object C) (i : s.N n ⟶ Y.obj (op [n]))
 
-def sk : Π (n : ℕ), candidate_sk s n
+/-def sk : Π (n : ℕ), candidate_sk s n
 | 0 :=
   { Y := Δ[0].tensor (s.N 0),
     i := (sSet.tensor_yoneda_adjunction 0 (s.N 0) _).to_fun (𝟙 _), }
-| (n+1) := sorry
+| (n+1) := sorry-/
 
 end splitting
 

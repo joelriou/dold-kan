@@ -43,6 +43,9 @@ open_locale simplicial dold_kan
 
 namespace simplex_category
 
+protected def rec {F : Π (X : simplex_category), Sort*} (h : ∀ (n : ℕ), F [n]) :
+  Π X, F X := λ n, h n.len
+
 namespace splitting_index_set
 
 variables {Δ' Δ : simplex_category} (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
@@ -335,6 +338,21 @@ for any additive category `C`. -/
 @[simps]
 def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
 (category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
+
+def Γ₀.splitting (K : chain_complex C ℕ) :
+  simplicial_object.splitting (Γ₀.obj K) :=
+{ N := λ n, K.X n,
+  ι := λ n, ι_Γ₀_summand K (splitting_index_set.id [n]),
+  is_iso' := λ Δ, begin
+    convert is_iso.id _,
+    ext A,
+    discrete_cases,
+    induction Δ using opposite.rec,
+    induction Δ with n,
+    dsimp,
+    simp only [colimit.ι_desc, cofan.mk_ι_app, comp_id],
+    apply eq_ι_Γ₀_summand K,
+  end, }
 
 end dold_kan
 
