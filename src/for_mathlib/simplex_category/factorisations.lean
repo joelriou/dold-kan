@@ -15,18 +15,13 @@ by { rw ← is_iso_iff_bijective, apply_instance, }
 
 lemma strong_epi_of_split_epi
   {C : Type*} [category C] {A B : C} (f : A ⟶ B) [split_epi f] : strong_epi f :=
-{ epi := infer_instance,
-  has_lift := begin
-    introsI X Y u v z hz fac,
-    constructor,
-    exact nonempty.intro
-    { lift := section_ f ≫ u,
-      fac_left' :=
-        by simp only [arrow.mk_hom, arrow.hom_mk'_left, ← cancel_mono z,
-          category.assoc, fac, split_epi.id_assoc f],
-      fac_right' := by simp only [← cancel_epi f, arrow.mk_hom, category.assoc,
-          arrow.hom_mk'_right, fac, split_epi.id_assoc f], },
-  end, }
+strong_epi.mk' begin
+  introsI X Y z hz u v sq,
+  exact comm_sq.has_lift.mk'
+  { l := section_ f ≫ u,
+    fac_left' := by simp only [← cancel_mono z, sq.w, category.assoc, split_epi.id_assoc],
+    fac_right' := by simp only [sq.w, category.assoc, split_epi.id_assoc], }
+end
 
 variables {C D : Type*} [category C] [category D] (F : C ⥤ D) {X Y : C} (f : X ⟶ Y)
 
@@ -79,7 +74,9 @@ begin
     constructor,
     { rw ← F.epi_iff_epi_map,
       apply_instance, },
-    { introsI W Z u v g hg fac,
+    { introsI W Z g hg,
+      constructor,
+      intros u v sq,
       let W' := F.inv.obj W,
       let Z' := F.inv.obj Z,
       let g' : W' ⟶ Z' := F.inv.map g,
@@ -87,47 +84,38 @@ begin
       let v' : Y ⟶ Z' := F.preimage (v ≫ F.as_equivalence.counit_iso.inv.app Z),
       have fac' : u' ≫ g' = f ≫ v',
       { apply F.map_injective,
-        simp only [reassoc_of fac, map_comp, image_preimage, is_equivalence.fun_inv_map,
+        simp only [sq.w_assoc, map_comp, image_preimage, is_equivalence.fun_inv_map,
           category.assoc, iso.inv_hom_id_app_assoc], },
-      have H := hf.2,
-      haveI := H fac',
-      refine ⟨nonempty.intro
-      { lift := F.map (arrow.lift (arrow.hom_mk' fac')) ≫ F.as_equivalence.counit_iso.hom.app W,
+      exact comm_sq.has_lift.mk'
+      { l := F.map (comm_sq.mk fac').lift ≫ F.as_equivalence.counit_iso.hom.app W,
         fac_left' := begin
           dsimp,
-          simp only [← F.map_comp_assoc, arrow.lift_mk'_left, u',
-            as_equivalence_counit, image_preimage, category.assoc, iso.inv_hom_id_app],
+          simp only [←F.map_comp_assoc, comm_sq.fac_left, image_preimage, as_equivalence_counit, category.assoc, iso.inv_hom_id_app],
           dsimp,
           simp only [category.comp_id],
         end,
         fac_right' := begin
           have eq := F.as_equivalence.counit_iso.hom.naturality g,
           dsimp at eq ⊢,
-          simp only [category.assoc, ← eq, ← F.map_comp_assoc, arrow.lift_mk'_right, v',
-            as_equivalence_counit, image_preimage, category.assoc, iso.inv_hom_id_app],
+          simp only [category.assoc, ← eq, ← F.map_comp_assoc,
+            comm_sq.fac_right, image_preimage, as_equivalence_counit,
+            iso.inv_hom_id_app],
           dsimp,
           simp only [category.comp_id],
-        end, }⟩, }, },
+        end, }, }, },
   { introI hf,
     constructor,
     { rw F.epi_iff_epi_map,
       apply_instance, },
-    { introsI W Z u v g hg fac,
+    { introsI W Z g hg,
+      constructor,
+      intros u v sq,
       have fac' : F.map u ≫ F.map g = F.map f ≫ F.map v,
-      { simp only [← F.map_comp, fac], },
-      have H := hf.2,
-      haveI := H fac',
-      refine ⟨nonempty.intro
-      { lift := F.preimage (arrow.lift (arrow.hom_mk' fac')),
-        fac_left' := begin
-          apply F.map_injective,
-          simp only [map_comp, image_preimage, arrow.lift_mk'_left, arrow.hom_mk'_left],
-        end,
-        fac_right' := begin
-          apply F.map_injective,
-          simp only [arrow.mk_hom, map_comp, image_preimage, arrow.lift_mk'_right,
-            arrow.hom_mk'_right],
-        end, }⟩, }, },
+      { simp only [← F.map_comp, sq.w], },
+      exact comm_sq.has_lift.mk'
+      { l := F.preimage (comm_sq.mk fac').lift,
+        fac_left' := F.map_injective (by simp),
+        fac_right' := F.map_injective (by simp), }, }, },
 end
 
 open limits
