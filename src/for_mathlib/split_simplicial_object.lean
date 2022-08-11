@@ -129,7 +129,7 @@ variable {Δ}
 @[simp]
 def ι_sum (A : splitting_index_set Δ) : N A.1.len ⟶ sum N Δ := sigma.ι _ A
 
-variables {N X}
+variables {N}
 
 @[simp]
 def map (Δ' : simplex_categoryᵒᵖ) : sum N Δ'.unop ⟶ X.obj Δ' :=
@@ -141,7 +141,7 @@ variable [has_finite_coproducts C]
 
 structure splitting (X : simplicial_object C) :=
 (N : ℕ → C) (ι : Π n, N n ⟶ X _[n])-- (mono_ι : ∀ n, mono (ι n))
-(is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map ι Δ))
+(is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map X ι Δ))
 
 namespace splitting
 
@@ -149,11 +149,11 @@ open simplex_category
 
 variables {X Y : simplicial_object C} (s : splitting X) (f g : X ⟶ Y)
 
-instance map_is_iso (Δ : simplex_categoryᵒᵖ) : is_iso (splitting.map s.ι Δ) := s.is_iso' Δ
+instance map_is_iso (Δ : simplex_categoryᵒᵖ) : is_iso (splitting.map X s.ι Δ) := s.is_iso' Δ
 
 @[simps]
 def iso (Δ : simplex_categoryᵒᵖ) : sum s.N Δ.unop ≅ X.obj Δ :=
-as_iso (splitting.map s.ι Δ)
+as_iso (splitting.map X s.ι Δ)
 
 @[reassoc]
 lemma ι_comp_iso_hom {Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ.unop) :
