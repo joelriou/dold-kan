@@ -10,6 +10,8 @@ import for_mathlib.dold_kan.p_infty
 
 # Construction of functors N for the Dold-Kan correspondence
 
+TODO (@joelriou) continue adding the various files referenced below
+
 In this file, we construct the functors `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`
 and `N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`
 for any preadditive category `C`.
@@ -22,6 +24,9 @@ equivalence `chain_complex C ℕ ⥤ karoubi (chain_complex C ℕ)` will be the 
 `category_theory.idempotents.dold_kan.N` of the equivalence of categories
 `category_theory.idempotents.dold_kan.equivalence : simplicial_object C ≌ chain_complex C ℕ`
 defined in `equivalence_pseudoabelian.lean`.
+
+When the category `C` is abelian, a relation between `N₁` and the
+normalized Moore complex functor shall be obtained in `normalized.lean`.
 
 (See `equivalence.lean` for the general strategy of proof.)
 
