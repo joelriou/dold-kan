@@ -1,6 +1,7 @@
 import category_theory.limits.shapes.images
 import algebraic_topology.simplex_category
 import tactic.equiv_rw
+import for_mathlib.lifting_properties_misc
 
 noncomputable theory
 
@@ -23,7 +24,7 @@ strong_epi.mk' begin
     fac_right' := by simp only [sq.w, category.assoc, is_split_epi.id_assoc], }
 end
 
-variables {C D : Type*} [category C] [category D] (F : C ⥤ D) {X Y : C} (f : X ⟶ Y)
+variables {C D : Type*} [category C] [category D] (F : C ⥤ D) {A B : C} (f : A ⟶ B)
 
 namespace functor
 
@@ -34,57 +35,65 @@ begin
   { intro h, refine is_split_epi.mk' ((split_epi_equiv F f).inv_fun h.exists_split_epi.some), },
 end
 
-lemma strong_epi_iff_strong_epi_map [is_equivalence F] :
+variable {F}
+lemma strong_epi_imp_strong_epi_map_of_adjunction {F' : D ⥤ C} (adj : F ⊣ F') (f : A ⟶ B)
+  [h₁ : preserves_monomorphisms F']
+  [h₂ : preserves_epimorphisms F] :
+  strong_epi f → strong_epi (F.map f) :=
+begin
+  introI hf,
+  refine ⟨infer_instance, _⟩,
+  intros X Y z,
+  introI,
+  rw has_lifting_property.iff_of_adjunction adj,
+  apply_instance,
+end
+
+instance strong_epi_map_of_is_equivalence [is_equivalence F]
+  [h : strong_epi f] : strong_epi (F.map f) :=
+strong_epi_imp_strong_epi_map_of_adjunction ((as_equivalence F).to_adjunction) f h
+
+lemma strong_epi.of_arrow_iso {A B A' B' : C} {f : A ⟶ B} {g : A' ⟶ B'}
+  (e : arrow.mk f ≅ arrow.mk g) [h : strong_epi f] : strong_epi g :=
+{ epi := begin
+    haveI : epi (f ≫ (arrow.right_func.map_iso e).hom) := epi_comp _ _,
+    have eq : g = (arrow.left_func.map_iso e).inv ≫ f ≫
+      (arrow.right_func.map_iso e).hom,
+    { have eq' := arrow.hom.congr_right e.inv_hom_id,
+      dsimp at eq',
+      simp only [map_iso_inv, arrow.left_func_map, map_iso_hom,
+        arrow.right_func_map, arrow.w_mk_right_assoc, arrow.mk_hom, eq'],
+      dsimp,
+      simp only [category.comp_id], },
+    rw eq,
+    apply epi_comp,
+  end,
+  llp := λ X Y z, begin
+    introI,
+    apply has_lifting_property.of_arrow_iso_left e z,
+  end }
+
+lemma strong_epi_iff_of_arrow_iso {A B A' B' : C} {f : A ⟶ B} {g : A' ⟶ B'}
+  (e : arrow.mk f ≅ arrow.mk g) : strong_epi f ↔ strong_epi g :=
+by { split; introI, exacts [strong_epi.of_arrow_iso e, strong_epi.of_arrow_iso e.symm], }
+
+def arrow.iso_of_nat_iso {C D : Type*} [category C] [category D]
+  {F G : C ⥤ D} (e : F ≅ G) (f : arrow C) :
+  F.map_arrow.obj f ≅ G.map_arrow.obj f :=
+arrow.iso_mk (e.app f.left) (e.app f.right) (by simp)
+
+variable (F)
+lemma strong_epi_iff_strong_epi_map_of_is_equivalence [is_equivalence F] :
   strong_epi f ↔ strong_epi (F.map f) :=
 begin
-  /- weaker assumption : F a un adjoint à droite qui préserve et reflète les mono -/
   split,
-  { introI hf,
-    constructor,
-    { rw F.epi_map_iff_epi,
-      apply_instance, },
-    { introsI W Z g hg,
-      constructor,
-      intros u v sq,
-      let W' := F.inv.obj W,
-      let Z' := F.inv.obj Z,
-      let g' : W' ⟶ Z' := F.inv.map g,
-      let u' : X ⟶ W' := F.preimage (u ≫ F.as_equivalence.counit_iso.inv.app W),
-      let v' : Y ⟶ Z' := F.preimage (v ≫ F.as_equivalence.counit_iso.inv.app Z),
-      have fac' : u' ≫ g' = f ≫ v',
-      { apply F.map_injective,
-        simp only [sq.w_assoc, map_comp, image_preimage, is_equivalence.fun_inv_map,
-          category.assoc, iso.inv_hom_id_app_assoc], },
-      exact comm_sq.has_lift.mk'
-      { l := F.map (comm_sq.mk fac').lift ≫ F.as_equivalence.counit_iso.hom.app W,
-        fac_left' := begin
-          dsimp,
-          simp only [←F.map_comp_assoc, comm_sq.fac_left, image_preimage, as_equivalence_counit, category.assoc, iso.inv_hom_id_app],
-          dsimp,
-          simp only [category.comp_id],
-        end,
-        fac_right' := begin
-          have eq := F.as_equivalence.counit_iso.hom.naturality g,
-          dsimp at eq ⊢,
-          simp only [category.assoc, ← eq, ← F.map_comp_assoc,
-            comm_sq.fac_right, image_preimage, as_equivalence_counit,
-            iso.inv_hom_id_app],
-          dsimp,
-          simp only [category.comp_id],
-        end, }, }, },
-  { introI hf,
-    constructor,
-    { rw ← F.epi_map_iff_epi,
-      apply_instance, },
-    { introsI W Z g hg,
-      constructor,
-      intros u v sq,
-      have fac' : F.map u ≫ F.map g = F.map f ≫ F.map v,
-      { simp only [← F.map_comp, sq.w], },
-      exact comm_sq.has_lift.mk'
-      { l := F.preimage (comm_sq.mk fac').lift,
-        fac_left' := F.map_injective (by simp),
-        fac_right' := F.map_injective (by simp), }, }, },
+  { introI,
+    apply_instance, },
+  { introI,
+    have e : arrow.mk f ≅ arrow.mk (F.inv.map (F.map f)) :=
+      arrow.iso_of_nat_iso (F.as_equivalence.unit_iso) (arrow.mk f),
+    rw strong_epi_iff_of_arrow_iso e,
+    apply_instance, }
 end
 
 open limits
@@ -97,7 +106,8 @@ begin
   { simp only [← F.mono_map_iff_mono, as_equivalence_counit, image_preimage],
     apply mono_comp, },
   haveI : strong_epi (F.preimage (s.e ≫ F.as_equivalence.counit_iso.inv.app _)),
-  { simp only [F.strong_epi_iff_strong_epi_map, image_preimage, as_equivalence_counit],
+  { simp only [F.strong_epi_iff_strong_epi_map_of_is_equivalence,
+      image_preimage, as_equivalence_counit],
     apply strong_epi_comp, },
   exact
   { I := F.inv.obj s.I,
