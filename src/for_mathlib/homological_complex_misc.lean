@@ -79,11 +79,11 @@ begin
       apply (equiv_of_fully_faithful F).injective,
       dsimp,
       simp only [functor.image_preimage, functor.map_comp],
-      haveI : (split_epi (φ.f i)) :=
+      haveI : is_split_epi (φ.f i) := is_split_epi.mk'
       { section_ := (inv φ).f i,
         id' := by simpa only [homological_complex.comp_f]
           using homological_complex.congr_hom (is_iso.inv_hom_id φ) i, },
-      haveI : (split_mono (φ.f j)) :=
+      haveI : is_split_mono (φ.f j) := is_split_mono.mk'
       { retraction := (inv φ).f j,
         id' := by simpa only [homological_complex.comp_f]
           using homological_complex.congr_hom (is_iso.hom_inv_id φ) j, },
