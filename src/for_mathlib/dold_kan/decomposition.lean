@@ -28,11 +28,7 @@ def reverse_fin {n : ℕ} (i : fin (n+1)) : fin (n+1):= ⟨n-i, nat.sub_lt_succ 
 
 lemma reverse_fin_eq {n a : ℕ} (i : fin (n+1)) (hnaq : n=a+i) : reverse_fin i =
   ⟨a, nat.lt_succ_iff.mpr (nat.le.intro (eq.symm hnaq))⟩ :=
-begin
-  ext,
-  simp only [reverse_fin, fin.coe_mk],
-  exact tsub_eq_of_eq_add hnaq,
-end
+by { ext, exact tsub_eq_of_eq_add hnaq, }
 
 /-- In each positive degree, this lemma decomposes the idempotent endomorphism
 `Q q` as a sum of morphisms which are postcompositions with suitable degeneracies.
@@ -43,7 +39,7 @@ the $y_i$ are in degree $n$. -/
 lemma decomposition_Q (n q : ℕ) :
   ((Q q).f (n+1) : X _[n+1] ⟶ X _[n+1]) =
   ∑ (i : fin (n+1)) in finset.filter (λ i : fin(n+1), (i:ℕ)<q) finset.univ,
-  (P i).f (n+1) ≫ X.δ (reverse_fin i).succ ≫ X.σ (reverse_fin i) :=
+    (P i).f (n+1) ≫ X.δ (reverse_fin i).succ ≫ X.σ (reverse_fin i) :=
 begin
   induction q with q hq,
   { simp only [Q_eq_zero, homological_complex.zero_f_apply, nat.not_lt_zero,
@@ -54,33 +50,22 @@ begin
       ext,
       have hx := x.is_lt,
       simp only [nat.succ_eq_add_one],
-      split;
-      { intro h, linarith, }, },
+      split; intro h; linarith, },
     { cases nat.le.dest (nat.succ_le_succ_iff.mp hqn) with a ha,
       rw [Q_eq, homological_complex.sub_f_apply, homological_complex.comp_f, hq],
       symmetry,
       conv_rhs { rw [sub_eq_add_neg, add_comm], },
       let q' : fin (n+1) := ⟨q, nat.succ_le_iff.mp hqn⟩,
       convert finset.sum_insert ( _ : q' ∉ _),
-    { ext i,
-      simp only [finset.mem_insert, finset.mem_filter, finset.mem_univ, true_and],
-      split,
-      { intro hi,
-        by_cases (i : ℕ)<q,
-        { exact or.inr h, },
-        { apply or.inl,
-          ext,
-          exact nat.eq_of_le_of_lt_succ (not_lt.mp h) hi, }, },
-      { intro hi,
-        cases hi,
-        { rw hi,
-          exact lt_add_one q, },
-        { exact nat.lt.step hi, }, }, },
+      { ext i,
+        simp only [finset.mem_insert, finset.mem_filter, finset.mem_univ, true_and,
+          nat.lt_succ_iff_lt_or_eq, fin.ext_iff],
+        tauto, },
       { have hnaq' : n = a+q := by linarith,
         simpa only [fin.coe_mk, (higher_faces_vanish.of_P q n).comp_Hσ_eq hnaq',
-        reverse_fin_eq q' hnaq', neg_neg], },
+          reverse_fin_eq q' hnaq', neg_neg], },
       { simp only [finset.mem_filter, fin.coe_mk, lt_self_iff_false,
-          and_false, not_false_iff], }, }, }
+            and_false, not_false_iff], }, }, },
 end
 
 variable (X)
@@ -89,13 +74,8 @@ variable (X)
 the proof that `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ))`
 reflects isomorphisms. The fields are the data that are needed in order to
 construct a morphism `X _[n+1] ⟶ Z` (see `φ`) using the decomposition of the
-identity given by `decomposition_Q n (n+1)`.
-
-In the proof of `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ))`,
-in order to check that two maps coincide, we shall only verify that the
-`morph_components` they come from are equal.
--/
-@[ext, nolint has_inhabited_instance]
+identity given by `decomposition_Q n (n+1)`. -/
+@[ext, nolint has_nonempty_instance]
 structure morph_components (n : ℕ) (Z : C) :=
 (a : X _[n+1] ⟶ Z) (b : fin (n+1) → (X _[n] ⟶ Z))
 
@@ -105,7 +85,7 @@ variables {X} {n : ℕ} {Z Z' : C} (f : morph_components X n Z) (g : X' ⟶ X) (
 /-- The morphism `X _[n+1] ⟶ Z ` associated to `f : morph_components X n Z`. -/
 def φ {Z : C} (f : morph_components X n Z) :
   X _[n+1] ⟶ Z := P_infty.f (n+1) ≫ f.a +
-  ∑ (i : fin (n+1)), ((P i).f (n+1) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i)))
+    ∑ (i : fin (n+1)), ((P i).f (n+1) ≫ (X.δ (reverse_fin i).succ) ≫ (f.b (reverse_fin i)))
 
 variables (X n)
 /-- the canonical `morph_components` whose associated morphism is the identity
@@ -115,7 +95,7 @@ def id : morph_components X n (X _[n+1]) :=
 { a := P_infty.f (n+1),
   b := λ i, X.σ i, }
 
-lemma φ_id : (id X n).φ = 𝟙 _ :=
+lemma id_φ : (id X n).φ = 𝟙 _ :=
 begin
   simp only [← P_add_Q_f (n+1) (n+1), φ],
   congr' 1,
@@ -133,8 +113,7 @@ def post_comp : morph_components X n Z' :=
 { a := f.a ≫ h,
   b := λ i, f.b i ≫ h }
 
-lemma post_comp_φ :
-  (f.post_comp h).φ = f.φ ≫ h :=
+lemma post_comp_φ : (f.post_comp h).φ = f.φ ≫ h :=
 begin
   unfold φ post_comp,
   simp only [add_comp, sum_comp, assoc],

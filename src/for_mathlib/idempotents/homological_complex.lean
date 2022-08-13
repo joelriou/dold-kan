@@ -291,13 +291,13 @@ variables (α : Type*) [add_right_cancel_semigroup α] [has_one α]
 def karoubi_chain_complex_equivalence :
   karoubi (chain_complex C α) ≌
     chain_complex (karoubi C) α :=
-  karoubi_homological_complex_equivalence C (complex_shape.down α)
+karoubi_homological_complex_equivalence C (complex_shape.down α)
 
 @[simps]
 def karoubi_cochain_complex_equivalence :
   karoubi (cochain_complex C α) ≌
     cochain_complex (karoubi C) α :=
-  karoubi_homological_complex_equivalence C (complex_shape.up α)
+karoubi_homological_complex_equivalence C (complex_shape.up α)
 
 end idempotents
 

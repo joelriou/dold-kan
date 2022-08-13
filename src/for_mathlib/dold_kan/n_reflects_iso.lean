@@ -28,16 +28,14 @@ open morph_components
 
 instance : reflects_isomorphisms
   (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
-begin
-  constructor,
-  intros X Y f,
+⟨λ X Y f, begin
   introI,
   /- restating the result in a way that allows induction on the degree n -/
   suffices : ∀ (n : ℕ), is_iso (f.app (op [n])),
   { haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (f.app Δ) := λ Δ, this Δ.unop.len,
     apply nat_iso.is_iso_of_is_iso_app, },
   /- restating the assumption in a more practical form -/
-  have h₁  := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
+  have h₁ := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
   have h₂ := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
   have h₃ := λ n, karoubi.homological_complex.f_p_comm_assoc (inv (N₁.map f)) (n) (f.app (op [n])),
   simp only [N₁_map_f, karoubi.comp, homological_complex.comp_f,
@@ -51,17 +49,17 @@ begin
     have h₂₀ := h₂ 0,
     dsimp at h₁₀ h₂₀,
     simp only [id_comp, comp_id] at h₁₀ h₂₀,
-    split; assumption, },
+    tauto, },
   /- induction step -/
   { haveI := hn,
     use φ
       { a := P_infty.f (n+1) ≫ (inv (N₁.map f)).f.f (n+1),
         b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
-    simp only [morph_components.id, ← φ_id, ← pre_comp_φ, pre_comp, ← post_comp_φ,
+    simp only [morph_components.id, ← id_φ, ← pre_comp_φ, pre_comp, ← post_comp_φ,
       post_comp, P_infty_f_naturality_assoc, is_iso.hom_inv_id_assoc, assoc,
       is_iso.inv_hom_id_assoc, simplicial_object.naturality_σ, h₁, h₂, h₃],
-    split; refl, },
-end
+    tauto, },
+end⟩
 
 lemma karoubi_alternating_face_map_complex_d (P : karoubi (simplicial_object C)) (n : ℕ) :
   (((alternating_face_map_complex.obj (karoubi_functor_category_embedding.obj P)).d (n+1) n).f) =
