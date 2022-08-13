@@ -35,6 +35,17 @@ noncomputable theory
 
 namespace algebraic_topology
 
+section
+variables {C : Type*} [category C] [abelian C]
+
+@[simp]
+lemma normalized_Moore_complex_obj_d (X : simplicial_object C) (n : ℕ) :
+  ((normalized_Moore_complex C).obj X).d (n+1) n =
+  normalized_Moore_complex.obj_d X n :=
+by apply chain_complex.of_d
+
+end
+
 namespace dold_kan
 
 universe v
@@ -42,34 +53,20 @@ universe v
 variables {A : Type*} [category A] [abelian A]
 variables {X : simplicial_object A}
 
-lemma higher_faces_vanish_on_Moore_complex (n : ℕ) :
+lemma higher_faces_vanish.on_Moore_complex (n : ℕ) :
   higher_faces_vanish (n+1) ((inclusion_of_Moore_complex_map X).f (n+1)) := λ j hj,
 begin
-  simp only [inclusion_of_Moore_complex_map, chain_complex.of_hom],
-  erw ← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ
-    _ j (by simp only [finset.mem_univ])),
-  slice_lhs 2 3 { rw kernel_subobject_arrow_comp, },
-  rwa [comp_zero],
-end
-
-lemma P_infty_on_Moore_complex :
-  inclusion_of_Moore_complex_map X ≫ P_infty = inclusion_of_Moore_complex_map X :=
-begin
-  ext n,
-  simp only [homological_complex.comp_f],
-  cases n,
-  { erw [P_f_0_eq, comp_id], },
-  { rw [P_infty_f],
-    exact (higher_faces_vanish_on_Moore_complex n).comp_P_eq_self, },
+  dsimp [inclusion_of_Moore_complex_map],
+  rw [← factor_thru_arrow _ _ (finset_inf_arrow_factors finset.univ
+    _ j (by simp only [finset.mem_univ])), assoc, kernel_subobject_arrow_comp, comp_zero],
 end
 
 lemma P_infty_factors_thru_Moore_complex_degreewise (n : ℕ) :
   subobject.factors (normalized_Moore_complex.obj_X X n) (P_infty.f n) :=
 begin
-  rw [P_infty_f],
-  cases n; rw [normalized_Moore_complex.obj_X],
+  cases n,
   { apply top_factors, },
-  { rw finset_inf_factors,
+  { rw [P_infty_f, normalized_Moore_complex.obj_X, finset_inf_factors],
     intros i hi,
     apply kernel_subobject_factors,
     exact (higher_faces_vanish.of_P (n+1) n) i (le_add_self), }
@@ -80,84 +77,47 @@ end
 def P_infty_into_Moore_subcomplex (X : simplicial_object A) : K[X] ⟶ N[X] :=
 chain_complex.of_hom _ _ _ _ _ _
   (λ n, factor_thru _ _ (P_infty_factors_thru_Moore_complex_degreewise n))
-  (λ n,
-    begin
-      apply (cancel_mono (normalized_Moore_complex.obj_X X n).arrow).mp,
-      simp only [assoc, factor_thru_arrow],
-      have eq := (inclusion_of_Moore_complex_map X).comm' (n+1) n (by simp only [complex_shape.down_rel]),
-      rw [(show (inclusion_of_Moore_complex_map X).f n = (normalized_Moore_complex.obj_X X n).arrow, by refl),
-        (show ((normalized_Moore_complex A).obj X).d (n+1) n = normalized_Moore_complex.obj_d X n,
-          by erw chain_complex.of_d)] at eq,
-      erw [← eq, ← assoc, factor_thru_arrow,
-        P_infty.comm' (n+1) n (by simp only [complex_shape.down_rel]), chain_complex.of_d],
+  (λ n, begin
+    rw [← cancel_mono (normalized_Moore_complex.obj_X X n).arrow, assoc, assoc,
+      factor_thru_arrow, ← inclusion_of_Moore_complex_map_f,
+      ← normalized_Moore_complex_obj_d, ← (inclusion_of_Moore_complex_map X).comm' (n+1) n rfl,
+      inclusion_of_Moore_complex_map_f, factor_thru_arrow_assoc,
+      ← alternating_face_map_complex_obj_d],
+    exact P_infty.comm' (n+1) n rfl,
     end)
 
-lemma P_infty_comp_P_infty_into_Moore_subcomplex_degreewise (X : simplicial_object A) (n : ℕ) :
-P_infty.f n ≫ (P_infty_into_Moore_subcomplex X).f n = (P_infty_into_Moore_subcomplex X).f n :=
-begin
-  ext,
-  rw [assoc],
-  dsimp [P_infty_into_Moore_subcomplex],
-  simp only [factor_thru_arrow],
-  exact P_infty_f_idem n,
-end
+@[simp, reassoc]
+lemma P_infty_into_Moore_subcomplex_comp_inclusion (X : simplicial_object A) :
+  P_infty_into_Moore_subcomplex X ≫ inclusion_of_Moore_complex_map X = P_infty := by tidy
 
-lemma P_infty_comp_P_infty_into_Moore_subcomplex (X : simplicial_object A) :
-P_infty ≫ P_infty_into_Moore_subcomplex X = P_infty_into_Moore_subcomplex X :=
-begin
-  ext1, ext1 n,
-  simp only [homological_complex.comp_f],
-  exact P_infty_comp_P_infty_into_Moore_subcomplex_degreewise X n,
-end
-
-lemma P_infty_into_Moore_subcomplex_degreewise_naturality {X Y : simplicial_object A} (f : X ⟶ Y) (n : ℕ) :
-(alternating_face_map_complex.map f).f n ≫ (P_infty_into_Moore_subcomplex Y).f n =
-(P_infty_into_Moore_subcomplex X).f n ≫ ((normalized_Moore_complex A).map f).f n :=
-begin
-  ext1 n,
-  dsimp [P_infty_into_Moore_subcomplex],
-  simp only [assoc, factor_thru_arrow, factor_thru_arrow_assoc],
-  apply P_infty_f_naturality,
-end
-
+@[simp, reassoc]
 lemma P_infty_into_Moore_subcomplex_naturality {X Y : simplicial_object A} (f : X ⟶ Y) :
-alternating_face_map_complex.map f ≫ P_infty_into_Moore_subcomplex Y =
-P_infty_into_Moore_subcomplex X ≫ normalized_Moore_complex.map f :=
-begin
-  ext1, ext1 n,
-  simp only [homological_complex.comp_f],
-  exact P_infty_into_Moore_subcomplex_degreewise_naturality f n,
-end
+  alternating_face_map_complex.map f ≫ P_infty_into_Moore_subcomplex Y =
+    P_infty_into_Moore_subcomplex X ≫ normalized_Moore_complex.map f := by tidy
 
-lemma inclusion_of_Moore_complex_comp_P_infty (X : simplicial_object A) :
-(inclusion_of_Moore_complex A).app X ≫ P_infty = (inclusion_of_Moore_complex A).app X :=
+@[simp, reassoc]
+lemma P_infty_comp_P_infty_into_Moore_subcomplex (X : simplicial_object A) :
+  P_infty ≫ P_infty_into_Moore_subcomplex X = P_infty_into_Moore_subcomplex X := by tidy
+
+@[simp, reassoc]
+lemma inclusion_of_Moore_complex_map_comp_P_infty (X : simplicial_object A) :
+  inclusion_of_Moore_complex_map X ≫ P_infty = inclusion_of_Moore_complex_map X :=
 begin
-  ext1, ext1 n,
-  simp only [homological_complex.comp_f],
+  ext n,
   cases n,
-  { erw comp_id, },
-  { exact (higher_faces_vanish_on_Moore_complex n).comp_P_eq_self, },
+  { dsimp, simp only [comp_id], },
+  { exact (higher_faces_vanish.on_Moore_complex n).comp_P_eq_self, },
 end
 
-lemma inclusion_of_Moore_complex_comp_P_infty_degreewise (X : simplicial_object A) (n : ℕ):
-((inclusion_of_Moore_complex A).app X).f n ≫ P_infty.f n = ((inclusion_of_Moore_complex A).app X).f n :=
-homological_complex.congr_hom (inclusion_of_Moore_complex_comp_P_infty X) n
+instance : mono (inclusion_of_Moore_complex_map X) :=
+⟨λ Y f₁ f₂ hf, by { ext n, exact homological_complex.congr_hom hf n, }⟩
 
-lemma P_infty_is_a_retraction (Y : simplicial_object A) :
-  inclusion_of_Moore_complex_map Y ≫ P_infty_into_Moore_subcomplex Y = 𝟙 _ :=
-begin
-  ext n,
-  erw [assoc, factor_thru_arrow, id_comp, inclusion_of_Moore_complex_comp_P_infty_degreewise],
-  refl,
-end
-
-lemma factors_P_infty (Y : simplicial_object A) :
-  P_infty_into_Moore_subcomplex Y ≫ inclusion_of_Moore_complex_map Y = P_infty :=
-begin
-  ext n,
-  simp only [P_infty_into_Moore_subcomplex, chain_complex.of_hom,
-    factor_thru_arrow, homological_complex.comp_f, inclusion_of_Moore_complex_map_f],
-end
+/-- `inclusion_of_Moore_complex_map X` is a split mono. -/
+def split_mono_inclusion_of_Moore_complex (X : simplicial_object A) :
+  split_mono (inclusion_of_Moore_complex_map X) :=
+{ retraction := P_infty_into_Moore_subcomplex X,
+  id' := by simp only [← cancel_mono (inclusion_of_Moore_complex_map X), assoc, id_comp,
+    P_infty_into_Moore_subcomplex_comp_inclusion, inclusion_of_Moore_complex_map_comp_P_infty], }
 
 variable (A)
 
@@ -170,38 +130,23 @@ def N₁_iso_to_karoubi_normalized :
 { hom :=
   { app := λ X,
     { f := P_infty_into_Moore_subcomplex X,
-      comm := by erw [comp_id, P_infty_comp_P_infty_into_Moore_subcomplex X] },
-    naturality' := λ X Y f, begin
-      ext1,
-      simp only [karoubi.comp, N₁_map_f, assoc],
-      erw [P_infty_into_Moore_subcomplex_naturality, ← assoc,
-        P_infty_comp_P_infty_into_Moore_subcomplex],
-      refl,
-    end },
+      comm := by tidy, }, },
   inv :=
   { app := λ X,
-    { f := (inclusion_of_Moore_complex A).app X,
-      comm := by erw [id_comp, inclusion_of_Moore_complex_comp_P_infty], },
-    naturality' := λ X Y f, begin
-      ext1,
-      simp only [karoubi.comp],
-      erw [(inclusion_of_Moore_complex A).naturality f, ← assoc,
-        inclusion_of_Moore_complex_comp_P_infty X],
-      refl,
-    end },
+    { f := inclusion_of_Moore_complex_map X,
+      comm := by tidy, }, },
   hom_inv_id' := begin
-    ext X n,
-    simpa only [inclusion_of_Moore_complex_app, nat_trans.comp_app, karoubi.comp,
-      homological_complex.comp_f, P_infty_into_Moore_subcomplex_f,
-      inclusion_of_Moore_complex_map_f, factor_thru_arrow],
+    ext X : 3,
+    simp only [P_infty_into_Moore_subcomplex_comp_inclusion, nat_trans.comp_app,
+      karoubi.comp, N₁_obj_p, nat_trans.id_app, karoubi.id_eq],
   end,
   inv_hom_id' := begin
-    ext X n,
-    simp only [karoubi.comp, assoc, inclusion_of_Moore_complex_app, nat_trans.comp_app,
-      homological_complex.comp_f, inclusion_of_Moore_complex_map_f,
-      P_infty_into_Moore_subcomplex_f, factor_thru_arrow, nat_trans.id_app, karoubi.id_eq],
-    erw [inclusion_of_Moore_complex_comp_P_infty_degreewise, id_comp],
-    refl,
+    ext X : 3,
+    simp only [← cancel_mono (inclusion_of_Moore_complex_map X),
+      nat_trans.comp_app, karoubi.comp, assoc, P_infty_into_Moore_subcomplex_comp_inclusion,
+      inclusion_of_Moore_complex_map_comp_P_infty, nat_trans.id_app, karoubi.id_eq],
+    dsimp only [functor.comp_obj, to_karoubi],
+    rw id_comp,
   end }
 
 end dold_kan

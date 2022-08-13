@@ -93,9 +93,9 @@ def inclusion_of_Moore_complex_is_homotopy_equiv {A : Type*} [category A] [abeli
   ((alternating_face_map_complex A).obj Y) :=
 { hom := inclusion_of_Moore_complex_map Y,
   inv := P_infty_into_Moore_subcomplex Y,
-  homotopy_hom_inv_id := homotopy.of_eq (P_infty_is_a_retraction Y),
-  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq (factors_P_infty Y))
-      (P_infty_is_homotopic_to_id Y), }
+  homotopy_hom_inv_id := homotopy.of_eq (split_mono_inclusion_of_Moore_complex Y).id,
+  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq
+    (P_infty_into_Moore_subcomplex_comp_inclusion Y)) (P_infty_is_homotopic_to_id Y), }
 
 end dold_kan
 
