@@ -15,7 +15,7 @@ open category_theory.category
 open category_theory.limits
 open category_theory.idempotents
 open simplex_category
---open opposite
+open opposite
 open_locale simplicial dold_kan
 
 namespace algebraic_topology
@@ -24,7 +24,34 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
-@[simp, reassoc]
+lemma P_infty_on_Γ₀_splitting_summand_eq_zero
+  (K : chain_complex C ℕ)
+  (n : ℕ) {A : simplex_category.splitting_index_set [n]}
+  (hA : A ≠ simplex_category.splitting_index_set.id [n]) :
+  (Γ₀.splitting K).ι_summand A ≫ (P_infty : K[Γ₀.obj K] ⟶ _).f n = 0 :=
+P_infty_on_splitting_eq_zero (Γ₀.splitting K) A hA
+
+lemma P_infty_on_Γ₀_splitting_summand_eq_self
+  (K : chain_complex C ℕ) {n : ℕ} :
+  (Γ₀.splitting K).ι_summand (simplex_category.splitting_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _).f n =
+    (Γ₀.splitting K).ι_summand (simplex_category.splitting_index_set.id [n]) :=
+begin
+  rw P_infty_f,
+  cases n,
+  { simpa only [P_f_0_eq] using comp_id _, },
+  { apply higher_faces_vanish.comp_P_eq_self,
+    intros j hj,
+    have eq := Γ₀.obj.map_mono_on_summand_id K (simplex_category.δ j.succ),
+    rw [Γ₀.obj.termwise.map_mono_eq_zero K, zero_comp] at eq, rotate,
+    { intro h,
+      exact (nat.succ_ne_self n) (congr_arg simplex_category.len h), },
+    { intro h,
+      simp only [is_d₀.iff] at h,
+      exact fin.succ_ne_zero j h, },
+    exact eq, },
+end
+
+/-@[simp, reassoc]
 lemma ι_Γ₀_summand_comp_P_infty_eq_zero (K : chain_complex C ℕ) {n : ℕ} {A : splitting_index_set [n]} (hA : ¬A = splitting_index_set.id [n]) :
   ι_Γ₀_summand K A ≫ P_infty.f n = 0 :=
 begin
@@ -55,12 +82,13 @@ begin
       simp only [is_d₀.iff] at h,
       exact fin.succ_ne_zero j h, },
     exact eq, },
-end
+end-/
 
 namespace N₁Γ₀
 
-def map_termwise (K : chain_complex C ℕ) (n : ℕ) (A : splitting_index_set [n]) :
-Γ₀.obj.summand K [n] A ⟶ ((to_karoubi (chain_complex C ℕ)).obj K).X.X n :=
+def hom_app_f_f_termwise (K : chain_complex C ℕ) (n : ℕ) (A : splitting_index_set [n]) :
+Γ₀.obj.summand K [n] A ⟶ K.X n :=
+  --((to_karoubi (chain_complex C ℕ)).obj K).X.X n :=
 begin
   by_cases A = splitting_index_set.id [n],
   { subst h,
@@ -68,22 +96,87 @@ begin
   { exact 0, }
 end
 
-lemma map_termwise_eq_id (K : chain_complex C ℕ) (n : ℕ) :
-map_termwise K n (splitting_index_set.id [n]) = 𝟙 _ :=
+@[simp]
+lemma hom_app_f_f_termwise_eq_id (K : chain_complex C ℕ) (n : ℕ) :
+hom_app_f_f_termwise K n (splitting_index_set.id [n]) = 𝟙 _ :=
 begin
-  dsimp [map_termwise],
+  dsimp [hom_app_f_f_termwise],
   simp only [eq_self_iff_true, if_true],
 end
 
-lemma map_termwise_eq_zero (K : chain_complex C ℕ) {n : ℕ} {A : splitting_index_set [n]}
-  (h : ¬ A = splitting_index_set.id [n]) :
-map_termwise K n A = 0 :=
+lemma hom_app_f_f_termwise_eq_zero (K : chain_complex C ℕ) (n : ℕ)
+  {A : splitting_index_set [n]} (h : ¬ A = splitting_index_set.id [n]) :
+hom_app_f_f_termwise K n A = 0 :=
 begin
-  dsimp [map_termwise],
+  dsimp [hom_app_f_f_termwise],
   split_ifs,
   refl,
 end
 
+@[simp]
+def hom_app_f_f (K : chain_complex C ℕ) (n : ℕ) :
+  (Γ₀.obj K) _[n] ⟶ K.X n :=
+(Γ₀.splitting K).desc (op [n]) (hom_app_f_f_termwise K n)
+
+@[simp, reassoc]
+lemma ι_hom_app_f_f (K : chain_complex C ℕ) (n : ℕ) (A : splitting_index_set [n]) :
+  (Γ₀.splitting K).ι_summand A ≫ hom_app_f_f K n = hom_app_f_f_termwise K n A :=
+(Γ₀.splitting K).ι_desc (op [n]) (hom_app_f_f_termwise K n) A
+
+lemma ι_d_hom_app_eq_d (K : chain_complex C ℕ) (i j : ℕ) (hij : j+1 = i) :
+  (Γ₀.splitting K).ι_summand (splitting_index_set.id [i]) ≫ K[Γ₀.obj K].d i j ≫
+    hom_app_f_f K j = K.d i j :=
+begin
+  sorry,
+end
+
+lemma ι_d_hom_app_eq_zero (K : chain_complex C ℕ) (i j : ℕ) (hij : j+1=i) (A : splitting_index_set [i])
+  (hA : ¬A = splitting_index_set.id [i]) :
+  (Γ₀.splitting K).ι_summand A ≫ K[Γ₀.obj K].d i j ≫
+    hom_app_f_f K j = 0 := sorry
+
+@[simps]
+def hom_app (K : chain_complex C ℕ) : (Γ₀ ⋙ N₁).obj K ⟶ (to_karoubi (chain_complex C ℕ)).obj K :=
+{ f :=
+  { f := λ n, hom_app_f_f K n,
+    comm' := λ i j hij, begin
+      apply (Γ₀.splitting K).hom_ext',
+      intro A,
+      by_cases A = splitting_index_set.id [i],
+      { subst h,
+        erw ι_d_hom_app_eq_d K i j hij,
+        dsimp only [to_karoubi],
+        simp only [ι_hom_app_f_f_assoc K, hom_app_f_f_termwise_eq_id, id_comp], },
+      { erw ι_d_hom_app_eq_zero K i j hij A h,
+        dsimp only [to_karoubi],
+        simp only [ι_hom_app_f_f_assoc K i A, hom_app_f_f_termwise_eq_zero K i h, zero_comp], },
+    end, },
+  comm := sorry, }
+
+@[simps]
+def hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
+{ app := hom_app,
+  naturality' := sorry, }
+
+@[simp]
+def inv_app_f_f (K : chain_complex C ℕ) (n : ℕ) :
+  K.X n ⟶ (Γ₀.obj K) _[n] :=
+(Γ₀.splitting K).ι_summand (splitting_index_set.id [n])
+
+@[simps]
+def inv_app (K : chain_complex C ℕ) : (to_karoubi (chain_complex C ℕ)).obj K ⟶ (Γ₀ ⋙ N₁).obj K :=
+{ f :=
+  { f := λ n, inv_app_f_f K n,
+    comm' := sorry, },
+  comm := sorry, }
+
+@[simps]
+def inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
+{ app := inv_app,
+  naturality' := sorry, }
+
+
+/-
 lemma d_on_KΓ (K : chain_complex C ℕ) (j : ℕ) :
   ι_Γ₀_summand K (splitting_index_set.id [j+1]) ≫ K[Γ₀.obj K].d (j+1) j
     ≫ sigma.desc (map_termwise K j) = K.d (j+1) j :=
@@ -239,9 +332,9 @@ begin
       erw [Γ₀.obj.termwise.map_mono_id K, id_comp, ← add_zsmul],
       convert zero_zsmul _,
       simp only [fin.coe_cast_succ, fin.coe_succ, pow_succ, neg_mul, one_mul, add_right_neg], }, },
-end
+end-/
 
-@[simps]
+/-@[simps]
 abbreviation hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
 { app := λ K,
   { f :=
@@ -326,7 +419,7 @@ abbreviation inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
     simp only [karoubi.comp, homological_complex.comp_f],
     dsimp,
     simpa only [ι_Γ₀_summand_id_comp_P_infty_assoc, ι_colim_map, discrete.nat_trans_app],
-  end }
+  end }-/
 
 end N₁Γ₀
 
@@ -335,22 +428,31 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
 { hom := N₁Γ₀.hom,
   inv := N₁Γ₀.inv,
   hom_inv_id' := begin
-    ext K n A,
-    cases A,
-    simp only [homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc_assoc,
-      nat_trans.id_app, karoubi.id_eq, karoubi.comp, nat_trans.comp_app],
-    dsimp at ⊢ A,
+    ext K n : 5,
+    apply (Γ₀.splitting K).hom_ext',
+    intro A,
+    dsimp at A,
+    simp only [nat_trans.comp_app, N₁Γ₀.hom_app_2, N₁Γ₀.inv_app_2,
+      karoubi.comp, homological_complex.comp_f, N₁Γ₀.hom_app_f_f,
+      N₁Γ₀.hom_app_f_f_2, N₁Γ₀.inv_app_f_f, N₁Γ₀.inv_app_f_f_2,
+      nat_trans.id_app, karoubi.id_eq, (Γ₀.splitting K).ι_desc_assoc (op [n])],
     by_cases A = splitting_index_set.id [n],
     { subst h,
-      simp only [ι_Γ₀_summand_id_comp_P_infty, N₁Γ₀.map_termwise_eq_id, id_comp], },
-    { simp only [ι_Γ₀_summand_comp_P_infty_eq_zero K h, N₁Γ₀.map_termwise_eq_zero K h, zero_comp], },
+      dsimp,
+      simpa only [N₁Γ₀.hom_app_f_f_termwise_eq_id,
+        P_infty_on_Γ₀_splitting_summand_eq_self] using id_comp _, },
+    { dsimp,
+      simp only [N₁Γ₀.hom_app_f_f_termwise_eq_zero K n h,
+        P_infty_on_Γ₀_splitting_summand_eq_zero K n h, zero_comp], },
   end,
   inv_hom_id' := begin
     ext K n,
-    dsimp,
-    simpa only [karoubi.comp, homological_complex.comp_f, colimit.ι_desc, cofan.mk_ι_app,
-      N₁Γ₀.map_termwise_eq_id],
-  end }
+    simpa only [nat_trans.comp_app, N₁Γ₀.inv_app_2, N₁Γ₀.hom_app_2,
+      karoubi.comp, homological_complex.comp_f, N₁Γ₀.inv_app_f_f,
+      N₁Γ₀.inv_app_f_f_2, N₁Γ₀.hom_app_f_f, N₁Γ₀.hom_app_f_f_2, to_karoubi_obj_p,
+      nat_trans.id_app, karoubi.id_eq, (Γ₀.splitting K).ι_desc (op [n]),
+      N₁Γ₀.hom_app_f_f_termwise_eq_id],
+  end, }
 
 def N₂Γ₂_to_karoubi : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
 begin

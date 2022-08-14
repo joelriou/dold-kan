@@ -43,9 +43,6 @@ open_locale simplicial dold_kan
 
 namespace simplex_category
 
-protected def rec {F : Π (X : simplex_category), Sort*} (h : ∀ (n : ℕ), F [n]) :
-  Π X, F X := λ n, h n.len
-
 namespace splitting_index_set
 
 variables {Δ' Δ : simplex_category} (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
@@ -233,7 +230,7 @@ sigma.desc (λ A, termwise.map_mono K (image.ι (θ ≫ A.e)) ≫
 variables {Δ Δ'}
 
 @[reassoc]
-lemma map_on_summand (A : splitting_index_set Δ) {θ : Δ' ⟶ Δ}
+lemma map_on_summand₀ (A : splitting_index_set Δ) {θ : Δ' ⟶ Δ}
   {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (fac : e ≫ i = θ ≫ A.e) : (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K i ≫ sigma.ι (summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩ :=
@@ -249,10 +246,10 @@ begin
 end
 
 @[reassoc]
-lemma map_on_summand' (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
+lemma map_on_summand₁ (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
-map_on_summand K A (A.fac_pull θ)
+map_on_summand₀ K A (A.fac_pull θ)
 
 end obj
 
@@ -265,7 +262,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     ext A,
     cases A,
     have fac : A.e ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.e := by rw [comp_id, id_comp],
-    erw [obj.map_on_summand K A fac, obj.termwise.map_mono_id, id_comp, comp_id],
+    erw [obj.map_on_summand₀ K A fac, obj.termwise.map_mono_id, id_comp, comp_id],
     unfreezingI { rcases A with ⟨Δ', ⟨e, he⟩⟩, },
     congr,
   end,
@@ -275,8 +272,8 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     have fac : θ.unop ≫ θ'.unop ≫ A.e = (θ' ≫ θ).unop ≫ A.e := by rw [unop_comp, assoc],
     rw [← image.fac (θ'.unop ≫ A.e), ← assoc,
       ← image.fac (θ.unop ≫ factor_thru_image (θ'.unop ≫ A.e)), assoc] at fac,
-    simpa only [obj.map_on_summand'_assoc K A θ'.unop, obj.map_on_summand' K _ θ.unop,
-      obj.termwise.map_mono_comp_assoc, obj.map_on_summand K A fac],
+    simpa only [obj.map_on_summand₁_assoc K A θ'.unop, obj.map_on_summand₁ K _ θ.unop,
+      obj.termwise.map_mono_comp_assoc, obj.map_on_summand₀ K A fac],
   end }
 
 /-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on objects. -/
@@ -311,26 +308,23 @@ def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
       ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
   end, }
 
-/-- The inclusion of a summand of `K[Γ₀.obj K].X n` -/
-abbreviation ι_Γ₀_summand {n : ℕ}
-  (A : splitting_index_set [n]) : Γ₀.obj.summand K [n] A ⟶ K[Γ₀.obj K].X n  :=
-sigma.ι (Γ₀.obj.summand K [n]) A
+/-abbreviation ι_Γ₀_summand {Δ : simplex_category}
+  (A : splitting_index_set Δ) : Γ₀.obj.summand K Δ A ⟶ K[Γ₀.obj K].X Δ.len := sigma.ι _ A
 
-lemma eq_ι_Γ₀_summand {n : ℕ} (A : splitting_index_set [n]) :
+lemma eq_ι_Γ₀_summand {Δ : simplex_category} (A : splitting_index_set Δ) :
   sigma.ι (Γ₀.obj.summand K A.1) (splitting_index_set.id A.1) ≫
     (Γ₀.obj K).map A.e.op = ι_Γ₀_summand K A :=
 begin
-  rw [Γ₀.obj_map, quiver.hom.unop_op,
-    Γ₀.obj.map_on_summand K (simplex_category.splitting_index_set.id A.1)
-    (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
+  rw [Γ₀.obj_map, quiver.hom.unop_op, Γ₀.obj.map_on_summand K
+    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
     Γ₀.obj.termwise.map_mono_id, A.ext'],
   apply id_comp,
 end
 
-lemma ι_Γ₀_summand_comp_map_mono {n' n : ℕ} (i : [n'] ⟶ [n]) [mono i]:
-  ι_Γ₀_summand K (splitting_index_set.id [n]) ≫ (Γ₀.obj K).map i.op =
-    Γ₀.obj.termwise.map_mono K i ≫ ι_Γ₀_summand K (splitting_index_set.id [n']) :=
-Γ₀.obj.map_on_summand K _ rfl
+lemma ι_Γ₀_summand_comp_map_mono {Δ₁ Δ₂ : simplex_category} (i : Δ₁ ⟶ Δ₂) [mono i] :
+  ι_Γ₀_summand K (splitting_index_set.id Δ₂) ≫ (Γ₀.obj K).map i.op =
+  Γ₀.obj.termwise.map_mono K i ≫ ι_Γ₀_summand K (splitting_index_set.id Δ₁) :=
+Γ₀.obj.map_on_summand K _ rfl-/
 
 /-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
 on the idempotent completions. It shall be an equivalence of categories
@@ -339,20 +333,59 @@ for any additive category `C`. -/
 def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
 (category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
 
+lemma Γ₀.splitting_map_eq_id (Δ : simplex_categoryᵒᵖ) :
+  (simplicial_object.splitting.map (Γ₀.obj K) (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n])) Δ)
+    = 𝟙 _ :=
+begin
+  ext A,
+  discrete_cases,
+  induction Δ using opposite.rec,
+  induction Δ with n,
+  dsimp,
+  simp only [colimit.ι_desc, cofan.mk_ι_app, comp_id, Γ₀.obj_map],
+  rw [Γ₀.obj.map_on_summand₀ K
+    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
+    Γ₀.obj.termwise.map_mono_id, A.ext'],
+  apply id_comp,
+end
+
 def Γ₀.splitting (K : chain_complex C ℕ) :
   simplicial_object.splitting (Γ₀.obj K) :=
 { N := λ n, K.X n,
-  ι := λ n, ι_Γ₀_summand K (splitting_index_set.id [n]),
+  ι := λ n, sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n]),
   is_iso' := λ Δ, begin
-    convert is_iso.id _,
-    ext A,
-    discrete_cases,
-    induction Δ using opposite.rec,
-    induction Δ with n,
-    dsimp,
-    simp only [colimit.ι_desc, cofan.mk_ι_app, comp_id],
-    apply eq_ι_Γ₀_summand K,
+    rw Γ₀.splitting_map_eq_id,
+    apply is_iso.id,
   end, }
+
+@[simp]
+lemma Γ₀.splitting_iso_hom_eq_id (Δ : simplex_category): ((Γ₀.splitting K).iso Δ).hom = 𝟙 _ :=
+Γ₀.splitting_map_eq_id K (op Δ)
+
+@[reassoc]
+lemma Γ₀.obj.map_on_summand (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
+  {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
+  (fac : e ≫ i = θ ≫ A.e) : (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ.op =
+  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand ⟨Δ'', e, infer_instance⟩ :=
+begin
+  dsimp only [simplicial_object.splitting.ι_summand,
+    simplicial_object.splitting.ι_sum],
+  simp only [assoc, Γ₀.splitting_iso_hom_eq_id, id_comp, comp_id],
+  exact Γ₀.obj.map_on_summand₀ K A fac,
+end
+
+@[reassoc]
+lemma Γ₀.obj.map_mono_on_summand_id (i : Δ' ⟶ Δ) [mono i] :
+  (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ) ≫ (Γ₀.obj K).map i.op =
+  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ') :=
+Γ₀.obj.map_on_summand K (splitting_index_set.id Δ) i (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
+
+@[reassoc]
+lemma Γ₀.obj.map_epi_on_summand_id (e : Δ' ⟶ Δ) [epi e] :
+  (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ) ≫ (Γ₀.obj K).map e.op =
+    (Γ₀.splitting K).ι_summand ⟨Δ, ⟨e, infer_instance⟩⟩ :=
+by simpa only [Γ₀.obj.map_on_summand K (splitting_index_set.id Δ) e
+    (rfl : e ≫ 𝟙 Δ = e ≫ 𝟙 Δ), Γ₀.obj.termwise.map_mono_id] using id_comp _
 
 end dold_kan
 

@@ -60,11 +60,7 @@ lemma right_adjoint_has_lift_iff :
   has_lift (sq.right_adjoint adj) ↔ has_lift sq :=
 begin
   simp only [has_lift.iff],
-  split,
-  { intro h,
-    exact nonempty.intro ((sq.right_adjoint_lift_struct_equiv adj).inv_fun h.some), },
-  { intro h,
-    exact nonempty.intro (sq.right_adjoint_lift_struct_equiv adj h.some), },
+  exact equiv.nonempty_congr (sq.right_adjoint_lift_struct_equiv adj).symm,
 end
 
 instance [has_lift sq] : has_lift (sq.right_adjoint adj) :=
@@ -111,11 +107,7 @@ lemma left_adjoint_has_lift_iff :
   has_lift (sq.left_adjoint adj) ↔ has_lift sq :=
 begin
   simp only [has_lift.iff],
-  split,
-  { intro h,
-    exact nonempty.intro ((sq.left_adjoint_lift_struct_equiv adj).inv_fun h.some), },
-  { intro h,
-    exact nonempty.intro (sq.left_adjoint_lift_struct_equiv adj h.some), },
+  exact equiv.nonempty_congr (sq.left_adjoint_lift_struct_equiv adj).symm,
 end
 
 end

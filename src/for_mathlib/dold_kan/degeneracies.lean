@@ -6,6 +6,7 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.decomposition
 import for_mathlib.dold_kan.functor_gamma
+import for_mathlib.split_simplicial_object
 import tactic.fin_cases
 
 /-!
@@ -198,6 +199,17 @@ begin
   { rcases simplex_category.eq_σ_comp_of_not_injective θ hf with ⟨i, θ, h⟩,
     rw [h, op_comp, X.map_comp, assoc, (show X.map (simplex_category.σ i).op = X.σ i, by refl),
       σ_comp_P_infty, comp_zero], }
+end
+
+lemma P_infty_on_splitting_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
+  (s : simplicial_object.splitting X)
+  {n : ℕ} (A : simplex_category.splitting_index_set [n])
+  (hA : A ≠ simplex_category.splitting_index_set.id [n]) :
+  s.ι_summand A ≫ P_infty.f _ = 0 :=
+begin
+  rw simplex_category.splitting_index_set.neq_id_iff at hA,
+  rw [simplicial_object.splitting.ι_summand_eq, assoc,
+    P_infty_on_degeneracies X A.e hA, comp_zero],
 end
 
 end dold_kan
