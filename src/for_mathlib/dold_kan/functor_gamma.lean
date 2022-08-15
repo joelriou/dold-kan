@@ -154,6 +154,9 @@ begin
   refl,
 end
 
+lemma map_mono_d₀' {n : ℕ} : map_mono K (δ (0 : fin (n+2))) = K.d (n+1) n :=
+map_mono_d₀ K _ (by rw is_d₀.iff)
+
 lemma map_mono_eq_zero (h₁ : ¬Δ = Δ') (h₂ : ¬is_d₀ i) : map_mono K i = 0 :=
 by { unfold map_mono, split_ifs, refl, }
 
@@ -373,6 +376,12 @@ begin
   simp only [assoc, Γ₀.splitting_iso_hom_eq_id, id_comp, comp_id],
   exact Γ₀.obj.map_on_summand₀ K A fac,
 end
+
+@[reassoc]
+lemma Γ₀.obj.map_on_summand' (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
+  (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ.op =
+    Γ₀.obj.termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ (Γ₀.splitting K).ι_summand (A.pull θ) :=
+by { apply Γ₀.obj.map_on_summand, apply image.fac, }
 
 @[reassoc]
 lemma Γ₀.obj.map_mono_on_summand_id (i : Δ' ⟶ Δ) [mono i] :

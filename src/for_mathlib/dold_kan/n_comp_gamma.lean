@@ -23,9 +23,10 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
-lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ} {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
+lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ}
+  {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d₀ i) :
-P_infty.f n ≫ X.map i.op = 0 :=
+  P_infty.f n ≫ X.map i.op = 0 :=
 begin
   have h₃ := simplex_category.len_le_of_mono (show mono i, by apply_instance),
   simp only [simplex_category.len_mk] at h₃,
