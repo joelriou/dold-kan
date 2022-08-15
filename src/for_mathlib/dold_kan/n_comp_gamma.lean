@@ -23,6 +23,8 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
+/- ajoute lemme général un mono est epi sssi égalité des cardinaux, etc. -/
+
 lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ}
   {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d₀ i) :
@@ -136,7 +138,7 @@ namespace Γ₂N₁
 def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
-    { app := λ Δ, (Γ₀.splitting K[X]).desc Δ (λ A, P_infty.f A.1.len ≫ X.map (A.2.1.op)),
+    { app := λ Δ, (Γ₀.splitting K[X]).desc Δ (λ A, P_infty.f A.1.unop.len ≫ X.map (A.e.op)),
       naturality' := sorry, },
     comm := sorry, },
   naturality' := sorry, }

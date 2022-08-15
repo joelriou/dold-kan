@@ -186,30 +186,31 @@ begin
 end
 
 lemma P_infty_on_degeneracies (X : simplicial_object C)
-  {n : ℕ} {Δ' : simplex_category} (θ : [n] ⟶ Δ')
-  (hf : ¬function.injective θ.to_order_hom) :
+  (n : ℕ) {Δ' : simplex_category} (θ : [n] ⟶ Δ')
+  (hf : ¬mono θ) :
   X.map θ.op ≫ P_infty.f n = 0 :=
 begin
+  rw simplex_category.mono_iff_injective at hf,
   cases n,
   { exfalso,
     apply hf,
     intros x y h,
     fin_cases x,
     fin_cases y, },
-  { rcases simplex_category.eq_σ_comp_of_not_injective θ hf with ⟨i, θ, h⟩,
+  { rcases simplex_category.eq_σ_comp_of_not_injective θ hf with ⟨i, α, h⟩,
     rw [h, op_comp, X.map_comp, assoc, (show X.map (simplex_category.σ i).op = X.σ i, by refl),
-      σ_comp_P_infty, comp_zero], }
+      σ_comp_P_infty, comp_zero], },
 end
 
 lemma P_infty_on_splitting_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
   (s : simplicial_object.splitting X)
-  {n : ℕ} (A : simplex_category.splitting_index_set [n])
-  (hA : A ≠ simplex_category.splitting_index_set.id [n]) :
-  s.ι_summand A ≫ P_infty.f _ = 0 :=
+  {n : ℕ} (A : simplex_category.splitting_index_set (op [n]))
+  (hA : ¬ A.eq_id) :
+  s.ι_summand A ≫ P_infty.f n = 0 :=
 begin
-  rw simplex_category.splitting_index_set.neq_id_iff at hA,
+  rw simplex_category.splitting_index_set.eq_id_iff_mono at hA,
   rw [simplicial_object.splitting.ι_summand_eq, assoc,
-    P_infty_on_degeneracies X A.e hA, comp_zero],
+    P_infty_on_degeneracies X n A.e hA, comp_zero],
 end
 
 end dold_kan

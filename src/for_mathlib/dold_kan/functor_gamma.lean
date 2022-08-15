@@ -45,22 +45,23 @@ namespace simplex_category
 
 namespace splitting_index_set
 
-variables {Δ' Δ : simplex_category} (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
+variables {Δ' Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ')
 
-instance : strong_epi (factor_thru_image θ) :=
+instance {Δ₁ Δ₂ : simplex_category} (θ : Δ₁ ⟶ Δ₂) : strong_epi (factor_thru_image θ) :=
 strong_epi_factor_thru_image_of_strong_epi_mono_factorisation
   (has_strong_epi_mono_factorisations.has_fac θ).some
 
-instance : epi (factor_thru_image θ) := strong_epi.epi
+instance {Δ₁ Δ₂ : simplex_category} (θ : Δ₁ ⟶ Δ₂) :
+  epi (factor_thru_image θ) := strong_epi.epi
 
 /-- When `A : Γ_index_set Δ` and `θ : Δ' → Δ` is a morphism in `simplex_category`,
 the simplicial morphism `(Γ₀.obj _).map θ` sends the term of the direct sum corresponding
 to `A` to the term corresponding to `A.pull θ`. It is given by the epimorphism `e`, which
 appears in the epi-mono factorisation `θ ≫ A.e = e ≫ m`. -/
-def pull : splitting_index_set Δ' := ⟨_, ⟨factor_thru_image (θ ≫ A.e), infer_instance⟩⟩
+def pull : splitting_index_set Δ' :=
+splitting_index_set.mk (factor_thru_image (θ.unop ≫ A.e))
 
-lemma fac_pull : (A.pull θ).e ≫ image.ι (θ ≫ A.snd.val) = θ ≫ A.e :=
-image.fac (θ ≫ A.e)
+lemma fac_pull : (A.pull θ).e ≫ image.ι (θ.unop ≫ A.e) = θ.unop ≫ A.e := image.fac _
 
 end splitting_index_set
 
@@ -72,12 +73,11 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 variables (K K' : chain_complex C ℕ) (f : K ⟶ K')
-variables {Δ'' Δ' Δ : simplex_category}
 
 /-- `is_d₀ i` is a simple condition used to check whether a monomorphism in
 `simplex_category` is the coface maps `δ 0`. -/
 @[nolint unused_arguments]
-def is_d₀ (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
+def is_d₀ {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
 namespace is_d₀
 
@@ -107,17 +107,15 @@ end is_d₀
 
 namespace Γ₀
 
-variables (Δ' Δ)
-
 namespace obj
 
 /-- In the definition of `(Γ₀.obj K).obj Δ` as a direct sum indexed by `A : Γ_index_set Δ`,
 the summand `summand K Δ A` is `K.X A.1.len`. -/
-def summand (A : splitting_index_set Δ) : C := K.X A.1.len
+def summand (Δ : simplex_categoryᵒᵖ) (A : splitting_index_set Δ) : C := K.X A.1.unop.len
 
 /-- The functor `Γ₀` sends a chain complex `K` to the simplicial object which
 sends `Δ` to the direct sum of the objects `summand K Δ A` for all `A : Γ_index_set Δ` -/
-def obj₂ : C := ∐ (λ (A : splitting_index_set Δ), summand K Δ A)
+def obj₂ (Δ : simplex_categoryᵒᵖ): C := ∐ (λ (A : splitting_index_set Δ), summand K Δ A)
 
 namespace termwise
 
@@ -135,7 +133,7 @@ begin
     { exact 0, }, },
 end
 
-variables {Δ'' Δ' Δ}
+variables {Δ'' Δ' Δ : simplex_category}
 variables (i' : Δ'' ⟶ Δ') [mono i'] (i : Δ' ⟶ Δ) [mono i]
 
 variable (Δ)
@@ -225,18 +223,17 @@ end termwise
 a morphism `Δ' → Δ` in `simplex_category` is defined on each summand
 associated to an `A : Γ_index_set Δ` in terms of the epi-mono factorisation
 of `θ ≫ A.e`. -/
-def map (K : chain_complex C ℕ) {Δ' Δ : simplex_category} (θ : Δ' ⟶ Δ) :
+def map (K : chain_complex C ℕ) {Δ' Δ : simplex_categoryᵒᵖ} (θ : Δ ⟶ Δ') :
   obj₂ K Δ ⟶ obj₂ K Δ' :=
-sigma.desc (λ A, termwise.map_mono K (image.ι (θ ≫ A.e)) ≫
+sigma.desc (λ A, termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫
   (sigma.ι (summand K Δ') (A.pull θ)))
 
-variables {Δ Δ'}
-
 @[reassoc]
-lemma map_on_summand₀ (A : splitting_index_set Δ) {θ : Δ' ⟶ Δ}
-  {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
-  (fac : e ≫ i = θ ≫ A.e) : (sigma.ι (summand K Δ) A) ≫ map K θ =
-  termwise.map_mono K i ≫ sigma.ι (summand K Δ') ⟨Δ'', ⟨e, by apply_instance⟩⟩ :=
+lemma map_on_summand₀ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) {θ : Δ ⟶ Δ'}
+  {Δ'' : simplex_category} {e : Δ'.unop ⟶ Δ''} {i : Δ'' ⟶ A.1.unop} [epi e] [mono i]
+  (fac : e ≫ i = θ.unop ≫ A.e) :
+  (sigma.ι (summand K Δ) A) ≫ map K θ =
+  termwise.map_mono K i ≫ sigma.ι (summand K Δ') (splitting_index_set.mk e) :=
 begin
   simp only [map, colimit.ι_desc, cofan.mk_ι_app, simplex_category.splitting_index_set.pull],
   have h := simplex_category.image_eq fac,
@@ -249,9 +246,9 @@ begin
 end
 
 @[reassoc]
-lemma map_on_summand₁ (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
+lemma map_on_summand₁ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ') :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
-  termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
+  termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
 map_on_summand₀ K A (A.fac_pull θ)
 
 end obj
@@ -259,12 +256,12 @@ end obj
 /-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on objects. -/
 @[simps]
 def obj (K : chain_complex C ℕ) : simplicial_object C :=
-{ obj := λ Δ, obj.obj₂ K (unop Δ),
-  map := λ Δ Δ' θ, obj.map K θ.unop,
+{ obj := λ Δ, obj.obj₂ K Δ,
+  map := λ Δ Δ' θ, obj.map K θ,
   map_id' := λ Δ, begin
     ext A,
     cases A,
-    have fac : A.e ≫ 𝟙 A.1 = 𝟙 Δ.unop ≫ A.e := by rw [comp_id, id_comp],
+    have fac : A.e ≫ 𝟙 A.1.unop = (𝟙 Δ).unop ≫ A.e := by rw [unop_id, comp_id, id_comp],
     erw [obj.map_on_summand₀ K A fac, obj.termwise.map_mono_id, id_comp, comp_id],
     unfreezingI { rcases A with ⟨Δ', ⟨e, he⟩⟩, },
     congr,
@@ -275,12 +272,13 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
     have fac : θ.unop ≫ θ'.unop ≫ A.e = (θ' ≫ θ).unop ≫ A.e := by rw [unop_comp, assoc],
     rw [← image.fac (θ'.unop ≫ A.e), ← assoc,
       ← image.fac (θ.unop ≫ factor_thru_image (θ'.unop ≫ A.e)), assoc] at fac,
-    simpa only [obj.map_on_summand₁_assoc K A θ'.unop, obj.map_on_summand₁ K _ θ.unop,
+    simpa only [obj.map_on_summand₁_assoc K A θ', obj.map_on_summand₁ K _ θ,
       obj.termwise.map_mono_comp_assoc, obj.map_on_summand₀ K A fac],
   end }
 
 lemma splitting_map_eq_id (Δ : simplex_categoryᵒᵖ) :
-  (simplicial_object.splitting.map (Γ₀.obj K) (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n])) Δ)
+  (simplicial_object.splitting.map (Γ₀.obj K)
+    (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K (op [n])) (splitting_index_set.id (op [n]))) Δ)
     = 𝟙 _ :=
 begin
   ext A,
@@ -290,31 +288,29 @@ begin
   dsimp,
   simp only [colimit.ι_desc, cofan.mk_ι_app, comp_id, Γ₀.obj_map],
   rw [Γ₀.obj.map_on_summand₀ K
-    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
+    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e.op.unop ≫ 𝟙 _, by refl),
     Γ₀.obj.termwise.map_mono_id, A.ext'],
   apply id_comp,
 end
 
-def splitting (K : chain_complex C ℕ) :
-  simplicial_object.splitting (Γ₀.obj K) :=
+def splitting (K : chain_complex C ℕ) : simplicial_object.splitting (Γ₀.obj K) :=
 { N := λ n, K.X n,
-  ι := λ n, sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n]),
+  ι := λ n, sigma.ι (Γ₀.obj.summand K (op [n])) (splitting_index_set.id (op [n])),
   is_iso' := λ Δ, begin
     rw Γ₀.splitting_map_eq_id,
     apply is_iso.id,
   end, }
 
 @[simp]
-lemma splitting_iso_hom_eq_id (Δ : simplex_category): ((splitting K).iso Δ).hom = 𝟙 _ :=
-splitting_map_eq_id K (op Δ)
-
-variables {Δ Δ'}
+lemma splitting_iso_hom_eq_id (Δ : simplex_categoryᵒᵖ): ((splitting K).iso Δ).hom = 𝟙 _ :=
+splitting_map_eq_id K Δ
 
 @[reassoc]
-lemma obj.map_on_summand (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
-  {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
-  (fac : e ≫ i = θ ≫ A.e) : (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ.op =
-  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand ⟨Δ'', e, infer_instance⟩ :=
+lemma obj.map_on_summand {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ')
+  {Δ'' : simplex_category}
+  {e : Δ'.unop ⟶ Δ''} {i : Δ'' ⟶ A.1.unop} [epi e] [mono i]
+  (fac : e ≫ i = θ.unop ≫ A.e) : (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ =
+  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting_index_set.mk e) :=
 begin
   dsimp only [simplicial_object.splitting.ι_summand,
     simplicial_object.splitting.ι_sum],
@@ -323,34 +319,34 @@ begin
 end
 
 @[reassoc]
-lemma obj.map_on_summand' (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
-  (splitting K).ι_summand A ≫ (obj K).map θ.op =
-    obj.termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ (splitting K).ι_summand (A.pull θ) :=
+lemma obj.map_on_summand' {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ') :
+  (splitting K).ι_summand A ≫ (obj K).map θ =
+    obj.termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫ (splitting K).ι_summand (A.pull θ) :=
 by { apply obj.map_on_summand, apply image.fac, }
 
 @[reassoc]
-lemma obj.map_mono_on_summand_id (i : Δ' ⟶ Δ) [mono i] :
-  (splitting K).ι_summand (splitting_index_set.id Δ) ≫ (obj K).map i.op =
-  obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting_index_set.id Δ') :=
-obj.map_on_summand K (splitting_index_set.id Δ) i (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
+lemma obj.map_mono_on_summand_id {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
+  (splitting K).ι_summand (splitting_index_set.id (op Δ)) ≫ (obj K).map i.op =
+  obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting_index_set.id (op Δ')) :=
+obj.map_on_summand K (splitting_index_set.id (op Δ)) i.op (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
 
 @[reassoc]
-lemma obj.map_epi_on_summand_id (e : Δ' ⟶ Δ) [epi e] :
-  (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ) ≫ (Γ₀.obj K).map e.op =
-    (Γ₀.splitting K).ι_summand ⟨Δ, ⟨e, infer_instance⟩⟩ :=
-by simpa only [Γ₀.obj.map_on_summand K (splitting_index_set.id Δ) e
+lemma obj.map_epi_on_summand_id {Δ Δ' : simplex_category } (e : Δ' ⟶ Δ) [epi e] :
+  (Γ₀.splitting K).ι_summand (splitting_index_set.id (op Δ)) ≫ (Γ₀.obj K).map e.op =
+    (Γ₀.splitting K).ι_summand (splitting_index_set.mk e) :=
+by simpa only [Γ₀.obj.map_on_summand K (splitting_index_set.id (op Δ)) e.op
     (rfl : e ≫ 𝟙 Δ = e ≫ 𝟙 Δ), Γ₀.obj.termwise.map_mono_id] using id_comp _
 
 /-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on morphisms. -/
 @[simps]
 def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
-{ app := λ Δ, (Γ₀.splitting K).desc Δ (λ A, f.f A.1.len ≫ (Γ₀.splitting K').ι_summand A),
+{ app := λ Δ, (Γ₀.splitting K).desc Δ (λ A, f.f A.1.unop.len ≫ (Γ₀.splitting K').ι_summand A),
   naturality' := λ Δ' Δ θ, begin
     apply (Γ₀.splitting K).hom_ext',
     intro A,
-    erw [(splitting K).ι_desc_assoc, obj.map_on_summand'_assoc K _ θ.unop,
-      (splitting K).ι_desc, assoc, obj.map_on_summand' K' _ θ.unop,
-      obj.termwise.map_mono_naturality_assoc],
+    simp only [(splitting K).ι_desc_assoc, obj.map_on_summand'_assoc K _ θ,
+      (splitting K).ι_desc, assoc, obj.map_on_summand' K' _ θ],
+    apply obj.termwise.map_mono_naturality_assoc,
   end, }
 
 end Γ₀

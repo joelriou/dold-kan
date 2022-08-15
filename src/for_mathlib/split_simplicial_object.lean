@@ -26,12 +26,16 @@ protected def rec {F : Π (X : simplex_category), Sort*} (h : ∀ (n : ℕ), F [
   Π X, F X := λ n, h n.len
 
 /-- The index set which appears in the definition of split simplicial objects. -/
-def splitting_index_set (Δ : simplex_category) :=
-Σ (Δ' : simplex_category), { α : Δ ⟶ Δ' // epi α }
+def splitting_index_set (Δ : simplex_categoryᵒᵖ) :=
+Σ (Δ' : simplex_categoryᵒᵖ), { α : Δ.unop ⟶ Δ'.unop // epi α }
 
 namespace splitting_index_set
 
-variables {Δ' Δ : simplex_category} (A : splitting_index_set Δ)
+@[simps]
+def mk {Δ Δ' : simplex_category} (f : Δ ⟶ Δ') [epi f] : splitting_index_set (op Δ) :=
+⟨op Δ', f, infer_instance⟩
+
+variables {Δ' Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ)
 
 /-- The epimorphism in `simplex_category` associated to `A : splitting_index_set Δ` -/
 def e := A.2.1
@@ -41,7 +45,7 @@ instance : epi A.e := A.2.2
 lemma ext' : A = ⟨A.1, ⟨A.e, A.2.2⟩⟩ := by tidy
 
 lemma ext (A₁ A₂ : splitting_index_set Δ) (h₁ : A₁.1 = A₂.1)
-  (h₂ : A₁.e ≫ eq_to_hom h₁ = A₂.e) : A₁ = A₂ :=
+  (h₂ : A₁.e ≫ eq_to_hom (by rw h₁) = A₂.e) : A₁ = A₂ :=
 begin
   rcases A₁ with ⟨Δ₁, ⟨α₁, hα₁⟩⟩,
   rcases A₂ with ⟨Δ₂, ⟨α₂, hα₂⟩⟩,
@@ -52,11 +56,11 @@ begin
 end
 
 instance : fintype (splitting_index_set Δ) :=
-  fintype.of_injective ((λ A, ⟨⟨A.1.len,
-  nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi (infer_instance : epi A.e))⟩, A.e.to_order_hom⟩) :
-splitting_index_set Δ → (sigma (λ (k : fin (Δ.len+1)), (fin (Δ.len+1) → fin (k+1)))))
+fintype.of_injective ((λ A, ⟨⟨A.1.unop.len, nat.lt_succ_iff.mpr (simplex_category.len_le_of_epi (infer_instance : epi A.e))⟩, A.e.to_order_hom⟩) : splitting_index_set Δ → (sigma (λ (k : fin (Δ.unop.len+1)), (fin (Δ.unop.len+1) → fin (k+1)))))
 begin
   rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h,
+  induction Δ₁ using opposite.rec,
+  induction Δ₂ using opposite.rec,
   simp only at h,
   have h₃ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h.1, },
   subst h₃,
@@ -75,10 +79,14 @@ instance : inhabited (splitting_index_set Δ) := ⟨id Δ⟩
 
 variables {Δ}
 
-lemma eq_id_iff : A = id _ ↔ A.1 = Δ :=
+@[simp]
+def eq_id : Prop := A = id _
+
+lemma eq_id_iff_eq : A.eq_id ↔ A.1 = Δ :=
 begin
   split,
   { intro h,
+    dsimp at h,
     rw h,
     refl, },
   { intro h,
@@ -91,19 +99,41 @@ begin
       exact simplex_category.eq_id_of_epi f, }, },
 end
 
-lemma eq_id_iff' : A = id _ ↔ A.1.len = Δ.len :=
+lemma eq_id_iff_len_eq : A.eq_id ↔ A.1.unop.len = Δ.unop.len :=
 begin
-  rw eq_id_iff,
+  rw eq_id_iff_eq,
   split,
   { intro h,
     rw h, },
   { intro h,
+    rw ← unop_inj_iff,
     ext,
     exact h, },
 end
 
-lemma neq_id_iff : A ≠ id _ ↔ ¬ function.injective A.e.to_order_hom :=
-sorry
+lemma eq_id_iff_len_le : A.eq_id ↔ Δ.unop.len ≤ A.1.unop.len :=
+begin
+  split,
+  { intro h,
+    rw eq_id_iff_len_eq at h,
+    rw h, },
+  { intro h,
+    rw eq_id_iff_len_eq,
+    refine le_antisymm (len_le_of_epi (infer_instance : epi A.e)) h, },
+end
+
+lemma eq_id_iff_mono : A.eq_id ↔ mono A.e :=
+begin
+  split,
+  { intro h,
+    dsimp at h,
+    subst h,
+    dsimp only [id, e],
+    apply_instance, },
+  { intro h,
+    rw eq_id_iff_len_le,
+    exact len_le_of_mono h, }
+end
 
 variable (θ : Δ' ⟶ Δ)
 
@@ -117,13 +147,13 @@ variables {C : Type*} [category C]
 
 namespace splitting
 
-variables (N : ℕ → C) (Δ : simplex_category)
+variables (N : ℕ → C) (Δ : simplex_categoryᵒᵖ)
   (X : simplicial_object C) (φ : Π n, N n ⟶ X _[n])
 
 open simplex_category
 
 @[simp]
-def summand (A : splitting_index_set Δ) : C := N A.1.len
+def summand (A : splitting_index_set Δ) : C := N A.1.unop.len
 
 variable [has_finite_coproducts C]
 
@@ -133,13 +163,13 @@ def sum := sigma_obj (summand N Δ)
 variable {Δ}
 
 @[simp]
-def ι_sum (A : splitting_index_set Δ) : N A.1.len ⟶ sum N Δ := sigma.ι _ A
+def ι_sum (A : splitting_index_set Δ) : N A.1.unop.len ⟶ sum N Δ := sigma.ι _ A
 
 variables {N}
 
 @[simp]
-def map (Δ' : simplex_categoryᵒᵖ) : sum N Δ'.unop ⟶ X.obj Δ' :=
-sigma.desc (λ A, φ A.1.len ≫ X.map A.e.op)
+def map (Δ' : simplex_categoryᵒᵖ) : sum N Δ' ⟶ X.obj Δ' :=
+sigma.desc (λ A, φ A.1.unop.len ≫ X.map A.e.op)
 
 end splitting
 
@@ -158,37 +188,37 @@ variables {X Y : simplicial_object C} (s : splitting X) (f g : X ⟶ Y)
 instance map_is_iso (Δ : simplex_categoryᵒᵖ) : is_iso (splitting.map X s.ι Δ) := s.is_iso' Δ
 
 @[simps]
-def iso (Δ : simplex_category) : sum s.N Δ ≅ X.obj (op Δ) :=
-as_iso (splitting.map X s.ι (op Δ))
+def iso (Δ : simplex_categoryᵒᵖ) : sum s.N Δ ≅ X.obj Δ :=
+as_iso (splitting.map X s.ι Δ)
 
-def ι_summand {Δ : simplex_category} (A : splitting_index_set Δ) :
-  s.N A.1.len ⟶ X.obj (op Δ) :=
+def ι_summand {Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) :
+  s.N A.1.unop.len ⟶ X.obj Δ :=
 splitting.ι_sum s.N A ≫ (s.iso Δ).hom
 
 @[reassoc]
-lemma ι_summand_eq {Δ : simplex_category} (A : splitting_index_set Δ) :
-  s.ι_summand A = s.ι A.1.len ≫ X.map A.e.op :=
+lemma ι_summand_eq {Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) :
+  s.ι_summand A = s.ι A.1.unop.len ≫ X.map A.e.op :=
 begin
   dsimp only [ι_summand, iso.hom],
   erw [colimit.ι_desc, cofan.mk_ι_app],
 end
 
-lemma ι_summand_id (n : ℕ) : s.ι_summand (splitting_index_set.id [n]) = s.ι n :=
+lemma ι_summand_id (n : ℕ) : s.ι_summand (splitting_index_set.id (op [n])) = s.ι n :=
 by { erw [ι_summand_eq, X.map_id, comp_id], refl, }
 
 @[simp]
 def φ (n : ℕ) : s.N n ⟶ Y _[n] := s.ι n ≫ f.app (op [n])
 
 @[simp, reassoc]
-lemma ι_summand_comp_app {Δ : simplex_category} (A : splitting_index_set Δ) :
-  s.ι_summand A ≫ f.app (op Δ) = s.φ f A.1.len ≫ Y.map A.e.op :=
+lemma ι_summand_comp_app {Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) :
+  s.ι_summand A ≫ f.app Δ = s.φ f A.1.unop.len ≫ Y.map A.e.op :=
 by simp only [ι_summand_eq_assoc, φ, nat_trans.naturality, assoc]
 
 lemma hom_ext' {Z : C} {Δ : simplex_categoryᵒᵖ} (f g : X.obj Δ ⟶ Z)
-  (h : ∀ (A : splitting_index_set Δ.unop), s.ι_summand A ≫ f = s.ι_summand A ≫ g) :
+  (h : ∀ (A : splitting_index_set Δ), s.ι_summand A ≫ f = s.ι_summand A ≫ g) :
     f = g :=
 begin
-  rw ← cancel_epi (s.iso Δ.unop).hom,
+  rw ← cancel_epi (s.iso Δ).hom,
   ext A,
   discrete_cases,
   simpa only [ι_summand_eq, iso_hom, colimit.ι_desc_assoc, cofan.mk_ι_app, assoc] using h A,
@@ -206,16 +236,15 @@ begin
 end
 
 def desc {Z : C} (Δ : simplex_categoryᵒᵖ)
-  (F : Π (A : splitting_index_set Δ.unop), s.N A.1.len ⟶ Z) : X.obj Δ ⟶ Z :=
-(s.iso Δ.unop).inv ≫ sigma.desc F
+  (F : Π (A : splitting_index_set Δ), s.N A.1.unop.len ⟶ Z) : X.obj Δ ⟶ Z :=
+(s.iso Δ).inv ≫ sigma.desc F
 
 @[simp, reassoc]
 lemma ι_desc {Z : C} (Δ : simplex_categoryᵒᵖ)
-  (F : Π (A : splitting_index_set Δ.unop), s.N A.1.len ⟶ Z) (A : splitting_index_set Δ.unop) :
+  (F : Π (A : splitting_index_set Δ), s.N A.1.unop.len ⟶ Z) (A : splitting_index_set Δ) :
   s.ι_summand A ≫ s.desc Δ F = F A :=
 begin
   dsimp only [ι_summand, desc],
-  change (_ ≫ (s.iso (unop Δ)).hom) ≫ (s.iso (unop Δ)).inv ≫ _ = _,
   simp only [assoc, iso.hom_inv_id_assoc, ι_sum],
   erw [colimit.ι_desc, cofan.mk_ι_app],
 end
