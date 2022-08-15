@@ -213,6 +213,21 @@ begin
     simp only [← assoc, v j (by linarith), zero_comp], },
 end
 
+@[reassoc]
+lemma d_eq {Y : C} (n : ℕ) {φ : Y ⟶ X _[n+1]}
+  (v : higher_faces_vanish (n+1) φ) :
+  φ ≫ K[X].d (n+1) n = φ ≫ X.δ 0 :=
+begin
+  simp only [alternating_face_map_complex.obj_d_eq, comp_sum],
+  rw [finset.sum_eq_single (0 : fin (n+2)), fin.coe_zero, pow_zero, one_zsmul],
+  { intros b h hb,
+    rw [preadditive.comp_zsmul, ← fin.succ_pred b hb, v, zsmul_zero],
+    linarith, },
+  { intro h,
+    exfalso,
+    exact h (finset.mem_univ _), },
+end
+
 end higher_faces_vanish
 
 end dold_kan
