@@ -279,64 +279,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
       obj.termwise.map_mono_comp_assoc, obj.map_on_summand₀ K A fac],
   end }
 
-/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on objects. -/
-@[simps]
-def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
-{ app := λ Δ, limits.sigma.map (λ (A : splitting_index_set Δ.unop), f.f A.1.len),
-  naturality' := λ Δ' Δ θ, begin
-    ext A,
-    simpa only [obj_map, obj.map, ι_colim_map_assoc,
-      discrete.nat_trans_app, cofan.mk_ι_app, image.as_ι, colimit.ι_desc_assoc,
-      ι_colim_map, colimit.ι_desc, assoc] using obj.termwise.map_mono_naturality_assoc _ _ _,
-  end, }
-
-end Γ₀
-
-/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which is
-the inverse functor of the Dold-Kan equivalence in the category abelian
-categories, or more generally pseudoabelian categories. -/
-@[simps]
-def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
-{ obj := Γ₀.obj,
-  map := λ _ _, Γ₀.map,
-  map_id' := λ K, begin
-    ext Δ A,
-    simp only [Γ₀.map_app, discrete.nat_trans_app, ι_colim_map, nat_trans.id_app,
-      homological_complex.id_f],
-    erw [id_comp, comp_id],
-  end,
-  map_comp' := λ K K' K'' f f', begin
-    ext Δ A,
-    simp only [Γ₀.map_app, homological_complex.comp_f, discrete.nat_trans_app,
-      ι_colim_map, ι_colim_map_assoc, assoc, nat_trans.comp_app],
-  end, }
-
-/-abbreviation ι_Γ₀_summand {Δ : simplex_category}
-  (A : splitting_index_set Δ) : Γ₀.obj.summand K Δ A ⟶ K[Γ₀.obj K].X Δ.len := sigma.ι _ A
-
-lemma eq_ι_Γ₀_summand {Δ : simplex_category} (A : splitting_index_set Δ) :
-  sigma.ι (Γ₀.obj.summand K A.1) (splitting_index_set.id A.1) ≫
-    (Γ₀.obj K).map A.e.op = ι_Γ₀_summand K A :=
-begin
-  rw [Γ₀.obj_map, quiver.hom.unop_op, Γ₀.obj.map_on_summand K
-    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e ≫ 𝟙 _, by refl),
-    Γ₀.obj.termwise.map_mono_id, A.ext'],
-  apply id_comp,
-end
-
-lemma ι_Γ₀_summand_comp_map_mono {Δ₁ Δ₂ : simplex_category} (i : Δ₁ ⟶ Δ₂) [mono i] :
-  ι_Γ₀_summand K (splitting_index_set.id Δ₂) ≫ (Γ₀.obj K).map i.op =
-  Γ₀.obj.termwise.map_mono K i ≫ ι_Γ₀_summand K (splitting_index_set.id Δ₁) :=
-Γ₀.obj.map_on_summand K _ rfl-/
-
-/-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
-on the idempotent completions. It shall be an equivalence of categories
-for any additive category `C`. -/
-@[simps]
-def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
-(category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
-
-lemma Γ₀.splitting_map_eq_id (Δ : simplex_categoryᵒᵖ) :
+lemma splitting_map_eq_id (Δ : simplex_categoryᵒᵖ) :
   (simplicial_object.splitting.map (Γ₀.obj K) (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n])) Δ)
     = 𝟙 _ :=
 begin
@@ -352,7 +295,7 @@ begin
   apply id_comp,
 end
 
-def Γ₀.splitting (K : chain_complex C ℕ) :
+def splitting (K : chain_complex C ℕ) :
   simplicial_object.splitting (Γ₀.obj K) :=
 { N := λ n, K.X n,
   ι := λ n, sigma.ι (Γ₀.obj.summand K [n]) (splitting_index_set.id [n]),
@@ -362,11 +305,13 @@ def Γ₀.splitting (K : chain_complex C ℕ) :
   end, }
 
 @[simp]
-lemma Γ₀.splitting_iso_hom_eq_id (Δ : simplex_category): ((Γ₀.splitting K).iso Δ).hom = 𝟙 _ :=
-Γ₀.splitting_map_eq_id K (op Δ)
+lemma splitting_iso_hom_eq_id (Δ : simplex_category): ((splitting K).iso Δ).hom = 𝟙 _ :=
+splitting_map_eq_id K (op Δ)
+
+variables {Δ Δ'}
 
 @[reassoc]
-lemma Γ₀.obj.map_on_summand (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
+lemma obj.map_on_summand (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ)
   {e : Δ' ⟶ Δ''} {i : Δ'' ⟶ A.1} [epi e] [mono i]
   (fac : e ≫ i = θ ≫ A.e) : (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ.op =
   Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand ⟨Δ'', e, infer_instance⟩ :=
@@ -378,23 +323,67 @@ begin
 end
 
 @[reassoc]
-lemma Γ₀.obj.map_on_summand' (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
-  (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ.op =
-    Γ₀.obj.termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ (Γ₀.splitting K).ι_summand (A.pull θ) :=
-by { apply Γ₀.obj.map_on_summand, apply image.fac, }
+lemma obj.map_on_summand' (A : splitting_index_set Δ) (θ : Δ' ⟶ Δ) :
+  (splitting K).ι_summand A ≫ (obj K).map θ.op =
+    obj.termwise.map_mono K (image.ι (θ ≫ A.e)) ≫ (splitting K).ι_summand (A.pull θ) :=
+by { apply obj.map_on_summand, apply image.fac, }
 
 @[reassoc]
-lemma Γ₀.obj.map_mono_on_summand_id (i : Δ' ⟶ Δ) [mono i] :
-  (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ) ≫ (Γ₀.obj K).map i.op =
-  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ') :=
-Γ₀.obj.map_on_summand K (splitting_index_set.id Δ) i (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
+lemma obj.map_mono_on_summand_id (i : Δ' ⟶ Δ) [mono i] :
+  (splitting K).ι_summand (splitting_index_set.id Δ) ≫ (obj K).map i.op =
+  obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting_index_set.id Δ') :=
+obj.map_on_summand K (splitting_index_set.id Δ) i (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
 
 @[reassoc]
-lemma Γ₀.obj.map_epi_on_summand_id (e : Δ' ⟶ Δ) [epi e] :
+lemma obj.map_epi_on_summand_id (e : Δ' ⟶ Δ) [epi e] :
   (Γ₀.splitting K).ι_summand (splitting_index_set.id Δ) ≫ (Γ₀.obj K).map e.op =
     (Γ₀.splitting K).ι_summand ⟨Δ, ⟨e, infer_instance⟩⟩ :=
 by simpa only [Γ₀.obj.map_on_summand K (splitting_index_set.id Δ) e
     (rfl : e ≫ 𝟙 Δ = e ≫ 𝟙 Δ), Γ₀.obj.termwise.map_mono_id] using id_comp _
+
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on morphisms. -/
+@[simps]
+def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
+{ app := λ Δ, (Γ₀.splitting K).desc Δ (λ A, f.f A.1.len ≫ (Γ₀.splitting K').ι_summand A),
+  naturality' := λ Δ' Δ θ, begin
+    apply (Γ₀.splitting K).hom_ext',
+    intro A,
+    erw [(splitting K).ι_desc_assoc, obj.map_on_summand'_assoc K _ θ.unop,
+      (splitting K).ι_desc, assoc, obj.map_on_summand' K' _ θ.unop,
+      obj.termwise.map_mono_naturality_assoc],
+  end, }
+
+end Γ₀
+
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which is
+the inverse functor of the Dold-Kan equivalence in the category abelian
+categories, or more generally pseudoabelian categories. -/
+@[simps]
+def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
+{ obj := Γ₀.obj,
+  map := λ _ _, Γ₀.map,
+  map_id' := λ K, begin
+    apply (Γ₀.splitting K).hom_ext,
+    intro n,
+    simpa only [simplicial_object.splitting.φ, ← simplicial_object.splitting.ι_summand_id,
+      Γ₀.map_app, homological_complex.id_f, nat_trans.id_app, comp_id,
+      (Γ₀.splitting K).ι_desc (op [n])] using id_comp _,
+  end,
+  map_comp' := λ K K' K'' f f', begin
+    apply (Γ₀.splitting K).hom_ext,
+    intro n,
+    simp only [simplicial_object.splitting.φ, ← simplicial_object.splitting.ι_summand_id,
+      Γ₀.map_app, nat_trans.comp_app, assoc, homological_complex.comp_f,
+      (Γ₀.splitting K).ι_desc (op [n]), (Γ₀.splitting K).ι_desc_assoc (op [n]),
+      (Γ₀.splitting K').ι_desc (op [n])],
+  end, }
+
+/-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
+on the idempotent completions. It shall be an equivalence of categories
+for any additive category `C`. -/
+@[simps]
+def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
+(category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
 
 end dold_kan
 

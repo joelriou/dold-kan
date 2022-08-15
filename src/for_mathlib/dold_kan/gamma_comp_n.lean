@@ -24,6 +24,7 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [additive_category C]
 
+@[reassoc]
 lemma P_infty_on_Γ₀_splitting_summand_eq_zero
   (K : chain_complex C ℕ)
   (n : ℕ) {A : simplex_category.splitting_index_set [n]}
@@ -31,6 +32,7 @@ lemma P_infty_on_Γ₀_splitting_summand_eq_zero
   (Γ₀.splitting K).ι_summand A ≫ (P_infty : K[Γ₀.obj K] ⟶ _).f n = 0 :=
 P_infty_on_splitting_eq_zero (Γ₀.splitting K) A hA
 
+@[simp, reassoc]
 lemma P_infty_on_Γ₀_splitting_summand_eq_self
   (K : chain_complex C ℕ) {n : ℕ} :
   (Γ₀.splitting K).ι_summand (simplex_category.splitting_index_set.id [n]) ≫ (P_infty : K[Γ₀.obj K] ⟶ _).f n =
@@ -178,12 +180,36 @@ def hom_app (K : chain_complex C ℕ) : (Γ₀ ⋙ N₁).obj K ⟶ (to_karoubi (
         dsimp only [to_karoubi],
         simp only [ι_hom_app_f_f_assoc K i A, hom_app_f_f_termwise_eq_zero K i h, zero_comp], },
     end, },
-  comm := sorry, }
+  comm := begin
+    ext n : 2,
+    apply (Γ₀.splitting K).hom_ext',
+    intro A,
+    dsimp,
+    rw simplicial_object.splitting.ι_desc,
+    by_cases A = splitting_index_set.id [n],
+    { subst h,
+      simp only [hom_app_f_f_termwise_eq_id, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
+        simplicial_object.splitting.ι_desc _ (op [n]), comp_id], },
+    { simp only [hom_app_f_f_termwise_eq_zero K n h, zero_comp,
+        P_infty_on_Γ₀_splitting_summand_eq_zero_assoc K n h], },
+  end, }
 
 @[simps]
 def hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
 { app := hom_app,
-  naturality' := sorry, }
+  naturality' := λ K L f, begin
+    ext n : 3,
+    apply (Γ₀.splitting K).hom_ext',
+    intro A,
+    dsimp,
+    simp only [N₁_map_f, assoc, karoubi.comp, homological_complex.comp_f,
+      alternating_face_map_complex.map_f, Γ₀.map_app, hom_app_f_f, hom_app_f_f_2,
+      to_karoubi_map_f, simplicial_object.splitting.ι_desc_assoc],
+    by_cases A = splitting_index_set.id [n],
+    { subst h,
+      sorry, },
+    { sorry, },
+  end }
 
 @[simp]
 def inv_app_f_f (K : chain_complex C ℕ) (n : ℕ) :
