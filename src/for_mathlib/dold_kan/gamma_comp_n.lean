@@ -99,7 +99,7 @@ lemma ι_hom_app_f_f (K : chain_complex C ℕ) (n : ℕ) (A : splitting_index_se
 @[reassoc]
 lemma ι_id_d (K : chain_complex C ℕ) (i j : ℕ) (hij : j+1 = i) :
   (Γ₀.splitting K).ι_summand (splitting_index_set.id (op [i])) ≫
-    ((Γ₀ ⋙ N₁).obj K).X.d i j = --K[Γ₀.obj K].d i j =
+    ((Γ₀ ⋙ N₁).obj K).X.d i j =
   K.d i j ≫ (Γ₀.splitting K).ι_summand (splitting_index_set.id (op [j])) :=
 begin
   subst hij,
@@ -128,15 +128,23 @@ lemma ι_d_hom_app_eq_zero.term_is_zero (K : chain_complex C ℕ) (j : ℕ)
 begin
   erw Γ₀.obj.map_on_summand'_assoc K A (simplex_category.δ b).op,
   simp only [hom_app_f_f, (Γ₀.splitting K).ι_desc],
-  dsimp only [splitting_index_set.pull],
---  δ b ≫ A.e
--- |j] ⟶ [j+1] ⟶ A.e
--- pour que ce soit difféent de zéro, il faut :
---  - soit A.e = id et b =0 [on a fait l'hypothèse A.e ≠ id]
---  - que le composé soit un iso
--- pour que ce soit égal à zéro,
--- il suffit : (A.e ≠ id ou b ≠ 0 )
-  sorry
+  rw [hom_app_f_f_termwise_eq_zero, comp_zero, zsmul_zero],
+  intro h,
+  apply hb,
+  have h' : mono (δ b ≫ A.e),
+  { rw splitting_index_set.eq_id_iff_mono at h,
+    change mono (factor_thru_image (δ b ≫ A.e)) at h,
+    rw ← image.fac (δ b ≫ A.e),
+    haveI := h,
+    apply mono_comp, },
+  apply is_iso_of_bijective,
+  rw fintype.bijective_iff_injective_and_card,
+  split,
+  { simpa only [simplex_category.mono_iff_injective] using h', },
+  { simp only [len_mk, fintype.card_fin, add_left_inj],
+    apply le_antisymm (len_le_of_mono h'),
+    simpa only [splitting_index_set.eq_id_iff_len_le, unop_op, len_mk, not_le,
+      nat.lt_succ_iff] using hA, },
 end
 
 lemma fin.is_succ_of_ne_zero {j : ℕ} (x : fin (j+1)) (hx : x ≠ 0) :
@@ -328,190 +336,6 @@ def inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
       Γ₀.map_app, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
       (Γ₀.splitting X).ι_desc (op [n])],
   end, }
-
-/-
-
-lemma simplex_category.eq_eq_to_hom_of_mono {x y : simplex_category} (i : x ⟶ y) [mono i] (hxy : x = y) :
-  i = eq_to_hom hxy :=
-begin
-  unfreezingI { subst hxy, },
-  exact simplex_category.eq_id_of_mono i,
-end
-
-lemma simplex_category.eq_eq_to_hom_of_epi {x y : simplex_category} (i : x ⟶ y) [epi i] (hxy : x = y) :
-  i = eq_to_hom hxy :=
-begin
-  unfreezingI { subst hxy, },
-  exact simplex_category.eq_id_of_epi i,
-end
-
-lemma d_on_KΓ' (K : chain_complex C ℕ) (j : ℕ) (A : splitting_index_set [j+1]) (hA : ¬A = splitting_index_set.id [j+1]) :
-ι_Γ₀_summand K A ≫ K[Γ₀.obj K].d (j + 1) j ≫ sigma.desc (map_termwise K j) = 0 :=
-begin
-  erw chain_complex.of_d,
-  dsimp,
-  simp only [preadditive.sum_comp, preadditive.comp_sum, preadditive.zsmul_comp, preadditive.comp_zsmul, ← assoc],
-  by_cases hA' : A.1.len = j, swap,
-  { apply finset.sum_eq_zero,
-    intros i hi,
-    let θ := simplex_category.δ i ≫ A.e,
-    erw [Γ₀.obj.map_on_summand' K A, assoc, colimit.ι_desc, cofan.mk_ι_app],
-    erw [map_termwise_eq_zero, comp_zero, smul_zero'],
-    { intro h,
-      simp only at h,
-      have hi' := simplex_category.len_le_of_mono (infer_instance : mono (image.ι θ)),
-      erw splitting_index_set.eq_id_iff' at h,
-      erw h at hi',
-      cases nat.le.dest hi' with b hb,
-      have he := simplex_category.len_le_of_epi (infer_instance : epi A.e),
-      simp only [simplex_category.len_mk] at he hb,
-      have hA'' : ¬A.1.len = j+1,
-      { intro h,
-        erw ← splitting_index_set.eq_id_iff' at h,
-        exact hA h, },
-      dsimp at he hb hA'',
-      simp only [← hb, add_right_inj, add_le_add_iff_left] at hA'' he,
-      have hb' := nat.lt_one_iff.mp ((ne.le_iff_lt hA'').mp he),
-      rw [← hb, hb'] at hA',
-      exact hA' rfl, }, },
-  { have eq : A.1 = [j] := by { ext, exact hA', },
-    haveI := epi_comp A.e (eq_to_hom eq),
-    cases simplex_category.eq_σ_of_epi (A.e ≫ eq_to_hom eq : [j+1] ⟶ [j]) with i hi,
-    let A' : splitting_index_set [j+1] := ⟨[j], ⟨simplex_category.σ i, by apply_instance⟩⟩,
-    rw [splitting_index_set.ext A A' eq hi, fintype.sum_eq_add (fin.cast_succ i) i.succ], rotate,
-    { by_contradiction,
-      simpa only [fin.ext_iff, nat.one_ne_zero, fin.coe_succ, fin.coe_cast_succ, self_eq_add_right] using h, },
-    { rintros k ⟨h₁, h₂⟩,
-      convert zsmul_zero _,
-      erw [Γ₀.obj.map_on_summand' K A', assoc, colimit.ι_desc, cofan.mk_ι_app],
-      erw [map_termwise_eq_zero K, comp_zero],
-      intro hj,
-      dsimp at hj,
-      rw splitting_index_set.eq_id_iff' at hj,
-      have eq := image.fac (simplex_category.δ k ≫ A'.e),
-      rw [simplex_category.eq_eq_to_hom_of_epi (factor_thru_image _) (by { ext, exact hj.symm, }),
-        simplex_category.eq_eq_to_hom_of_mono (image.ι _) (by { ext, exact hj, }),
-        eq_to_hom_trans, eq_to_hom_refl] at eq,
-      have eq' := λ (l : fin ([j].len+1)), congr_arg (λ φ, (simplex_category.hom.to_order_hom φ) l) eq,
-      simp only [simplex_category.hom.id, simplex_category.small_category_id,
-        simplex_category.hom.to_order_hom_mk, order_hom.id_coe, id.def, simplex_category.hom.comp,
-        simplex_category.small_category_comp, order_hom.comp_coe, function.comp_app] at eq',
-      have ineqi := fin.is_lt i,
-      by_cases (k : ℕ) < i,
-      { let l : fin (j+1) := ⟨k, by linarith⟩,
-        have hl := eq' l,
-        erw fin.succ_above_above k l (by { rw [fin.le_iff_coe_le_coe,
-          fin.cast_succ_mk, fin.eta], }) at hl,
-        simp only [splitting_index_set.e] at hl,
-        simp only [simplex_category.σ, simplex_category.hom.to_order_hom_mk,
-          simplex_category.mk_hom, order_hom.coe_fun_mk] at hl,
-        rw fin.pred_above_below i l.succ _ at hl, swap,
-        { simp only [fin.succ_mk, nat.succ_eq_add_one, fin.coe_mk,
-          fin.le_iff_coe_le_coe, fin.coe_cast_succ],
-          linarith, },
-        simp only [fin.ext_iff, fin.succ_mk, fin.coe_mk] at hl,
-        rw fin.cast_pred_mk at hl, swap,
-        { linarith, },
-        simpa only [fin.coe_mk, self_eq_add_right] using hl, },
-      { rw [not_lt] at h,
-        let l : fin (j+1) := ⟨i+1, _⟩, swap,
-        { simp only [add_lt_add_iff_right],
-        by_contradiction h',
-        simp only [not_lt] at h',
-        have eqi : (i : ℕ) = j := ge_antisymm h' (nat.lt_succ_iff.mp ineqi),
-        simp only [ne.def, fin.ext_iff, fin.coe_succ,
-          fin.coe_cast_succ, eqi] at h₁ h₂,
-        rw eqi at h,
-        cases nat.le.dest h with c hc,
-        have hk := nat.lt_succ_iff.mp (fin.is_lt k),
-        rw ← hc at hk h₁ h₂,
-        simp only [add_le_add_iff_left] at hk,
-        cases eq_or_lt_of_le hk with hc' hc',
-        { apply h₂,
-          rw hc', },
-        { apply h₁,
-          simp only [nat.lt_one_iff] at hc',
-          rw [hc', add_zero], }, },
-        have hl := eq' l,
-        erw fin.succ_above_below k l _ at hl, swap,
-        { simp only [fin.lt_iff_coe_lt_coe, fin.cast_succ_mk, fin.coe_mk],
-          by_contradiction hk,
-          simp only [not_lt] at hk,
-          simp only [ne.def, fin.ext_iff, fin.coe_succ,
-            fin.coe_cast_succ] at h₁ h₂,
-          cases nat.le.dest h with c hc,
-          rw ← hc at hk h₁ h₂,
-          simp only [add_right_eq_self, add_le_add_iff_left, add_right_inj] at h₁ h₂ hk,
-          cases eq_or_lt_of_le hk with hc' hc',
-          { exact h₂ hc', },
-          { simp only [nat.lt_one_iff] at hc',
-            exact h₁ hc', }, },
-          rw [show fin.cast_succ l = i.succ, by { ext, simp only [fin.coe_succ, fin.cast_succ_mk, fin.coe_mk], }] at hl,
-          simp only [splitting_index_set.e, simplex_category.σ, simplex_category.hom.to_order_hom_mk,
-            simplex_category.mk_hom, order_hom.coe_fun_mk] at hl,
-          rw fin.pred_above_above i i.succ _ at hl, swap,
-          { simp only [fin.lt_iff_coe_lt_coe, lt_add_iff_pos_right,
-              fin.coe_succ, fin.coe_cast_succ, nat.lt_one_iff], },
-          simpa only [l, fin.pred_succ, fin.ext_iff, fin.coe_mk, nat.succ_ne_self] using hl, }, },
-    { erw Γ₀.obj.map_on_summand K A' (show 𝟙 _ ≫ 𝟙 _ = simplex_category.δ (fin.cast_succ i) ≫
-        simplex_category.σ i, by { rw [simplex_category.δ_comp_σ_self, id_comp], }),
-      erw Γ₀.obj.map_on_summand K A' (show 𝟙 _ ≫ 𝟙 _ = simplex_category.δ i.succ ≫
-        simplex_category.σ i, by { rw [simplex_category.δ_comp_σ_succ, id_comp], }),
-      erw [Γ₀.obj.termwise.map_mono_id K, id_comp, ← add_zsmul],
-      convert zero_zsmul _,
-      simp only [fin.coe_cast_succ, fin.coe_succ, pow_succ, neg_mul, one_mul, add_right_neg], }, },
-end-/
-
-/-@[simps]
-abbreviation hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
-{ app := λ K,
-  { f :=
-    { f:= λ n, sigma.desc (map_termwise K n),
-      comm' := λ i j hij, begin
-        have h : j+1 = i := hij,
-        subst h,
-        ext A,
-        cases A,
-        dsimp at A,
-        simp only [cofan.mk_ι_app, colimit.ι_desc_assoc],
-        by_cases A = splitting_index_set.id [j+1],
-        { subst h,
-          erw [d_on_KΓ K j, map_termwise_eq_id K, id_comp],
-          refl, },
-        { erw [d_on_KΓ' K j A h, map_termwise_eq_zero K h, zero_comp], },
-      end },
-    comm := begin
-      ext n A,
-      cases A,
-      simp only [to_karoubi_obj_p, homological_complex.comp_f, cofan.mk_ι_app, colimit.ι_desc],
-      dsimp at ⊢ A,
-      erw [comp_id],
-      by_cases A = splitting_index_set.id [n],
-      { subst h,
-        simp only [ι_Γ₀_summand_id_comp_P_infty_assoc,
-          map_termwise_eq_id, eq_to_hom_refl, colimit.ι_desc, cofan.mk_ι_app,
-          simplex_category.len_mk, eq_self_iff_true, dite_eq_ite, if_true], },
-      { rw [ι_Γ₀_summand_comp_P_infty_eq_zero_assoc K h, zero_comp, map_termwise_eq_zero K h], },
-    end },
-  naturality' := λ K L f, begin
-    ext n A,
-    cases A,
-    dsimp at A,
-    simp only [colimit.ι_desc_assoc, cofan.mk_ι_app, homological_complex.comp_f,
-      alternating_face_map_complex.map, N₁_map_f, assoc, functor.comp_map, Γ₀_map, karoubi.comp,
-      chain_complex.of_hom_f, to_karoubi_map_f, Γ₀.map_app],
-    by_cases A = splitting_index_set.id [n],
-    { subst h,
-      dsimp,
-      simp only [ι_Γ₀_summand_id_comp_P_infty_assoc, ι_colim_map_assoc, discrete.nat_trans_app,
-        colimit.ι_desc, cofan.mk_ι_app, map_termwise_eq_id, id_comp],
-      dsimp [splitting_index_set.id],
-      rw comp_id, },
-    { dsimp,
-      rw [ι_Γ₀_summand_comp_P_infty_eq_zero_assoc K h, map_termwise_eq_zero K h,
-        zero_comp, zero_comp], },
-  end, }-/
-
 
 end N₁Γ₀
 
