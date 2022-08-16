@@ -67,7 +67,7 @@ begin
 end
 
 @[simp]
-lemma P_infty_deg0_eq : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
+lemma P_infty_f_0 : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
 
 lemma P_infty_f (n : ℕ) :
   (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := by refl
