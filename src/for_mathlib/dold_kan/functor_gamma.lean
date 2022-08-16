@@ -24,10 +24,10 @@ and more generally pseudoabelian categories. We also extend this functor `Γ₀`
 completion, and this functor shall be an equivalence of categories when `C` is any additive
 category (see `equivalence_additive.lean`).
 
-When `K` is a chain_complex, `Γ₀.obj K` is a simplicial object which sends `op Δ` to
-the direct sum of copies of `K.X m` for any tuple `(Δ', α)` where `α : Δ → Δ'`
-is an epimorphism in `simplex_category`. The index set of this direct sum is denoted
-`Γ_index_set Δ`.
+--When `K` is a chain_complex, `Γ₀.obj K` is a simplicial object which sends `op Δ` to
+--the direct sum of copies of `K.X m` for any tuple `(Δ', α)` where `α : Δ → Δ'`
+--is an epimorphism in `simplex_category`. The index set of this direct sum is denoted
+--`Γ_index_set Δ`.
 
 -/
 
@@ -39,13 +39,16 @@ open category_theory.limits
 open category_theory.idempotents
 open opposite
 open simplex_category
+open simplicial_object
 open_locale simplicial dold_kan
 
-namespace simplex_category
+namespace simplicial_object
 
-namespace splitting_index_set
+namespace splitting
 
-variables {Δ' Δ : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ')
+namespace index_set
+
+variables {Δ' Δ : simplex_categoryᵒᵖ} (A : index_set Δ) (θ : Δ ⟶ Δ')
 
 instance {Δ₁ Δ₂ : simplex_category} (θ : Δ₁ ⟶ Δ₂) : strong_epi (factor_thru_image θ) :=
 strong_epi_factor_thru_image_of_strong_epi_mono_factorisation
@@ -58,14 +61,16 @@ instance {Δ₁ Δ₂ : simplex_category} (θ : Δ₁ ⟶ Δ₂) :
 the simplicial morphism `(Γ₀.obj _).map θ` sends the term of the direct sum corresponding
 to `A` to the term corresponding to `A.pull θ`. It is given by the epimorphism `e`, which
 appears in the epi-mono factorisation `θ ≫ A.e = e ≫ m`. -/
-def pull : splitting_index_set Δ' :=
-splitting_index_set.mk (factor_thru_image (θ.unop ≫ A.e))
+def pull : index_set Δ' := mk (factor_thru_image (θ.unop ≫ A.e))
 
+@[simp, reassoc]
 lemma fac_pull : (A.pull θ).e ≫ image.ι (θ.unop ≫ A.e) = θ.unop ≫ A.e := image.fac _
 
-end splitting_index_set
+end index_set
 
-end simplex_category
+end splitting
+
+end simplicial_object
 
 namespace algebraic_topology
 
@@ -111,11 +116,11 @@ namespace obj
 
 /-- In the definition of `(Γ₀.obj K).obj Δ` as a direct sum indexed by `A : Γ_index_set Δ`,
 the summand `summand K Δ A` is `K.X A.1.len`. -/
-def summand (Δ : simplex_categoryᵒᵖ) (A : splitting_index_set Δ) : C := K.X A.1.unop.len
+def summand (Δ : simplex_categoryᵒᵖ) (A : splitting.index_set Δ) : C := K.X A.1.unop.len
 
 /-- The functor `Γ₀` sends a chain complex `K` to the simplicial object which
 sends `Δ` to the direct sum of the objects `summand K Δ A` for all `A : Γ_index_set Δ` -/
-def obj₂ (Δ : simplex_categoryᵒᵖ): C := ∐ (λ (A : splitting_index_set Δ), summand K Δ A)
+def obj₂ (Δ : simplex_categoryᵒᵖ): C := ∐ (λ (A : splitting.index_set Δ), summand K Δ A)
 
 namespace termwise
 
@@ -229,24 +234,24 @@ sigma.desc (λ A, termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫
   (sigma.ι (summand K Δ') (A.pull θ)))
 
 @[reassoc]
-lemma map_on_summand₀ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) {θ : Δ ⟶ Δ'}
+lemma map_on_summand₀ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) {θ : Δ ⟶ Δ'}
   {Δ'' : simplex_category} {e : Δ'.unop ⟶ Δ''} {i : Δ'' ⟶ A.1.unop} [epi e] [mono i]
   (fac : e ≫ i = θ.unop ≫ A.e) :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
-  termwise.map_mono K i ≫ sigma.ι (summand K Δ') (splitting_index_set.mk e) :=
+  termwise.map_mono K i ≫ sigma.ι (summand K Δ') (splitting.index_set.mk e) :=
 begin
-  simp only [map, colimit.ι_desc, cofan.mk_ι_app, simplex_category.splitting_index_set.pull],
+  simp only [map, colimit.ι_desc, cofan.mk_ι_app],
   have h := simplex_category.image_eq fac,
   unfreezingI { subst h, },
   congr,
   { exact simplex_category.image_ι_eq fac, },
-  { dsimp only [simplex_category.splitting_index_set.pull],
+  { dsimp only [simplicial_object.splitting.index_set.pull],
     congr,
     exact simplex_category.factor_thru_image_eq fac, },
 end
 
 @[reassoc]
-lemma map_on_summand₁ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ') :
+lemma map_on_summand₁ {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) (θ : Δ ⟶ Δ') :
   (sigma.ι (summand K Δ) A) ≫ map K θ =
   termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫ sigma.ι (summand K _) (A.pull θ) :=
 map_on_summand₀ K A (A.fac_pull θ)
@@ -278,7 +283,7 @@ def obj (K : chain_complex C ℕ) : simplicial_object C :=
 
 lemma splitting_map_eq_id (Δ : simplex_categoryᵒᵖ) :
   (simplicial_object.splitting.map (Γ₀.obj K)
-    (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K (op [n])) (splitting_index_set.id (op [n]))) Δ)
+    (λ (n : ℕ), sigma.ι (Γ₀.obj.summand K (op [n])) (splitting.index_set.id (op [n]))) Δ)
     = 𝟙 _ :=
 begin
   ext A,
@@ -288,14 +293,14 @@ begin
   dsimp,
   simp only [colimit.ι_desc, cofan.mk_ι_app, comp_id, Γ₀.obj_map],
   rw [Γ₀.obj.map_on_summand₀ K
-    (simplex_category.splitting_index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e.op.unop ≫ 𝟙 _, by refl),
+    (simplicial_object.splitting.index_set.id A.1) (show A.e ≫ 𝟙 _ = A.e.op.unop ≫ 𝟙 _, by refl),
     Γ₀.obj.termwise.map_mono_id, A.ext'],
   apply id_comp,
 end
 
 def splitting (K : chain_complex C ℕ) : simplicial_object.splitting (Γ₀.obj K) :=
 { N := λ n, K.X n,
-  ι := λ n, sigma.ι (Γ₀.obj.summand K (op [n])) (splitting_index_set.id (op [n])),
+  ι := λ n, sigma.ι (Γ₀.obj.summand K (op [n])) (splitting.index_set.id (op [n])),
   is_iso' := λ Δ, begin
     rw Γ₀.splitting_map_eq_id,
     apply is_iso.id,
@@ -306,11 +311,11 @@ lemma splitting_iso_hom_eq_id (Δ : simplex_categoryᵒᵖ): ((splitting K).iso 
 splitting_map_eq_id K Δ
 
 @[reassoc]
-lemma obj.map_on_summand {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ')
+lemma obj.map_on_summand {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) (θ : Δ ⟶ Δ')
   {Δ'' : simplex_category}
   {e : Δ'.unop ⟶ Δ''} {i : Δ'' ⟶ A.1.unop} [epi e] [mono i]
   (fac : e ≫ i = θ.unop ≫ A.e) : (Γ₀.splitting K).ι_summand A ≫ (Γ₀.obj K).map θ =
-  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting_index_set.mk e) :=
+  Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting.index_set.mk e) :=
 begin
   dsimp only [simplicial_object.splitting.ι_summand,
     simplicial_object.splitting.ι_sum],
@@ -319,22 +324,22 @@ begin
 end
 
 @[reassoc]
-lemma obj.map_on_summand' {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting_index_set Δ) (θ : Δ ⟶ Δ') :
+lemma obj.map_on_summand' {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) (θ : Δ ⟶ Δ') :
   (splitting K).ι_summand A ≫ (obj K).map θ =
     obj.termwise.map_mono K (image.ι (θ.unop ≫ A.e)) ≫ (splitting K).ι_summand (A.pull θ) :=
 by { apply obj.map_on_summand, apply image.fac, }
 
 @[reassoc]
 lemma obj.map_mono_on_summand_id {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
-  (splitting K).ι_summand (splitting_index_set.id (op Δ)) ≫ (obj K).map i.op =
-  obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting_index_set.id (op Δ')) :=
-obj.map_on_summand K (splitting_index_set.id (op Δ)) i.op (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
+  (splitting K).ι_summand (splitting.index_set.id (op Δ)) ≫ (obj K).map i.op =
+  obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting.index_set.id (op Δ')) :=
+obj.map_on_summand K (splitting.index_set.id (op Δ)) i.op (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
 
 @[reassoc]
 lemma obj.map_epi_on_summand_id {Δ Δ' : simplex_category } (e : Δ' ⟶ Δ) [epi e] :
-  (Γ₀.splitting K).ι_summand (splitting_index_set.id (op Δ)) ≫ (Γ₀.obj K).map e.op =
-    (Γ₀.splitting K).ι_summand (splitting_index_set.mk e) :=
-by simpa only [Γ₀.obj.map_on_summand K (splitting_index_set.id (op Δ)) e.op
+  (Γ₀.splitting K).ι_summand (splitting.index_set.id (op Δ)) ≫ (Γ₀.obj K).map e.op =
+    (Γ₀.splitting K).ι_summand (splitting.index_set.mk e) :=
+by simpa only [Γ₀.obj.map_on_summand K (splitting.index_set.id (op Δ)) e.op
     (rfl : e ≫ 𝟙 Δ = e ≫ 𝟙 Δ), Γ₀.obj.termwise.map_mono_id] using id_comp _
 
 /-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, on morphisms. -/

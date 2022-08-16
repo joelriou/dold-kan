@@ -204,11 +204,11 @@ end
 
 lemma P_infty_on_splitting_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
   (s : simplicial_object.splitting X)
-  {n : ℕ} (A : simplex_category.splitting_index_set (op [n]))
+  {n : ℕ} (A : simplicial_object.splitting.index_set (op [n]))
   (hA : ¬ A.eq_id) :
   s.ι_summand A ≫ P_infty.f n = 0 :=
 begin
-  rw simplex_category.splitting_index_set.eq_id_iff_mono at hA,
+  rw simplicial_object.splitting.index_set.eq_id_iff_mono at hA,
   rw [simplicial_object.splitting.ι_summand_eq, assoc,
     P_infty_on_degeneracies X n A.e hA, comp_zero],
 end

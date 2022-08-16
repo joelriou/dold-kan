@@ -15,6 +15,7 @@ open category_theory.limits
 open category_theory.idempotents
 open simplex_category
 open opposite
+open simplicial_object
 open_locale simplicial dold_kan
 
 namespace algebraic_topology
@@ -189,17 +190,17 @@ end Γ₂N₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-(Γ₀.splitting (N₂.obj P).X).ι_summand (splitting_index_set.id (op [n])) :=
+(Γ₀.splitting (N₂.obj P).X).ι_summand (splitting.index_set.id (op [n])) :=
 begin
   simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f],
   dsimp only [to_karoubi],
   simp only [assoc, simplicial_object.splitting.ι_desc],
-  dsimp [splitting_index_set.id],
+  dsimp [splitting.index_set.id],
   simp only [← P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem_assoc],
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-  (Γ₀.splitting (N₂.obj P).X).ι_summand (splitting_index_set.id (op [n]))
+  (Γ₀.splitting (N₂.obj P).X).ι_summand (splitting.index_set.id (op [n]))
   ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) :=
 begin
   simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
@@ -209,7 +210,7 @@ begin
   simp only [id_comp, simplicial_object.splitting.ι_desc_assoc, assoc, nat_trans.naturality,
     P_infty_f_idem_assoc],
   erw P.X.map_id,
-  dsimp [splitting_index_set.id, splitting_index_set.e],
+  dsimp [splitting.index_set.id, splitting.index_set.e],
   simp only [comp_id, P_infty_f_naturality_assoc, app_idem, P_infty_f_idem_assoc],
 end
 
@@ -259,7 +260,7 @@ begin
   dsimp [N₁, N₂],
   simp only [← simplicial_object.splitting.ι_summand_id, simplicial_object.splitting.ι_desc,
     id_comp, comp_id, simplicial_object.splitting.ι_desc_assoc, assoc, P_infty_f_idem_assoc],
-  change _ = _ ≫ (Γ₀.splitting K[X]).ι_summand (splitting_index_set.id (op [n])) ≫ _,
+  change _ = _ ≫ (Γ₀.splitting K[X]).ι_summand (splitting.index_set.id (op [n])) ≫ _,
   simp only [simplicial_object.splitting.ι_desc_assoc, assoc, simplicial_object.splitting.ι_desc,
     P_infty_f_idem_assoc],
 end
