@@ -121,6 +121,7 @@ begin
   simp only [simplex_category.mk_len],
 end
 
+@[reassoc]
 lemma Γ_on_mono_comp_P_infty (X : simplicial_object C) {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
   Γ₀.obj.termwise.map_mono (alternating_face_map_complex.obj X) i ≫ P_infty.f (Δ'.len) = P_infty.f (Δ.len) ≫
     X.map (eq_to_hom (by simp only [simplex_category.mk_len]) ≫ i.op ≫ eq_to_hom (by simp only [simplex_category.mk_len])) :=
@@ -139,51 +140,37 @@ def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
 { app := λ X,
   { f :=
     { app := λ Δ, (Γ₀.splitting K[X]).desc Δ (λ A, P_infty.f A.1.unop.len ≫ X.map (A.e.op)),
-      naturality' := sorry, },
-    comm := sorry, },
-  naturality' := sorry, }
-
-/-@[simps]
-def nat_trans : (N₁ : simplicial_object C ⥤ _) ⋙ Γ₂ ⟶ to_karoubi _ :=
-{ app := λ X,
-  { f :=
-    { app := λ Δ, sigma.desc (λ A,
-        P_infty.f _ ≫ X.map (eq_to_hom (by { simp only [simplex_category.mk_len] }) ≫ A.2.1.op)),
       naturality' := λ Δ Δ' θ, begin
-        ext A,
-        cases A,
-        slice_rhs 1 2 { erw colimit.ι_desc, },
-        dsimp,
-        slice_lhs 1 2 { erw [Γ₀.obj.map_on_summand' _ A], },
-        slice_lhs 2 3 { erw colimit.ι_desc, },
-        erw cofan.mk_ι_app,
-        slice_lhs 1 2 { erw Γ_on_mono_comp_P_infty, },
-        simp only [assoc, ← X.map_comp],
+        apply (Γ₀.splitting K[X]).hom_ext',
+        intro A,
+        change _ ≫ (Γ₀.obj K[X]).map θ  ≫ _ = _,
+        simp only [(Γ₀.splitting K[X]).ι_desc_assoc, assoc,
+          Γ₀.obj.map_on_summand'_assoc K[X] A θ, (Γ₀.splitting K[X]).ι_desc],
+        erw Γ_on_mono_comp_P_infty_assoc X  (image.ι (θ.unop ≫ A.e)),
+        dsimp only [to_karoubi],
+        simp only [← X.map_comp],
         congr' 2,
-        repeat { erw id_comp, },
-        erw [← op_comp, image.fac, op_comp],
-        refl,
-      end },
+        simp only [eq_to_hom_refl, id_comp, comp_id, ← op_comp],
+        apply quiver.hom.unop_inj,
+        exact A.fac_pull θ,
+      end, },
     comm := begin
-      ext Δ A,
-      dsimp,
-      simp only [colimit.ι_desc],
-      dsimp,
-      slice_rhs 1 2 { erw ι_colim_map, },
-      simp only [discrete.nat_trans_app, cofan.mk_ι_app, colimit.ι_desc,
-        eq_to_hom_map, assoc, comp_id, functor.map_comp],
-      slice_rhs 1 2 { erw P_infty_f_idem, },
-      simp only [assoc],
-    end },
+      apply (Γ₀.splitting K[X]).hom_ext,
+      intro n,
+      dsimp [N₁],
+      simp only [← simplicial_object.splitting.ι_summand_id, simplicial_object.splitting.ι_desc,
+        comp_id, simplicial_object.splitting.ι_desc_assoc, assoc, P_infty_f_idem_assoc],
+    end, },
   naturality' := λ X Y f, begin
-    ext Δ A,
-    simpa only [colimit.ι_desc, assoc, functor.map_comp, discrete.nat_trans_app,
-      cofan.mk_ι_app, subtype.val_eq_coe, functor.comp_map, karoubi.comp, nat_trans.comp_app,
-      Γ₂_map_f_app, N₁_map_f, alternating_face_map_complex.map, alternating_face_map_complex_map_f,
-      homological_complex.comp_f, chain_complex.of_hom_f, ι_colim_map_assoc, to_karoubi_map_f,
-      colimit.ι_desc_assoc, nat_trans.naturality, P_infty_f_naturality_assoc,
-      P_infty_f_idem_assoc, ← f.naturality_assoc, assoc],
-  end }-/
+    ext1,
+    apply (Γ₀.splitting K[X]).hom_ext,
+    intro n,
+    dsimp [N₁, to_karoubi],
+    simpa only [← simplicial_object.splitting.ι_summand_id, simplicial_object.splitting.ι_desc,
+      simplicial_object.splitting.ι_desc_assoc, assoc, karoubi.comp, nat_trans.comp_app,
+      Γ₂_map_f_app, homological_complex.comp_f, alternating_face_map_complex.map_f,
+      P_infty_f_naturality_assoc, P_infty_f_idem_assoc, nat_trans.naturality],
+  end, }
 
 end Γ₂N₁
 
@@ -200,36 +187,39 @@ def nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 
 
 end Γ₂N₂
 
-/-lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
+lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
 (N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (splitting_index_set.id [n]) :=
+(Γ₀.splitting (N₂.obj P).X).ι_summand (splitting_index_set.id (op [n])) :=
 begin
-  simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f, assoc,
-    ι_Γ₀_summand_id_comp_P_infty_assoc,
-    ι_colim_map, discrete.nat_trans_app],
+  simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f],
+  dsimp only [to_karoubi],
+  simp only [assoc, simplicial_object.splitting.ι_desc],
   dsimp [splitting_index_set.id],
   simp only [← P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem_assoc],
 end
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
-sigma.ι (Γ₀.obj.summand (N₂.obj P).X [n]) (splitting_index_set.id [n]) ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n =
-P_infty.f n ≫ P.p.app (op [n]) :=
+  (Γ₀.splitting (N₂.obj P).X).ι_summand (splitting_index_set.id (op [n]))
+  ≫ (N₂.map (Γ₂N₂.nat_trans.app P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) :=
 begin
-  simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, ι_Γ₀_summand_id_comp_P_infty_assoc,
-    ι_colim_map_assoc, discrete.nat_trans_app, assoc],
-  erw [colimit.ι_desc_assoc, id_comp, cofan.mk_ι_app, P.X.map_id, comp_id],
-  dsimp [splitting_index_set.id],
-  simp only [P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem],
-end-/
+  simp only [N₂_map_f_f, Γ₂N₂.nat_trans_app_f_app, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
+    simplicial_object.splitting.ι_desc_assoc, assoc],
+  dsimp [to_karoubi, N₂],
+  change _ ≫  _ ≫ (Γ₀.splitting K[P.X]).ι_summand _ ≫ _ = _,
+  simp only [id_comp, simplicial_object.splitting.ι_desc_assoc, assoc, nat_trans.naturality,
+    P_infty_f_idem_assoc],
+  erw P.X.map_id,
+  dsimp [splitting_index_set.id, splitting_index_set.e],
+  simp only [comp_id, P_infty_f_naturality_assoc, app_idem, P_infty_f_idem_assoc],
+end
 
 lemma identity_N₂_objectwise (P : karoubi (simplicial_object C)) :
 N₂Γ₂.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂.nat_trans.app P) = 𝟙 (N₂.obj P) :=
 begin
   ext n,
-  sorry,
-/-  simpa only [assoc, karoubi.comp, homological_complex.comp_f, identity_N₂_objectwise_eq₁,
-    identity_N₂_objectwise_eq₂, P_infty_f_naturality_assoc,
-    P_infty_f_idem_assoc, app_idem],-/
+  simp only [karoubi.comp, homological_complex.comp_f, assoc,
+    identity_N₂_objectwise_eq₁, identity_N₂_objectwise_eq₂,
+    P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem, karoubi.id_eq, N₂_obj_p_f],
 end
 
 lemma identity_N₂ :
@@ -260,16 +250,18 @@ lemma compatibility_Γ₂N₁_Γ₂N₂_nat_trans (X : simplicial_object C) :
   Γ₂N₁.nat_trans.app X = (compatibility_Γ₂N₁_Γ₂N₂.app X).inv ≫
     Γ₂N₂.nat_trans.app ((to_karoubi _).obj X) :=
 begin
-  sorry,
-/-  ext Δ A,
-  simp only [Γ₂N₁.nat_trans_app_f_app, colimit.ι_desc, cofan.mk_ι_app,
-    karoubi.comp, nat_trans.comp_app, assoc, Γ₂N₂.nat_trans_app_f_app,
-    compatibility_Γ₂N₁_Γ₂N₂, eq_to_iso, iso.app_inv, eq_to_hom_app, karoubi.eq_to_hom_f,
-    eq_to_hom_refl, id_comp, to_karoubi_obj_p],
-  dsimp,
-  simp only [comp_id, ι_colim_map_assoc, discrete.nat_trans_app],
-  erw [colimit.ι_desc, cofan.mk_ι_app],
-  simp only [P_infty_f_idem_assoc],-/
+  ext1,
+  apply (Γ₀.splitting (N₁.obj X).X).hom_ext,
+  intro n,
+  simp only [simplicial_object.splitting.φ, Γ₂N₁.nat_trans_app_f_app, karoubi.eq_to_hom_f,
+    eq_to_hom_refl, comp_id, iso.app_inv, compatibility_Γ₂N₁_Γ₂N₂_inv, eq_to_hom_app,
+    karoubi.comp, nat_trans.comp_app, Γ₂N₂.nat_trans_app_f_app, to_karoubi_obj_p],
+  dsimp [N₁, N₂],
+  simp only [← simplicial_object.splitting.ι_summand_id, simplicial_object.splitting.ι_desc,
+    id_comp, comp_id, simplicial_object.splitting.ι_desc_assoc, assoc, P_infty_f_idem_assoc],
+  change _ = _ ≫ (Γ₀.splitting K[X]).ι_summand (splitting_index_set.id (op [n])) ≫ _,
+  simp only [simplicial_object.splitting.ι_desc_assoc, assoc, simplicial_object.splitting.ι_desc,
+    P_infty_f_idem_assoc],
 end
 
 instance : is_iso (Γ₂N₁.nat_trans : (N₁ : simplicial_object C ⥤_ ) ⋙ _ ⟶ _) :=
