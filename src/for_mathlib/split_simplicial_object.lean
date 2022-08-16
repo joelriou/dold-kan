@@ -25,7 +25,8 @@ variables {C : Type*} [category C]
 
 namespace simplex_category
 
-protected def rec {F : Π (X : simplex_category), Sort*} (h : ∀ (n : ℕ), F [n]) :
+/-- A recursor for `simplex_category`. Use it as `induction Δ using simplex_category.rec`. -/
+protected def rec {F : Π (Δ : simplex_category), Sort*} (h : ∀ (n : ℕ), F [n]) :
   Π X, F X := λ n, h n.len
 
 end simplex_category
@@ -40,13 +41,14 @@ def index_set (Δ : simplex_categoryᵒᵖ) :=
 
 namespace index_set
 
+/-- The element in `splitting.index_set Δ` attached to an epimorphism `f : Δ ⟶ Δ'`. -/
 @[simps]
 def mk {Δ Δ' : simplex_category} (f : Δ ⟶ Δ') [epi f] : index_set (op Δ) :=
 ⟨op Δ', f, infer_instance⟩
 
 variables {Δ' Δ : simplex_categoryᵒᵖ} (A : index_set Δ)
 
-/-- The epimorphism in `simplex_category` associated to `A : splitting_index_set Δ` -/
+/-- The epimorphism in `simplex_category` associated to `A : splitting.index_set Δ` -/
 def e := A.2.1
 
 instance : epi A.e := A.2.2
@@ -61,7 +63,7 @@ begin
   simp only at h₁,
   subst h₁,
   simp only [eq_to_hom_refl, comp_id, index_set.e] at h₂,
-  congr',
+  simp only [h₂],
 end
 
 instance : fintype (index_set Δ) :=
@@ -70,20 +72,20 @@ fintype.of_injective
     (simplex_category.len_le_of_epi (infer_instance : epi A.e))⟩, A.e.to_order_hom⟩) :
     index_set Δ → (sigma (λ (k : fin (Δ.unop.len+1)), (fin (Δ.unop.len+1) → fin (k+1)))))
 begin
-  rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h,
+  rintros ⟨Δ₁, α₁⟩ ⟨Δ₂, α₂⟩ h₁,
   induction Δ₁ using opposite.rec,
   induction Δ₂ using opposite.rec,
-  simp only at h,
-  have h₃ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h.1, },
-  subst h₃,
+  simp only at h₁,
+  have h₂ : Δ₁ = Δ₂ := by { ext1, simpa only [subtype.mk_eq_mk] using h₁.1, },
+  subst h₂,
   refine ext _ _ rfl _,
-  ext1, ext1,
-  exact eq_of_heq h.2,
+  ext : 2,
+  exact eq_of_heq h₁.2,
 end
 
 variable (Δ)
 
-/-- The distinguished element in `Γ_index_set Δ` which corresponds to the
+/-- The distinguished element in `splitting.index_set Δ` which corresponds to the
 identity of `Δ`. -/
 def id : index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
@@ -91,6 +93,8 @@ instance : inhabited (index_set Δ) := ⟨id Δ⟩
 
 variables {Δ}
 
+/-- The condition that an element `splitting.index_set Δ` is the distinguished
+element `splitting.index_set.id Δ`. -/
 @[simp]
 def eq_id : Prop := A = id _
 
@@ -147,8 +151,6 @@ begin
     exact len_le_of_mono h, }
 end
 
---variable (θ : Δ' ⟶ Δ)
-
 end index_set
 
 variables (N : ℕ → C) (Δ : simplex_categoryᵒᵖ)
@@ -156,43 +158,60 @@ variables (N : ℕ → C) (Δ : simplex_categoryᵒᵖ)
 
 open simplex_category
 
-@[simp]
+/-- Given a sequences of objects `N : ℕ → C` in a category `C`, this is
+a family of objects indexed by the elements `A : splitting.index_set Δ`.
+The `Δ`-simplices of a split simplicial objects shall identify to the
+direct sum of objects in such a family. -/
+@[simp, nolint unused_arguments]
 def summand (A : index_set Δ) : C := N A.1.unop.len
 
 variable [has_finite_coproducts C]
 
+/-- The direct sum of the family `summand N Δ` -/
 @[simp]
 def sum := sigma_obj (summand N Δ)
 
 variable {Δ}
 
+/-- The inclusion of a summand in the direct sum. -/
 @[simp]
 def ι_sum (A : index_set Δ) : N A.1.unop.len ⟶ sum N Δ := sigma.ι _ A
 
 variables {N}
 
+/-- The canonical morphism `sum N Δ ⟶ X.obj Δ` attached to a sequence
+of objects `N` and a sequence of morphisms `N n ⟶ X _[n]`. -/
 @[simp]
-def map (Δ' : simplex_categoryᵒᵖ) : sum N Δ' ⟶ X.obj Δ' :=
+def map (Δ : simplex_categoryᵒᵖ) : sum N Δ ⟶ X.obj Δ :=
 sigma.desc (λ A, φ A.1.unop.len ≫ X.map A.e.op)
 
 end splitting
 
 variable [has_finite_coproducts C]
 
+/-- A splitting of a simplicial object `X` consists of the datum of a sequence
+of objects `N`, a sequence of morphisms `ι : N n ⟶ X _[n]` such that
+for all `Δ : simplex_categoryhᵒᵖ`, the canonical map `splitting.map X ι Δ`
+is an isomorphism. -/
+@[nolint has_nonempty_instance]
 structure splitting (X : simplicial_object C) :=
 (N : ℕ → C) (ι : Π n, N n ⟶ X _[n])
-(is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map X ι Δ))
+(map_is_iso' : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (splitting.map X ι Δ))
 
 namespace splitting
 
 variables {X Y : simplicial_object C} (s : splitting X)
 
-instance map_is_iso (Δ : simplex_categoryᵒᵖ) : is_iso (splitting.map X s.ι Δ) := s.is_iso' Δ
+instance map_is_iso (Δ : simplex_categoryᵒᵖ) : is_iso (splitting.map X s.ι Δ) :=
+s.map_is_iso' Δ
 
+/-- The isomorphism on simplices given by the axiom `splitting.map_is_iso'` -/
 @[simps]
 def iso (Δ : simplex_categoryᵒᵖ) : sum s.N Δ ≅ X.obj Δ :=
 as_iso (splitting.map X s.ι Δ)
 
+/-- Via the isomorphism `s.iso Δ`, this is the inclusion of a summand
+in the direct sum decomposition given by the splitting `s : splitting X`. -/
 def ι_summand {Δ : simplex_categoryᵒᵖ} (A : index_set Δ) :
   s.N A.1.unop.len ⟶ X.obj Δ :=
 splitting.ι_sum s.N A ≫ (s.iso Δ).hom
@@ -208,6 +227,9 @@ end
 lemma ι_summand_id (n : ℕ) : s.ι_summand (index_set.id (op [n])) = s.ι n :=
 by { erw [ι_summand_eq, X.map_id, comp_id], refl, }
 
+/-- As it is stated in `splitting.hom_ext`, a morphism `f : X ⟶ Y` from a split
+simplicial object to any simplicial object is determined by its restrictions
+`s.φ f n : s.N n ⟶ Y _[n]` to the distinguished summands in each degree `n`. -/
 @[simp]
 def φ (f : X ⟶ Y) (n : ℕ) : s.N n ⟶ Y _[n] := s.ι n ≫ f.app (op [n])
 
@@ -237,6 +259,8 @@ begin
   simp only [s.ι_summand_comp_app, h],
 end
 
+/-- The map `X.obj Δ ⟶ Z` obtained by providing a family of morphisms on all the
+terms of decomposition given by a splitting `s : splitting X`  -/
 def desc {Z : C} (Δ : simplex_categoryᵒᵖ)
   (F : Π (A : index_set Δ), s.N A.1.unop.len ⟶ Z) : X.obj Δ ⟶ Z :=
 (s.iso Δ).inv ≫ sigma.desc F

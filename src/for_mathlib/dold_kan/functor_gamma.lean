@@ -301,7 +301,7 @@ end
 def splitting (K : chain_complex C ℕ) : simplicial_object.splitting (Γ₀.obj K) :=
 { N := λ n, K.X n,
   ι := λ n, sigma.ι (Γ₀.obj.summand K (op [n])) (splitting.index_set.id (op [n])),
-  is_iso' := λ Δ, begin
+  map_is_iso' := λ Δ, begin
     rw Γ₀.splitting_map_eq_id,
     apply is_iso.id,
   end, }
