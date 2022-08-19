@@ -179,6 +179,16 @@ begin
     ← category.assoc, ι_summand_eq],
 end
 
+@[simp, reassoc]
+lemma sk_ι_inv_of_le_naturality (d : ℕ) {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (θ : Δ₁ ⟶ Δ₂)
+  (h₁ : Δ₁.unop.len ≤ d) (h₂ : Δ₂.unop.len ≤ d) :
+  s.sk_ι_inv_of_le d Δ₁ h₁ ≫ s.sk_map d θ = X.map θ ≫ s.sk_ι_inv_of_le d Δ₂ h₂ :=
+begin
+  haveI := s.sk_ι_is_iso_of_le d Δ₂ h₂,
+  simp only [← cancel_mono (s.sk_ι_app d Δ₂), sk_ι_inv_of_le, category.assoc,
+    sk_ι_app_naturality, is_iso.inv_hom_id_assoc, is_iso.inv_hom_id, category.comp_id],
+end
+
 @[simps]
 def sk (d : ℕ) [mono_in C] : simplicial_object C :=
 { obj := s.sk_obj d,
@@ -209,8 +219,8 @@ begin
   simp only [category.comp_id],
 end
 
-lemma sk_hom_ext (d : ℕ) [mono_in C] {Z : simplicial_object C}
-  {f₁ f₂ : s.sk d ⟶ Z}
+lemma sk_hom_ext (d : ℕ) [mono_in C] {Y : simplicial_object C}
+  {f₁ f₂ : s.sk d ⟶ Y}
   (h : ∀ (n : ℕ) (hn : n ≤ d), s.sk_φ f₁ hn = s.sk_φ f₂ hn) : f₁ = f₂ :=
 begin
   ext Δ : 2,
@@ -223,6 +233,64 @@ begin
   congr' 1,
   apply h _ B.2,
 end
+
+@[simps]
+def sk_hom_extension (d : ℕ) [mono_in C] {Y : simplicial_object C}
+  (f : ((simplicial_object.sk d).obj X ⟶ (simplicial_object.sk d).obj Y)) :
+  s.sk d ⟶ Y :=
+{ app := λ Δ, s.sk_desc d Δ (λ B, s.ι B.1.1.unop.len ≫ f.app (op ⟨B.1.1.unop, B.2⟩) ≫
+    Y.map B.1.e.op),
+  naturality' := λ Δ₁ Δ₂ θ, begin
+    apply s.sk_obj_hom_ext,
+    intro B,
+    dsimp only [sk, sk_map],
+ --   simp only [ι_summand_sk_desc_assoc, category.assoc, sk_map_epi,
+ --     ← s.sk_ι_inv_of_le_naturality_assoc d _ B.2, s.ι_sk_ι_inv_of_le_assoc d B.1.1 B.2],
+ --   dsimp only [sk_map],
+ --   rw ι_summand_sk_desc_assoc,
+ --   simp only [ι_summand_sk_desc_assoc, category.assoc, sk_map_epi],
+    sorry,
+  end}
+
+instance (d : ℕ) [mono_in C] (Δ : (simplex_category.truncated d)ᵒᵖ) :
+  is_iso (((simplicial_object.sk d).map (s.sk_ι d)).app Δ) :=
+s.sk_ι_is_iso_of_le d (op Δ.unop.1) Δ.unop.2
+
+instance (d : ℕ) [mono_in C] : is_iso ((simplicial_object.sk d).map (s.sk_ι d)) :=
+nat_iso.is_iso_of_is_iso_app _
+
+include s
+def hom_equiv (d : ℕ) [mono_in C] (Y : simplicial_object C) : (s.sk d ⟶ Y) ≃
+  ((simplicial_object.sk d).obj X ⟶ (simplicial_object.sk d).obj Y) :=
+{ to_fun := λ f, inv ((simplicial_object.sk d).map (s.sk_ι d)) ≫
+      (simplicial_object.sk d).map f,
+  inv_fun := s.sk_hom_extension d,
+  left_inv := λ f, begin
+    apply s.sk_hom_ext,
+    intros n hn,
+    dsimp only [sk_φ, sk_hom_extension],
+    rw [ι_summand_sk_desc],
+    simp only [nat_trans.comp_app, nat_iso.is_iso_inv_app, category.assoc, ι_summand_sk_desc],
+    erw [s.ι_sk_ι_inv_of_le_assoc d (op [n]) hn, Y.map_id, category.comp_id],
+    refl,
+  end,
+  right_inv := λ g, begin
+    ext Δ : 2,
+    induction Δ using opposite.rec,
+    rcases Δ with ⟨Δ, hΔ⟩,
+    apply s.hom_ext',
+    intro A,
+    dsimp [simplex_category.truncated.inclusion] at A,
+    simp only,
+    simp only [nat_trans.comp_app, nat_iso.is_iso_inv_app],
+    change _ ≫ _ ≫ (s.sk_hom_extension d g).app (op Δ) = _,
+    dsimp only [sk_hom_extension],
+    --have eq := s.ι_sk_ι_inv_of_le_assoc d (op Δ) hΔ,
+    --rw ← s.ι_summand_id at eq,
+    -- généraliser ι_sk_ι_inv_of_le
+    sorry,
+--    simp,
+  end, }
 
 end splitting
 
