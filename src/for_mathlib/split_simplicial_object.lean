@@ -151,6 +151,10 @@ begin
     exact len_le_of_mono h, }
 end
 
+@[simps]
+def epi_comp {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁) (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
+  index_set Δ₂ := ⟨A.1, ⟨p.unop ≫ A.e, epi_comp _ _⟩⟩
+
 end index_set
 
 variables (N : ℕ → C) (Δ : simplex_categoryᵒᵖ)
@@ -273,6 +277,16 @@ begin
   dsimp only [ι_summand, desc],
   simp only [assoc, iso.hom_inv_id_assoc, ι_sum],
   erw [colimit.ι_desc, cofan.mk_ι_app],
+end
+
+lemma ι_summand_epi_naturality {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁)
+  (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
+  s.ι_summand A ≫ X.map p = s.ι_summand (A.epi_comp p) :=
+begin
+  dsimp [ι_summand],
+  erw [colimit.ι_desc, colimit.ι_desc, cofan.mk_ι_app, cofan.mk_ι_app],
+  dsimp only [index_set.epi_comp, index_set.e],
+  rw [op_comp, X.map_comp, assoc, quiver.hom.op_unop],
 end
 
 end splitting
