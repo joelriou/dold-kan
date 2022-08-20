@@ -9,6 +9,7 @@ import category_theory.limits.shapes.images
 import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.finite_products
 import algebraic_topology.simplicial_set
+import category_theory.limits.preserves.shapes.products
 
 noncomputable theory
 
@@ -288,6 +289,25 @@ begin
   dsimp only [index_set.epi_comp, index_set.e],
   rw [op_comp, X.map_comp, assoc, quiver.hom.op_unop],
 end
+
+def whiskering {D : Type*} [category D] [has_finite_coproducts D]
+  {X : simplicial_object C} (s : splitting X)
+  (F : C ⥤ D) [∀ (J : Type) [fintype J], preserves_limits_of_shape (discrete J) F]
+  : splitting (((simplicial_object.whiskering _ _).obj F).obj X) :=
+{ N := λ n, F.obj (s.N n),
+  ι := λ n, F.map (s.ι n),
+  map_is_iso' := λ Δ, begin
+    haveI : preserves_colimit (discrete.functor (splitting.summand s.N Δ)) F,
+    { sorry,
+      --apply preserves_colimits_of_shape.preserves_colimit,
+       },
+    let α := F.map (splitting.map X s.ι Δ),
+    haveI : is_iso α := infer_instance,
+    let β := sigma_comparison F (splitting.summand s.N Δ),
+    let e := preserves_coproduct.iso F (splitting.summand s.N Δ),
+    haveI : is_iso β := by { change is_iso e.inv, apply_instance, },
+    sorry,
+  end, }
 
 end splitting
 
