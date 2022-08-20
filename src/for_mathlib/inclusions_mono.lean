@@ -6,10 +6,11 @@ Authors: Joël Riou
 
 import category_theory.limits.shapes.finite_products
 
+noncomputable theory
+
 open category_theory category_theory.category category_theory.limits
 
 namespace category_theory
-
 
 namespace limits
 
@@ -30,6 +31,86 @@ begin
   apply mono_comp,
 end
 
+namespace mono_inclusion_sub_coproduct
+
+variables {I J : Type*} [fintype I] [decidable_eq I] [fintype J] [mono_in C] (X : I → C) (γ : J → I)
+  (hγ : function.injective γ)
+
+def α : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X := sigma.desc (λ j, sigma.ι _ (γ j))
+def β : sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) ⟶ sigma_obj X := sigma.desc (λ k, sigma.ι _ k)
+def φ := coprod.desc (α X γ) (β X γ)
+def index (i : I) (hi : i ∈ finset.image γ ⊤) : J := (finset.mem_image.mp hi).some
+lemma index_cond (i : I) (hi : i ∈ finset.image γ ⊤) : i = γ (index γ i hi) :=
+(finset.mem_image.mp hi).some_spec.some_spec.symm
+
+include hγ
+
+lemma index_eq (i : I) (j : J) (hj : i = γ j) : index γ i (by { simp only [finset.mem_image],
+  exact ⟨j, finset.mem_univ j, hj.symm⟩, }) = j :=
+begin
+  apply hγ,
+  rw [← index_cond γ i, hj],
+end
+
+omit hγ
+
+def ψ₁ (i : I) (hi : i ∈ finset.image γ ⊤) : X i ⟶ sigma_obj (λ j, X (γ j)) :=
+eq_to_hom (by { congr, exact index_cond γ i hi,}) ≫ sigma.ι _ (index γ i hi)
+
+lemma sigma.congr_ι {J D : Type*} [category D] (F : J → D) [has_coproduct F]
+  (a b : J) (h : a = b) : eq_to_hom (by rw h) ≫ sigma.ι F a = sigma.ι F b :=
+by { subst h, simp only [eq_to_hom_refl, id_comp], }
+
+include hγ
+
+lemma ψ₁_eq_ι (j : J) : ψ₁ X γ (γ j) (by { rw finset.mem_image, exact ⟨j, finset.mem_univ _, rfl⟩}) =
+  sigma.ι _ j :=
+sigma.congr_ι (λ (j : J), X (γ j)) (index γ (γ j) _) j (index_eq γ hγ (γ j) j rfl)
+
+omit hγ
+
+def ψ₂ (i : I) (hi : ¬ i ∈ (finset.image γ ⊤)) :
+  X i ⟶ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) :=
+sigma.ι (λ (k : (finset.image γ ⊤)ᶜ), X k) ⟨i, by simpa only [finset.mem_compl] using hi⟩
+
+lemma ψ₂_eq_ι (i : I) (hi : ¬ i ∈ (finset.image γ ⊤)) :
+  ψ₂ X γ i hi = sigma.ι (λ (k : (finset.image γ ⊤)ᶜ), X k)
+    ⟨i, by simpa only [finset.mem_compl] using hi⟩ := sorry
+
+def ψ : sigma_obj X ⟶ sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) :=
+sigma.desc (λ i, begin
+  by_cases hi : i ∈ finset.image γ finset.univ,
+  { exact ψ₁ X γ i hi ≫ coprod.inl, },
+  { exact ψ₂ X γ i hi ≫ coprod.inr, },
+end)
+
+include hγ
+def iso : sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) ≅ sigma_obj X :=
+{ hom := φ X γ,
+  inv := ψ X γ,
+  hom_inv_id' := begin
+    dsimp only [φ, ψ, α, β],
+    ext; discrete_cases,
+    { rw [coprod.inl_desc_assoc, colimit.ι_desc_assoc, cofan.mk_ι_app, colimit.ι_desc,
+        cofan.mk_ι_app, comp_id],
+      dsimp,
+      rw dif_pos, swap,
+      { simp only [finset.mem_image],
+        exact ⟨j, finset.mem_univ _, rfl⟩, },
+      erw ψ₁_eq_ι X γ hγ j, },
+    { rw [coprod.inr_desc_assoc, colimit.ι_desc_assoc, cofan.mk_ι_app, colimit.ι_desc,
+        cofan.mk_ι_app, comp_id],
+      dsimp,
+      rw dif_neg, swap,
+      { simpa only [finset.mem_compl] using j.2, },
+      rw ψ₂_eq_ι X γ j,
+      congr,
+      simp only [finset.mk_coe], },
+  end,
+  inv_hom_id' := sorry, }
+
+end mono_inclusion_sub_coproduct
+
 lemma mono_inclusion_sub_coproduct {I J : Type*} [fintype I] [fintype J] [mono_in C]
   (X : I → C) (γ : J → I) (hγ : function.injective γ) :
     mono (sigma.desc (λ j, sigma.ι _ (γ j)) : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X) :=
@@ -42,6 +123,7 @@ begin
   let β : B ⟶ sigma_obj X := sigma.desc (λ k, sigma.ι _ k),
   let φ : A ⨿ B ⟶ sigma_obj X := coprod.desc α β,
   let ψ : sigma_obj X ⟶ A ⨿ B := sigma.desc (λ i, begin
+--    have h : i ∈ finset.image γ ⊤ := sorry,
     by_cases ∃ (j : J), i = γ j,
     { exact eq_to_hom (by { congr', exact h.some_spec, }) ≫ sigma.ι _ h.some ≫ coprod.inl, },
     { refine eq_to_hom _ ≫ sigma.ι _ (⟨i, _⟩ : K) ≫ coprod.inr,
