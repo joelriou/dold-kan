@@ -118,14 +118,17 @@ begin
   exact inv (s.sk_ι_app d Δ),
 end
 
+@[reassoc]
+lemma ι_summand_sk_ι_inv_of_le (d : ℕ) {Δ : simplex_categoryᵒᵖ} (B : index_set.truncated d Δ)
+  (h : Δ.unop.len ≤ d) :
+  s.ι_summand_sk d B = s.ι_summand B.1 ≫ s.sk_ι_inv_of_le d Δ h :=
+by rw [← s.ι_summand_sk_ι d B, sk_ι_inv_of_le, is_iso.eq_comp_inv]
+
+
 @[simp, reassoc]
 lemma ι_sk_ι_inv_of_le (d : ℕ) (Δ : simplex_categoryᵒᵖ) (h : Δ.unop.len ≤ d) :
   s.ι Δ.unop.len ≫ s.sk_ι_inv_of_le d Δ h = s.ι_summand_sk d ⟨index_set.id Δ, h⟩ :=
-begin
-  haveI := s.sk_ι_is_iso_of_le d Δ h,
-  simpa only [←cancel_mono (s.sk_ι_app d Δ), sk_ι_inv_of_le, category.assoc, is_iso.inv_hom_id,
-    category.comp_id, ι_summand_sk_ι, ← s.ι_summand_id],
-end
+by simpa only [s.ι_summand_sk_ι_inv_of_le d ⟨index_set.id Δ, h⟩ h, ← s.ι_summand_id]
 
 @[simp]
 def sk_map_epi (d : ℕ) {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (θ : Δ₁ ⟶ Δ₂) [epi θ.unop] :
@@ -142,6 +145,18 @@ begin
     s.ι_summand_epi_naturality B.1 θ],
 end
 
+@[simp, reassoc]
+lemma sk_ι_app_inv_epi_naturality (d : ℕ) {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (θ : Δ₁ ⟶ Δ₂) [epi θ.unop]
+  (h : Δ₂.unop.len ≤ d) :
+  s.sk_ι_inv_of_le d Δ₁ ((simplex_category.len_le_of_epi
+    (infer_instance : epi θ.unop)).trans h) ≫
+    s.sk_map_epi d θ = X.map θ ≫ s.sk_ι_inv_of_le d Δ₂ h :=
+begin
+  haveI := s.sk_ι_is_iso_of_le d Δ₂ h,
+  simp only [← cancel_mono (s.sk_ι_app d Δ₂), category.assoc, s.sk_ι_app_epi_naturality d θ,
+    sk_ι_inv_of_le, is_iso.inv_hom_id_assoc, is_iso.inv_hom_id, category.comp_id],
+end
+
 def sk_map (d : ℕ) {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (θ : Δ₁ ⟶ Δ₂) :
   s.sk_obj d Δ₁ ⟶ s.sk_obj d Δ₂ :=
 s.sk_desc d Δ₁ (λ B, begin
@@ -152,6 +167,7 @@ s.sk_desc d Δ₁ (λ B, begin
   exact (simplex_category.len_le_of_mono h).trans B.2,
 end)
 
+@[reassoc]
 def sk_map_on_summand (d : ℕ) {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (θ : Δ₁ ⟶ Δ₂)
   (B : index_set.truncated d Δ₁) {Δ₃ : simplex_category} {e : Δ₂.unop ⟶ Δ₃}
     {i : Δ₃ ⟶ B.1.1.unop} [epi e] [hi : mono i] (fac : e ≫ i = θ.unop ≫ B.1.e) :
@@ -198,8 +214,15 @@ def sk (d : ℕ) [mono_in C] : simplicial_object C :=
   map_comp' := λ Δ₁ Δ₂ Δ₃ θ θ', by simp only [← cancel_mono (s.sk_ι_app d Δ₃),
     sk_ι_app_naturality, functor.map_comp, category.assoc, sk_ι_app_naturality_assoc], }
 
+@[simps]
 def sk_ι (d : ℕ) [mono_in C] : s.sk d ⟶ X :=
 { app := s.sk_ι_app d, }
+
+instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_in C] : mono ((s.sk_ι d).app Δ) :=
+by { dsimp only [sk_ι], apply_instance, }
+
+instance (d : ℕ) [mono_in C] : mono (s.sk_ι d) :=
+nat_trans.mono_app_of_mono _ /- the name should be fixed -/
 
 @[simp]
 def sk_φ {d : ℕ} [mono_in C] {Y : simplicial_object C} (f : s.sk d ⟶ Y) {n : ℕ} (hn : n ≤ d) :
@@ -244,12 +267,29 @@ def sk_hom_extension (d : ℕ) [mono_in C] {Y : simplicial_object C}
     apply s.sk_obj_hom_ext,
     intro B,
     dsimp only [sk, sk_map],
- --   simp only [ι_summand_sk_desc_assoc, category.assoc, sk_map_epi,
- --     ← s.sk_ι_inv_of_le_naturality_assoc d _ B.2, s.ι_sk_ι_inv_of_le_assoc d B.1.1 B.2],
- --   dsimp only [sk_map],
- --   rw ι_summand_sk_desc_assoc,
- --   simp only [ι_summand_sk_desc_assoc, category.assoc, sk_map_epi],
-    sorry,
+    simp only [ι_summand_sk_desc_assoc, category.assoc, ← Y.map_comp],
+    change _ = _ ≫ _ ≫ Y.map (θ.unop ≫ B.1.e).op,
+    rw [← congr_arg quiver.hom.op (image.fac (θ.unop ≫ B.1.e)), op_comp, Y.map_comp],
+    have h := (simplex_category.len_le_of_mono
+      (infer_instance : mono (image.ι (θ.unop ≫ B.1.e)))).trans B.2,
+    let α : (⟨image (θ.unop ≫ B.1.e), h⟩ : simplex_category.truncated d) ⟶ ⟨B.1.1.unop, B.2⟩ :=
+      image.ι (θ.unop ≫ B.1.e),
+    slice_rhs 2 3 { erw ← f.naturality α.op, },
+    simp only [category.assoc],
+    congr' 2,
+    haveI := s.sk_ι_is_iso_of_le d (op (image (θ.unop ≫ B.val.e))) h,
+    rw ← cancel_epi (s.sk_ι_app d (op (image (θ.unop ≫ B.val.e)))),
+    simp only [sk_ι_inv_of_le, sk_map_epi, is_iso.hom_inv_id_assoc],
+    apply s.sk_obj_hom_ext,
+    intro B',
+    simp only [ι_summand_sk_desc_assoc, ι_summand_sk_desc, ι_summand_sk_ι_assoc, ι_summand_eq,
+      category.assoc],
+    dsimp only [index_set.e],
+    rw [op_comp, Y.map_comp],
+    let Δ₃ : (simplex_category.truncated d)ᵒᵖ := op ⟨B'.1.1.unop, B'.2⟩,
+    let β : Δ₃ ⟶ op ⟨_, h⟩ := quiver.hom.op B'.1.e,
+    slice_rhs 2 3 { erw (f.naturality β), },
+    simpa only [category.assoc],
   end}
 
 instance (d : ℕ) [mono_in C] (Δ : (simplex_category.truncated d)ᵒᵖ) :
@@ -277,20 +317,59 @@ def hom_equiv (d : ℕ) [mono_in C] (Y : simplicial_object C) : (s.sk d ⟶ Y) �
   right_inv := λ g, begin
     ext Δ : 2,
     induction Δ using opposite.rec,
-    rcases Δ with ⟨Δ, hΔ⟩,
     apply s.hom_ext',
     intro A,
     dsimp [simplex_category.truncated.inclusion] at A,
-    simp only,
     simp only [nat_trans.comp_app, nat_iso.is_iso_inv_app],
-    change _ ≫ _ ≫ (s.sk_hom_extension d g).app (op Δ) = _,
+    change _ ≫ _ ≫ (s.sk_hom_extension d g).app (op Δ.1) = _,
     dsimp only [sk_hom_extension],
-    --have eq := s.ι_sk_ι_inv_of_le_assoc d (op Δ) hΔ,
-    --rw ← s.ι_summand_id at eq,
-    -- généraliser ι_sk_ι_inv_of_le
-    sorry,
---    simp,
+    have hA := (simplex_category.len_le_of_epi A.2.2).trans Δ.2,
+    erw [← s.ι_summand_sk_ι_inv_of_le_assoc d ⟨A, hA⟩ Δ.2, ι_summand_sk_desc,
+      s.ι_summand_eq, category.assoc],
+    congr' 1,
+    let ψ : Δ ⟶ ⟨A.1.unop, hA⟩ := A.e,
+    exact (g.naturality ψ.op).symm,
   end, }
+
+@[simp]
+def sk_inclusion_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] (Δ : simplex_categoryᵒᵖ) :
+  (s.sk d₁).obj Δ ⟶ (s.sk d₂).obj Δ :=
+s.sk_desc d₁ Δ (λ B, s.ι_summand_sk d₂ ⟨B.1, B.2.trans h⟩)
+
+@[reassoc]
+lemma sk_inclusion_app_comp_sk_ι_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C]
+  (Δ : simplex_categoryᵒᵖ) : s.sk_inclusion_app h Δ ≫ s.sk_ι_app d₂ Δ = s.sk_ι_app d₁ Δ :=
+begin
+  apply s.sk_obj_hom_ext,
+  intro B,
+  simp only [sk_inclusion_app, ι_summand_sk_desc_assoc, ι_summand_sk_ι],
+end
+
+@[simps]
+def sk_inclusion {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] :
+  s.sk d₁ ⟶ s.sk d₂ :=
+{ app := λ Δ, s.sk_inclusion_app h Δ,
+  naturality' := λ Δ₁ Δ₂ θ, by begin
+    simp only [← cancel_mono (s.sk_ι_app d₂ Δ₂), category.assoc, sk_map_2,
+      sk_ι_app_naturality, s.sk_inclusion_app_comp_sk_ι_app h,
+      s.sk_inclusion_app_comp_sk_ι_app_assoc h],
+    end }
+
+@[simp, reassoc]
+lemma sk_inclusion_comp_sk_ι {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] :
+  s.sk_inclusion h ≫ s.sk_ι d₂ = s.sk_ι d₁ :=
+begin
+  apply s.sk_hom_ext,
+  intros n hn,
+  dsimp only [sk_φ],
+  simp only [nat_trans.comp_app, sk_inclusion_app, sk_inclusion_app_2, sk_ι_app_2,
+    ι_summand_sk_desc_assoc, ι_summand_sk_ι],
+end
+
+@[simp, reassoc]
+lemma sk_inclusion_comp_sk_inclusion {d₁ d₂ d₃ : ℕ} (h₁₂ : d₁ ≤ d₂) (h₂₃ : d₂ ≤ d₃) [mono_in C] :
+  s.sk_inclusion h₁₂ ≫ s.sk_inclusion h₂₃ = s.sk_inclusion (h₁₂.trans h₂₃) :=
+by simp only [← cancel_mono (s.sk_ι d₃), category.assoc, sk_inclusion_comp_sk_ι]
 
 end splitting
 
