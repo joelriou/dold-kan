@@ -292,21 +292,30 @@ end
 
 def whiskering {D : Type*} [category D] [has_finite_coproducts D]
   {X : simplicial_object C} (s : splitting X)
-  (F : C ⥤ D) [∀ (J : Type) [fintype J], preserves_limits_of_shape (discrete J) F]
-  : splitting (((simplicial_object.whiskering _ _).obj F).obj X) :=
+  (F : C ⥤ D) [hF : ∀ (J : Type) [fintype J], preserves_colimits_of_shape (discrete J) F] :
+  splitting (((simplicial_object.whiskering _ _).obj F).obj X) :=
 { N := λ n, F.obj (s.N n),
   ι := λ n, F.map (s.ι n),
   map_is_iso' := λ Δ, begin
-    haveI : preserves_colimit (discrete.functor (splitting.summand s.N Δ)) F,
-    { sorry,
-      --apply preserves_colimits_of_shape.preserves_colimit,
-       },
+    let X' := ((simplicial_object.whiskering C D).obj F).obj X,
+    let N' := λ n, F.obj (s.N n),
+    let ι' : Π (n : ℕ), N' n ⟶ X'.obj (op [n]) := λ n, F.map (s.ι n),
     let α := F.map (splitting.map X s.ι Δ),
-    haveI : is_iso α := infer_instance,
-    let β := sigma_comparison F (splitting.summand s.N Δ),
     let e := preserves_coproduct.iso F (splitting.summand s.N Δ),
-    haveI : is_iso β := by { change is_iso e.inv, apply_instance, },
-    sorry,
+    change is_iso (map X' ι' Δ),
+    rw [show map X' ι' Δ = e.inv ≫ α, by tidy],
+    apply_instance,
+  end, }
+
+def of_iso {X X' : simplicial_object C} (s : splitting X) (e : X ≅ X') :
+  splitting X' :=
+{ N := s.N,
+  ι := λ n, s.ι n ≫ e.hom.app (op [n]),
+  map_is_iso' := λ Δ, begin
+    let ι' : Π (n : ℕ), s.N n ⟶ X'.obj (op [n]) := λ n, s.ι n ≫ e.hom.app (op [n]),
+    change is_iso (splitting.map X' ι' Δ),
+    rw [show splitting.map X' ι' Δ = (s.iso Δ).hom ≫ e.hom.app Δ, by tidy],
+    apply_instance,
   end, }
 
 end splitting
