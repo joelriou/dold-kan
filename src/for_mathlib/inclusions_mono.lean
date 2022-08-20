@@ -73,10 +73,6 @@ def ψ₂ (i : I) (hi : ¬ i ∈ (finset.image γ ⊤)) :
   X i ⟶ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) :=
 sigma.ι (λ (k : (finset.image γ ⊤)ᶜ), X k) ⟨i, by simpa only [finset.mem_compl] using hi⟩
 
-lemma ψ₂_eq_ι (i : I) (hi : ¬ i ∈ (finset.image γ ⊤)) :
-  ψ₂ X γ i hi = sigma.ι (λ (k : (finset.image γ ⊤)ᶜ), X k)
-    ⟨i, by simpa only [finset.mem_compl] using hi⟩ := sorry
-
 def ψ : sigma_obj X ⟶ sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) :=
 sigma.desc (λ i, begin
   by_cases hi : i ∈ finset.image γ finset.univ,
@@ -85,6 +81,7 @@ sigma.desc (λ i, begin
 end)
 
 include hγ
+@[simps]
 def iso : sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤)ᶜ), X k) ≅ sigma_obj X :=
 { hom := φ X γ,
   inv := ψ X γ,
@@ -103,11 +100,26 @@ def iso : sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤
       dsimp,
       rw dif_neg, swap,
       { simpa only [finset.mem_compl] using j.2, },
-      rw ψ₂_eq_ι X γ j,
+      dsimp [ψ₂],
       congr,
       simp only [finset.mk_coe], },
   end,
-  inv_hom_id' := sorry, }
+  inv_hom_id' := begin
+    dsimp only [φ, ψ, α, β],
+    ext,
+    discrete_cases,
+    simp only [colimit.ι_desc_assoc, cofan.mk_ι_app, comp_id],
+    dsimp only,
+    split_ifs with hj,
+    { simp [finset.mem_image] at hj,
+      rcases hj with ⟨i, hi⟩,
+      subst hi,
+      erw ψ₁_eq_ι X γ hγ i,
+      tidy },
+    { dsimp [ψ₂],
+      erw [category.assoc, coprod.inr_desc, colimit.ι_desc, cofan.mk_ι_app],
+      refl, },
+  end, }
 
 end mono_inclusion_sub_coproduct
 
@@ -116,29 +128,10 @@ lemma mono_inclusion_sub_coproduct {I J : Type*} [fintype I] [fintype J] [mono_i
     mono (sigma.desc (λ j, sigma.ι _ (γ j)) : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X) :=
 begin
   classical,
-  let A := sigma_obj (λ j, X (γ j)),
-  let K := (finset.image γ ⊤)ᶜ,
-  let B := sigma_obj (λ (k : K), X k),
-  let α : A ⟶ sigma_obj X := sigma.desc (λ j, sigma.ι _ (γ j)),
-  let β : B ⟶ sigma_obj X := sigma.desc (λ k, sigma.ι _ k),
-  let φ : A ⨿ B ⟶ sigma_obj X := coprod.desc α β,
-  let ψ : sigma_obj X ⟶ A ⨿ B := sigma.desc (λ i, begin
---    have h : i ∈ finset.image γ ⊤ := sorry,
-    by_cases ∃ (j : J), i = γ j,
-    { exact eq_to_hom (by { congr', exact h.some_spec, }) ≫ sigma.ι _ h.some ≫ coprod.inl, },
-    { refine eq_to_hom _ ≫ sigma.ι _ (⟨i, _⟩ : K) ≫ coprod.inr,
-      { simp only [finset.mem_compl, finset.mem_image, exists_prop, not_exists, not_and],
-        exact λ j hj hji, h ⟨j, hji.symm⟩, },
-      { refl, }, },
-  end),
-  haveI : is_iso φ := begin
-    refine ⟨⟨ψ, ⟨_, _⟩⟩⟩,
-    sorry,
-    sorry,
-  end,
-  have eq : α = coprod.inl ≫ φ := by tidy,
+  let α : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X := sigma.desc
+    (λ j, sigma.ι X (γ j)),
   change mono α,
-  rw eq,
+  rw [show α = coprod.inl ≫ (mono_inclusion_sub_coproduct.iso X γ hγ).hom, by tidy],
   apply mono_comp,
 end
 
