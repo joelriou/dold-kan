@@ -10,6 +10,7 @@ import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.finite_products
 import algebraic_topology.simplicial_set
 import category_theory.limits.preserves.shapes.products
+import algebraic_topology.split_simplicial_object
 
 noncomputable theory
 
@@ -24,24 +25,16 @@ universe u
 
 variables {C : Type*} [category C]
 
-namespace simplex_category
-
-/-- A recursor for `simplex_category`. Use it as `induction Δ using simplex_category.rec`. -/
-protected def rec {F : Π (Δ : simplex_category), Sort*} (h : ∀ (n : ℕ), F [n]) :
-  Π X, F X := λ n, h n.len
-
-end simplex_category
-
 namespace simplicial_object
 
 namespace splitting
-
+/-
 /-- The index set which appears in the definition of split simplicial objects. -/
 def index_set (Δ : simplex_categoryᵒᵖ) :=
 Σ (Δ' : simplex_categoryᵒᵖ), { α : Δ.unop ⟶ Δ'.unop // epi α }
-
+-/
 namespace index_set
-
+/--/
 /-- The element in `splitting.index_set Δ` attached to an epimorphism `f : Δ ⟶ Δ'`. -/
 @[simps]
 def mk {Δ Δ' : simplex_category} (f : Δ ⟶ Δ') [epi f] : index_set (op Δ) :=
@@ -83,7 +76,6 @@ begin
   ext : 2,
   exact eq_of_heq h₁.2,
 end
-
 variable (Δ)
 
 /-- The distinguished element in `splitting.index_set Δ` which corresponds to the
@@ -91,8 +83,9 @@ identity of `Δ`. -/
 def id : index_set Δ := ⟨Δ, ⟨𝟙 _, by apply_instance,⟩⟩
 
 instance : inhabited (index_set Δ) := ⟨id Δ⟩
+-/
 
-variables {Δ}
+variables {Δ : simplex_categoryᵒᵖ} (A : index_set Δ)
 
 /-- The condition that an element `splitting.index_set Δ` is the distinguished
 element `splitting.index_set.id Δ`. -/
@@ -162,7 +155,7 @@ variables (N : ℕ → C) (Δ : simplex_categoryᵒᵖ)
   (X : simplicial_object C) (φ : Π n, N n ⟶ X _[n])
 
 open simplex_category
-
+/-
 /-- Given a sequences of objects `N : ℕ → C` in a category `C`, this is
 a family of objects indexed by the elements `A : splitting.index_set Δ`.
 The `Δ`-simplices of a split simplicial objects shall identify to the
@@ -189,11 +182,11 @@ of objects `N` and a sequence of morphisms `N n ⟶ X _[n]`. -/
 @[simp]
 def map (Δ : simplex_categoryᵒᵖ) : sum N Δ ⟶ X.obj Δ :=
 sigma.desc (λ A, φ A.1.unop.len ≫ X.map A.e.op)
-
+-/
 end splitting
 
 variable [has_finite_coproducts C]
-
+/-
 /-- A splitting of a simplicial object `X` consists of the datum of a sequence
 of objects `N`, a sequence of morphisms `ι : N n ⟶ X _[n]` such that
 for all `Δ : simplex_categoryhᵒᵖ`, the canonical map `splitting.map X ι Δ`
@@ -278,7 +271,11 @@ begin
   dsimp only [ι_summand, desc],
   simp only [assoc, iso.hom_inv_id_assoc, ι_sum],
   erw [colimit.ι_desc, cofan.mk_ι_app],
-end
+end-/
+
+namespace splitting
+
+variables {X Y : simplicial_object C} (s : splitting X)
 
 lemma ι_summand_epi_naturality {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁)
   (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
@@ -409,21 +406,3 @@ def tensor_yoneda_adjunction [has_finite_coproducts C]
   end, }
 
 end sSet
-
-namespace simplicial_object
-
-namespace splitting
-
-variables [has_finite_coproducts C] {X : simplicial_object C} (s : splitting X)
-
-structure candidate_sk (n : ℕ) := (Y : simplicial_object C) (i : s.N n ⟶ Y.obj (op [n]))
-
-/-def sk : Π (n : ℕ), candidate_sk s n
-| 0 :=
-  { Y := Δ[0].tensor (s.N 0),
-    i := (sSet.tensor_yoneda_adjunction 0 (s.N 0) _).to_fun (𝟙 _), }
-| (n+1) := sorry-/
-
-end splitting
-
-end simplicial_object

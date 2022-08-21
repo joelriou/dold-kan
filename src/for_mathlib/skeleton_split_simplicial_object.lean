@@ -82,7 +82,7 @@ end
 instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_in C] : mono (s.sk_ι_app d Δ) :=
 begin
   let α : (s.sk_obj d Δ) ⟶ sigma_obj (splitting.summand s.N Δ) :=
-    sigma.desc (λ (B : index_set.truncated d Δ), splitting.ι_sum s.N B.1),
+    sigma.desc (λ (B : index_set.truncated d Δ), splitting.ι_coprod s.N B.1),
   haveI : mono α,
   { apply mono_in.mono_inclusion_sub_coproduct,
     intros B₁ B₂ h,

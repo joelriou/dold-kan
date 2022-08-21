@@ -11,7 +11,7 @@ import algebraic_topology.simplicial_object
 import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.images
 import for_mathlib.dold_kan.notations
-import for_mathlib.split_simplicial_object
+import algebraic_topology.split_simplicial_object
 
 /-!
 
@@ -318,7 +318,7 @@ lemma obj.map_on_summand {Δ Δ' : simplex_categoryᵒᵖ} (A : splitting.index_
   Γ₀.obj.termwise.map_mono K i ≫ (Γ₀.splitting K).ι_summand (splitting.index_set.mk e) :=
 begin
   dsimp only [simplicial_object.splitting.ι_summand,
-    simplicial_object.splitting.ι_sum],
+    simplicial_object.splitting.ι_coprod],
   simp only [assoc, Γ₀.splitting_iso_hom_eq_id, id_comp, comp_id],
   exact Γ₀.obj.map_on_summand₀ K A fac,
 end
