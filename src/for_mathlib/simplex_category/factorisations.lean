@@ -2,6 +2,7 @@ import category_theory.limits.shapes.images
 import algebraic_topology.simplex_category
 import tactic.equiv_rw
 import for_mathlib.lifting_properties_misc
+import category_theory.limits.shapes.regular_mono
 
 noncomputable theory
 
@@ -201,13 +202,6 @@ instance : split_epi_category NonemptyFinLinOrd.{u} :=
       { exfalso,
         simpa only [h₂, lt_self_iff_false] using h, }, },
     simpa only [hφ] using f.monotone (le_of_lt h), },
-end⟩
-
-instance : strong_epi_category NonemptyFinLinOrd.{u} :=
-⟨λ X Y f, begin
-  introI,
-  haveI : is_split_epi f := is_split_epi_of_epi f,
-  apply strong_epi_of_is_split_epi,
 end⟩
 
 lemma mono_iff_injective {A B : NonemptyFinLinOrd.{u}} {f : A ⟶ B} :
