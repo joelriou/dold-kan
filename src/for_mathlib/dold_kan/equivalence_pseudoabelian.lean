@@ -70,11 +70,11 @@ lemma hη : compatibility.τ₀ =
   compatibility.τ₁ (eq_to_iso hN₁) (eq_to_iso hΓ₀)
   (N₁Γ₀ : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ κequiv'.functor) :=
 begin
-  ext1, ext1, ext1 K,
+  ext K : 3,
   rw compatibility.τ₀_hom_app_eq,
   dsimp [compatibility.τ₁],
-  simp only [id_comp, comp_id, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans],
-  apply N₂Γ₂_compatible_with_N₁Γ₀,
+  simpa only [id_comp, comp_id, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans,
+    N₂Γ₂_to_karoubi_iso_hom] using N₂Γ₂_compatible_with_N₁Γ₀ K,
 end
 
 /-- The counit isomorphism induced by `N₁Γ₀_iso` -/

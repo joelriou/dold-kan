@@ -152,6 +152,48 @@ lemma fin.is_succ_of_ne_zero {j : ℕ} (x : fin (j+1)) (hx : x ≠ 0) :
   ∃ (y : fin j), x = y.succ :=
 ⟨x.pred hx, (fin.succ_pred _ _).symm⟩
 
+lemma simplex_category.δ_comp_σ_of_lt' {k : ℕ} (b : fin (k+3)) (i : fin (k+2)) (h : (b : ℕ) < i) :
+  ∃ (j : fin (k+1)) (a : fin (k+2)) (hj : i = j.succ) (ha : b = a.cast_succ),
+    δ b ≫ σ i = σ j ≫ δ a :=
+begin
+  have hi : i ≠ 0,
+  { intro hi,
+    simpa only [hi, fin.coe_zero, not_lt_zero'] using h, },
+  cases fin.is_succ_of_ne_zero i hi with j hj,
+  subst hj,
+  let a := fin.cast_pred b,
+  have ha : a.cast_succ = b,
+  { apply fin.cast_succ_cast_pred,
+    rw fin.lt_iff_coe_lt_coe,
+    apply h.trans,
+    simpa only [fin.coe_succ, fin.coe_last, add_lt_add_iff_right] using j.is_lt, },
+  have h' : a ≤ j.cast_succ,
+  { dsimp [a],
+    simpa only [← ha, fin.le_iff_coe_le_coe, fin.cast_pred_cast_succ, fin.coe_cast_succ,
+      ← nat.lt_succ_iff, fin.coe_succ] using h, },
+  exact ⟨j, a, rfl, ha.symm, by simpa only [← ha] using simplex_category.δ_comp_σ_of_le h'⟩,
+end
+
+lemma simplex_category.δ_comp_σ_of_le' {k : ℕ} (b : fin (k+3)) (i : fin (k+2)) (h : (i : ℕ)+2 ≤ b) :
+  ∃ (j : fin (k+1)) (a : fin (k+2)) (hj : i = j.cast_succ) (ha : b = a.succ),
+    δ b ≫ σ i = σ j ≫ δ a :=
+begin
+  have hb : b ≠ 0,
+  { intro hb,
+    simpa only [hb, fin.coe_zero, le_zero_iff] using h, },
+  cases fin.is_succ_of_ne_zero b hb with a ha,
+  let j := i.cast_pred,
+  have hj : j.cast_succ = i,
+  { apply fin.cast_succ_cast_pred,
+    rw [fin.lt_iff_coe_lt_coe, ← nat.succ_le_iff, ← nat.succ_le_succ_iff],
+    apply h.trans,
+    simpa only [← nat.lt_succ_iff] using b.is_lt, },
+  have h' : j.cast_succ < a,
+  { rw [hj, fin.lt_iff_coe_lt_coe, ← nat.succ_lt_succ_iff, ← nat.succ_le_iff],
+    simpa only [ha, fin.coe_succ] using h, },
+  exact ⟨j, a, hj.symm, ha, by simpa only [ha, ← hj] using simplex_category.δ_comp_σ_of_gt h'⟩,
+end
+
 lemma ι_d_hom_app_eq_zero (K : chain_complex C ℕ) (i j : ℕ) (hij : j+1=i)
   {A : splitting.index_set (op [i])} (hA : ¬ A.eq_id) :
   (Γ₀.splitting K).ι_summand A ≫ ((Γ₀ ⋙ N₁).obj K).X.d i j ≫ hom_app_f_f K j = 0 :=
@@ -178,32 +220,18 @@ begin
       intro h,
       change is_iso (simplex_category.δ b ≫ simplex_category.σ i) at h,
       by_cases hbi : (b : ℕ)<i,
-      { have hi : i ≠ 0,
-        { intro hi,
-          simpa only [fin.coe_zero, not_lt_zero', hi] using hbi, },
-        cases fin.is_succ_of_ne_zero i hi with j hj,
-        unfreezingI { subst hj, cases k, fin_cases j, },
-        let b' := fin.cast_pred b,
-        have hb' : b'.cast_succ = b,
-        { apply fin.cast_succ_cast_pred,
-          rw fin.lt_iff_coe_lt_coe,
-          apply hbi.trans,
-          simpa only [fin.coe_succ, fin.coe_last, add_lt_add_iff_right] using j.is_lt, },
-        have hbi' : b' ≤ j.cast_succ,
-        { dsimp [b'],
-          simp only [← hb', fin.le_iff_coe_le_coe, fin.cast_pred_cast_succ, fin.coe_cast_succ,
-            ← nat.lt_succ_iff],
-          simpa only [← hb', fin.coe_succ] using hbi, },
-        have eq := simplex_category.δ_comp_σ_of_le hbi',
-        rw hb' at eq,
-        rw eq at h,
-        haveI := h,
-        have h' := len_le_of_epi (epi_of_epi (σ j) (δ b')),
-        dsimp at h',
-        simpa only [add_le_iff_nonpos_right, le_zero_iff] using h', },
-      { simp only [not_lt] at hbi,
-        have hbi' : (i : ℕ)+2 ≤ b,
-        { cases nat.le.dest hbi with t ht,
+      { unfreezingI { cases k, },
+        { exfalso,
+          fin_cases i,
+          simpa only [this, fin.coe_fin_one, not_lt_zero'] using hbi, },
+        { rcases simplex_category.δ_comp_σ_of_lt' b i hbi with ⟨j, a, hj, ha, eq⟩,
+          rw eq at h,
+          haveI := h,
+          simpa only [len_mk, add_le_iff_nonpos_right, le_zero_iff] using
+            len_le_of_epi (epi_of_epi (σ j) (δ a)), }, },
+      { have hbi' : (i : ℕ)+2 ≤ b,
+        { simp only [not_lt] at hbi,
+          cases nat.le.dest hbi with t ht,
           suffices : 2 ≤ t,
           { linarith, },
           by_contra' ht' : _,
@@ -217,28 +245,13 @@ begin
             symmetry,
             simp only [fin.ext_iff, fin.coe_mk, fin.coe_one] at this,
             simpa only [this, fin.ext_iff, fin.coe_succ] using ht, }, },
-        have hb : b ≠ 0,
-        { intro hb,
-          rw hb at hbi',
-          simpa only [fin.coe_zero, le_zero_iff] using hbi', },
-        cases fin.is_succ_of_ne_zero b hb with b' hb',
-        unfreezingI { cases k, fin_cases i, },
-        { simpa only [fin.coe_fin_one, lt_self_iff_false]
-            using lt_of_le_of_lt hbi' (b.is_lt), },
-        let i' := i.cast_pred,
-        have hi' : i'.cast_succ = i,
-        { apply fin.cast_succ_cast_pred,
-          rw [fin.lt_iff_coe_lt_coe, ← nat.succ_le_iff, ← nat.succ_le_succ_iff],
-          refine le_trans hbi' _,
-          simpa only [← nat.lt_succ_iff] using b.is_lt, },
-        rw [hb', ← hi'] at h,
-        have hbi'' : i'.cast_succ < b',
-        { rw [hi', fin.lt_iff_coe_lt_coe, ← nat.succ_lt_succ_iff, ← nat.succ_le_iff],
-          simpa only [hb', fin.coe_succ] using hbi', },
-        rw simplex_category.δ_comp_σ_of_gt hbi'' at h,
-        haveI := h,
-        have h' := len_le_of_epi (epi_of_epi (σ i') (δ b')),
-        simpa only [len_mk, add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero] using h', }, },
+        unfreezingI { cases k, },
+        { have h' := b.is_lt, linarith, },
+        { rcases simplex_category.δ_comp_σ_of_le' b i hbi' with ⟨j, a, hj, ha, eq⟩,
+          rw eq at h,
+          haveI := h,
+          simpa only [len_mk, add_le_iff_nonpos_right, le_zero_iff] using
+              len_le_of_epi (epi_of_epi (σ j) (δ a)), }, }, },
     { let A : splitting.index_set (op [k+1]) := ⟨op [k], ⟨σ i, he⟩⟩,
       erw [Γ₀.obj.map_on_summand_assoc K A
         (simplex_category.δ i.succ).op (_ : 𝟙 _ ≫ 𝟙 _ = _),
@@ -371,27 +384,32 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
       N₁Γ₀.hom_app_f_f_termwise_eq_id],
   end, }
 
-def N₂Γ₂_to_karoubi : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
+lemma N₂Γ₂_to_karoubi : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
 begin
-  have h := functor.congr_obj (functor_extension₂_comp_whiskering_left_to_karoubi (chain_complex C ℕ) (simplicial_object C)) Γ₀,
-  have h' := functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi (simplicial_object C) (chain_complex C ℕ)) N₁,
-  dsimp at h h',
-  erw [← functor.assoc_eq, h, functor.assoc_eq, h'],
+  have h := functor.congr_obj (functor_extension₂_comp_whiskering_left_to_karoubi
+    (chain_complex C ℕ) (simplicial_object C)) Γ₀,
+  have h' := functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi
+    (simplicial_object C) (chain_complex C ℕ)) N₁,
+  dsimp [N₂, Γ₂, functor_extension₁] at h h' ⊢,
+  rw [← functor.assoc_eq, h, functor.assoc_eq, h'],
 end
+
+@[simps]
+def N₂Γ₂_to_karoubi_iso : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ ≅ Γ₀ ⋙ N₁ :=
+eq_to_iso (N₂Γ₂_to_karoubi)
 
 @[simps]
 def N₂Γ₂ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
 (whiskering_left_to_karoubi_iso_equiv (Γ₂ ⋙ N₂) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
-((eq_to_iso N₂Γ₂_to_karoubi).trans N₁Γ₀)
+(N₂Γ₂_to_karoubi_iso.trans N₁Γ₀)
 
 lemma N₂Γ₂_compatible_with_N₁Γ₀ (K: chain_complex C ℕ) :
-  N₂Γ₂.hom.app ((to_karoubi _).obj K) = eq_to_hom (by { exact functor.congr_obj N₂Γ₂_to_karoubi K, })
-    ≫ N₁Γ₀.hom.app K :=
+  N₂Γ₂.hom.app ((to_karoubi _).obj K) = N₂Γ₂_to_karoubi_iso.hom.app K ≫ N₁Γ₀.hom.app K :=
 begin
   dsimp only [N₂Γ₂, N₁Γ₀, whiskering_left_to_karoubi_iso_equiv],
-  erw [whiskering_left_to_karoubi_hom_equiv_inv_fun_compat],
+  rw whiskering_left_to_karoubi_hom_equiv_inv_fun_compat,
   dsimp only [iso.trans, eq_to_iso],
-  simp only [nat_trans.comp_app, eq_to_hom_app],
+  apply nat_trans.comp_app,
 end
 
 end dold_kan
