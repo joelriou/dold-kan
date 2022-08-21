@@ -128,7 +128,7 @@ lemma ι_d_hom_app_eq_zero.term_is_zero (K : chain_complex C ℕ) (j : ℕ)
     (Γ₀.obj K).δ b ≫ hom_app_f_f K j = 0 :=
 begin
   erw Γ₀.obj.map_on_summand'_assoc K A (simplex_category.δ b).op,
-  simp only [hom_app_f_f, (Γ₀.splitting K).ι_desc],
+  simp only [hom_app_f_f, splitting.ι_desc],
   rw [hom_app_f_f_termwise_eq_zero, comp_zero, zsmul_zero],
   intro h,
   apply hb,
@@ -281,13 +281,12 @@ def hom_app (K : chain_complex C ℕ) : (Γ₀ ⋙ N₁).obj K ⟶ (to_karoubi (
       by_cases A.eq_id,
       { dsimp at h,
         subst h,
-        simp only [ι_id_d_assoc K i j hij, hom_app_f_f, (Γ₀.splitting K).ι_desc,
-          (Γ₀.splitting K).ι_desc_assoc, hom_app_f_f_termwise_eq_id],
+        simp only [ι_id_d_assoc K i j hij, hom_app_f_f, splitting.ι_desc,
+          splitting.ι_desc_assoc, hom_app_f_f_termwise_eq_id],
         dsimp,
         erw [id_comp, comp_id], },
       { rw [ι_d_hom_app_eq_zero K i j hij h, hom_app_f_f,
-          (Γ₀.splitting K).ι_desc_assoc, hom_app_f_f_termwise_eq_zero K i h,
-          zero_comp], },
+          splitting.ι_desc_assoc, hom_app_f_f_termwise_eq_zero K i h, zero_comp], },
     end, },
   comm := begin
     ext n : 2,
@@ -299,7 +298,7 @@ def hom_app (K : chain_complex C ℕ) : (Γ₀ ⋙ N₁).obj K ⟶ (to_karoubi (
     { dsimp at h,
       subst h,
       simp only [hom_app_f_f_termwise_eq_id, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
-        simplicial_object.splitting.ι_desc _ (op [n]), comp_id], },
+        splitting.ι_desc, comp_id], },
     { simp only [hom_app_f_f_termwise_eq_zero K n h, zero_comp,
         P_infty_on_Γ₀_splitting_summand_eq_zero_assoc K n h], },
   end, }
@@ -314,13 +313,12 @@ def hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
     dsimp,
     simp only [N₁_map_f, assoc, karoubi.comp, homological_complex.comp_f,
       alternating_face_map_complex.map_f, Γ₀.map_app, hom_app_f_f, hom_app_f_f_2,
-      to_karoubi_map_f, simplicial_object.splitting.ι_desc_assoc],
+      to_karoubi_map_f, splitting.ι_desc_assoc],
     by_cases A.eq_id,
     { dsimp at h,
       subst h,
-      rw P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
-      simp only [(Γ₀.splitting K).ι_desc_assoc, assoc, (Γ₀.splitting L).ι_desc,
-        hom_app_f_f_termwise_eq_id],
+      simp only [P_infty_on_Γ₀_splitting_summand_eq_self_assoc, splitting.ι_desc_assoc,
+        assoc, splitting.ι_desc, hom_app_f_f_termwise_eq_id],
       dsimp [splitting.index_set.id],
       erw [comp_id, id_comp], },
     { simp only [P_infty_on_Γ₀_splitting_summand_eq_zero_assoc K n h,
@@ -328,8 +326,7 @@ def hom : Γ₀ ⋙ N₁ ⟶ to_karoubi (chain_complex C ℕ) :=
   end }
 
 @[simp]
-def inv_app_f_f (K : chain_complex C ℕ) (n : ℕ) :
-  K.X n ⟶ (Γ₀.obj K) _[n] :=
+def inv_app_f_f (K : chain_complex C ℕ) (n : ℕ) : K.X n ⟶ (Γ₀.obj K) _[n] :=
 (Γ₀.splitting K).ι_summand (splitting.index_set.id (op [n]))
 
 @[simps]
@@ -348,7 +345,7 @@ def inv : to_karoubi (chain_complex C ℕ) ⟶ Γ₀ ⋙ N₁ :=
     simpa only [to_karoubi_map_f, karoubi.comp, homological_complex.comp_f,
       inv_app_f_f, inv_app_f_f_2, N₁_map_f, alternating_face_map_complex.map_f,
       Γ₀.map_app, P_infty_on_Γ₀_splitting_summand_eq_self_assoc,
-      (Γ₀.splitting X).ι_desc (op [n])],
+      splitting.ι_desc],
   end, }
 
 end N₁Γ₀
@@ -364,7 +361,7 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
     simp only [nat_trans.comp_app, N₁Γ₀.hom_app_2, N₁Γ₀.inv_app_2,
       karoubi.comp, homological_complex.comp_f, N₁Γ₀.hom_app_f_f,
       N₁Γ₀.hom_app_f_f_2, N₁Γ₀.inv_app_f_f, N₁Γ₀.inv_app_f_f_2,
-      nat_trans.id_app, karoubi.id_eq, (Γ₀.splitting K).ι_desc_assoc (op [n])],
+      nat_trans.id_app, karoubi.id_eq, splitting.ι_desc_assoc],
     by_cases A.eq_id,
     { dsimp at h,
       subst h,
@@ -375,14 +372,7 @@ def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
       simp only [N₁Γ₀.hom_app_f_f_termwise_eq_zero K n h,
         P_infty_on_Γ₀_splitting_summand_eq_zero K n h, zero_comp], },
   end,
-  inv_hom_id' := begin
-    ext K n,
-    simpa only [nat_trans.comp_app, N₁Γ₀.inv_app_2, N₁Γ₀.hom_app_2,
-      karoubi.comp, homological_complex.comp_f, N₁Γ₀.inv_app_f_f,
-      N₁Γ₀.inv_app_f_f_2, N₁Γ₀.hom_app_f_f, N₁Γ₀.hom_app_f_f_2, to_karoubi_obj_p,
-      nat_trans.id_app, karoubi.id_eq, (Γ₀.splitting K).ι_desc (op [n]),
-      N₁Γ₀.hom_app_f_f_termwise_eq_id],
-  end, }
+  inv_hom_id' := by tidy, }
 
 lemma N₂Γ₂_to_karoubi : to_karoubi (chain_complex C ℕ) ⋙ Γ₂ ⋙ N₂ = Γ₀ ⋙ N₁ :=
 begin
@@ -401,7 +391,7 @@ eq_to_iso (N₂Γ₂_to_karoubi)
 @[simps]
 def N₂Γ₂ : Γ₂ ⋙ N₂ ≅ 𝟭 (karoubi (chain_complex C ℕ)) :=
 (whiskering_left_to_karoubi_iso_equiv (Γ₂ ⋙ N₂) (𝟭 (karoubi (chain_complex C ℕ)))).inv_fun
-(N₂Γ₂_to_karoubi_iso.trans N₁Γ₀)
+  (N₂Γ₂_to_karoubi_iso.trans N₁Γ₀)
 
 lemma N₂Γ₂_compatible_with_N₁Γ₀ (K: chain_complex C ℕ) :
   N₂Γ₂.hom.app ((to_karoubi _).obj K) = N₂Γ₂_to_karoubi_iso.hom.app K ≫ N₁Γ₀.hom.app K :=
