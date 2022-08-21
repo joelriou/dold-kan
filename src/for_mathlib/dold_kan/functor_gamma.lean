@@ -24,10 +24,11 @@ and more generally pseudoabelian categories. We also extend this functor `Γ₀`
 completion, and this functor shall be an equivalence of categories when `C` is any additive
 category (see `equivalence_additive.lean`).
 
---When `K` is a chain_complex, `Γ₀.obj K` is a simplicial object which sends `op Δ` to
---the direct sum of copies of `K.X m` for any tuple `(Δ', α)` where `α : Δ → Δ'`
---is an epimorphism in `simplex_category`. The index set of this direct sum is denoted
---`Γ_index_set Δ`.
+By definition, when `K` is a chain_complex, `Γ₀.obj K` is a simplicial object which
+sends `Δ : simplex_categoryᵒᵖ` to a certain coproduct indexed by the set
+`splitting.index_set Δ` whose elements consists of epimorphisms `e : Δ.unop ⟶ Δ'.unop`
+(with `Δ' : simplex_categoryᵒᵖ`); the summand attached to such an `e` is `K.X Δ'.unop.len`.
+By construction, `Γ₀.obj K` is a split simplicial object whose splitting is `Γ₀.splitting K`.
 
 -/
 
