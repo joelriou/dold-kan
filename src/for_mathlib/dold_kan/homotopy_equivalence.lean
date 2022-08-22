@@ -25,9 +25,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-universe v
-
-variables {C : Type*} [category.{v} C] [preadditive C] (X : simplicial_object C)
+variables {C : Type*} [category C] [preadditive C] (X : simplicial_object C)
 
 /-- Inductive construction of homotopies from `P q` to `𝟙 _` -/
 noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
@@ -43,7 +41,7 @@ noncomputable def P_is_homotopic_to_id : Π (q : ℕ),
     { simp only [add_zero, comp_zero], },
   end
 
-/-- The complement projection `Q q` to `P q` are homotopic to zero. -/
+/-- The complement projection `Q q` to `P q` is homotopic to zero. -/
 def Q_is_homotopic_to_zero (q : ℕ) : homotopy (Q q : K[X] ⟶ _) 0 :=
 homotopy.equiv_sub_zero.to_fun (P_is_homotopic_to_id X q).symm
 
@@ -62,7 +60,7 @@ end
 variable (X)
 
 /-- Construction of the homotopy from `P_infty` to the identity using eventually
-(termwise) constant homotopies from `P q` to the identity for all q -/
+(termwise) constant homotopies from `P q` to the identity for all `q` -/
 @[simps]
 def P_infty_is_homotopic_to_id :
   homotopy (P_infty : K[X] ⟶ _) (𝟙 _) :=
@@ -70,15 +68,12 @@ def P_infty_is_homotopic_to_id :
   zero' := λ i j hij, homotopy.zero _ i j hij,
   comm := λ n, begin
     cases n,
-    { have h := (P_is_homotopic_to_id X 2).comm 0,
-      simp only [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,
-        zero_add, homological_complex.id_f, P_infty_f, P_f_0_eq] at h ⊢,
-      erw ← h, },
-    { have h := (P_is_homotopic_to_id X (n+2)).comm (n+1),
-      simp only [homotopy.d_next_succ_chain_complex, homotopy.prev_d_chain_complex,
-        homological_complex.id_f, P_infty_f] at h ⊢,
-      rw [homotopies_P_id_are_eventually_constant X (lt_add_one (n+1)), ← h,
-        ← P_is_eventually_constant (rfl.le : n+1 ≤ n+1)], },
+    { simpa only [homotopy.d_next_zero_chain_complex, homotopy.prev_d_chain_complex,  P_f_0_eq,
+        zero_add, homological_complex.id_f, P_infty_f] using (P_is_homotopic_to_id X 2).comm 0, },
+    { simpa only [homotopy.d_next_succ_chain_complex, homotopy.prev_d_chain_complex,
+        homological_complex.id_f, P_infty_f, ← P_is_eventually_constant (rfl.le : n+1 ≤ n+1),
+        homotopies_P_id_are_eventually_constant X (lt_add_one (n+1))]
+        using (P_is_homotopic_to_id X (n+2)).comm (n+1), },
   end }
 
 /-- The inclusion of the Moore complex in the alternating face map complex
@@ -90,8 +85,9 @@ def inclusion_of_Moore_complex_map_is_homotopy_equiv {A : Type*} [category A] [a
 { hom := inclusion_of_Moore_complex_map Y,
   inv := P_infty_into_Moore_subcomplex Y,
   homotopy_hom_inv_id := homotopy.of_eq (split_mono_inclusion_of_Moore_complex_map Y).id,
-  homotopy_inv_hom_id := homotopy.trans (homotopy.of_eq
-    (P_infty_into_Moore_subcomplex_comp_inclusion Y)) (P_infty_is_homotopic_to_id Y), }
+  homotopy_inv_hom_id := homotopy.trans
+    (homotopy.of_eq (P_infty_into_Moore_subcomplex_comp_inclusion Y))
+    (P_infty_is_homotopic_to_id Y), }
 
 end dold_kan
 
