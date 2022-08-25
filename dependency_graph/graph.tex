@@ -43,6 +43,7 @@ Colours :
 \node[green](functoriality) at (-5,-23) {functoriality.lean};
 \node[green](normalized) at (6,-15) {normalized.lean};
 \node[green](hoequiv) at (7,-19) {homotopy\_equivalence.lean};
+\node[red](degenerate) at (-6,-17) {degenerate\_subcomplex.lean};
 
 \path (notations) edge (homotopies);
 \path (notations) edge [bend right] (functorgamma);
@@ -71,6 +72,8 @@ Colours :
 \path (equivalence) edge (functoriality);
 \path (functorialityadditive) edge (functorialitypa);
 \path (functorialitypa) edge (functoriality);
+\path (degeneracies) edge (degenerate);
+\path (normalized) edge [bend left = 4mm] (degenerate);
 \end{tikzpicture}
 \end{center}
 
