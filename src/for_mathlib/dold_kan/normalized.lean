@@ -98,6 +98,15 @@ begin
   { exact (higher_faces_vanish.inclusion_of_Moore_complex_map n).comp_P_eq_self, },
 end
 
+@[simp, reassoc]
+lemma inclusion_of_Moore_complex_map_comp_Q_infty (X : simplicial_object A) :
+  inclusion_of_Moore_complex_map X ≫ Q_infty = 0 :=
+begin
+  dsimp only [Q_infty],
+  simpa only [preadditive.comp_sub, inclusion_of_Moore_complex_map_comp_P_infty, sub_eq_zero]
+    using comp_id _,
+end
+
 instance : mono (inclusion_of_Moore_complex_map X) :=
 ⟨λ Y f₁ f₂ hf, by { ext n, exact homological_complex.congr_hom hf n, }⟩
 

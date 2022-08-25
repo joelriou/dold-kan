@@ -187,17 +187,17 @@ end
 
 lemma P_infty_on_degeneracies (X : simplicial_object C)
   (n : ℕ) {Δ' : simplex_category} (θ : [n] ⟶ Δ')
-  (hf : ¬mono θ) :
+  (hθ : ¬mono θ) :
   X.map θ.op ≫ P_infty.f n = 0 :=
 begin
-  rw simplex_category.mono_iff_injective at hf,
+  rw simplex_category.mono_iff_injective at hθ,
   cases n,
   { exfalso,
-    apply hf,
+    apply hθ,
     intros x y h,
     fin_cases x,
     fin_cases y, },
-  { rcases simplex_category.eq_σ_comp_of_not_injective θ hf with ⟨i, α, h⟩,
+  { rcases simplex_category.eq_σ_comp_of_not_injective θ hθ with ⟨i, α, h⟩,
     rw [h, op_comp, X.map_comp, assoc, (show X.map (simplex_category.σ i).op = X.σ i, by refl),
       σ_comp_P_infty, comp_zero], },
 end

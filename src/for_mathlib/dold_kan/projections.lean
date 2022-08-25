@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.dold_kan.faces
+import category_theory.idempotents.biproducts
 
 /-!
 
@@ -168,6 +169,15 @@ begin
     simp only [comp_add, homological_complex.comp_f, homological_complex.add_f_apply,
       comp_id, functor.map_add, functor.map_comp, hq, map_Hσ], }
 end
+
+@[simp, reassoc]
+lemma Q_f_idem (q n : ℕ) :
+  ((Q q).f n : X _[n] ⟶ _) ≫ ((Q q).f n) = (Q q).f n :=
+(idempotents.karoubi.mk (X _[n]) _ (P_f_idem q n)).complement.idem
+
+@[simp, reassoc]
+lemma Q_idem (q : ℕ) : (Q q : K[X] ⟶ K[X]) ≫ Q q = Q q :=
+by { ext n, apply Q_f_idem, }
 
 end dold_kan
 
