@@ -28,18 +28,72 @@ begin
     exact subobject.le_of_comm (B.factor_thru _ h) (subobject.factor_thru_arrow _ _ _), }
 end
 
+section
+variables [abelian C] {I : Type*} [fintype I] {B : C} (P : I → subobject B)
 @[simp]
-def coproduct_to_finset_sup [abelian C] {I : Type*} [fintype I] {B : C}
-  (P : I → subobject B) : ∐ (λ (i : I), (P i : C)) ⟶ ↑(finset.univ.sup P) :=
-sigma.desc (λ i,subobject.of_le _ _ (finset.le_sup (finset.mem_univ _)))
+def coproduct_to_finset_univ_sup : ∐ (λ (i : I), (P i : C)) ⟶ ↑(finset.univ.sup P) :=
+sigma.desc (λ i, subobject.of_le _ _ (finset.le_sup (finset.mem_univ _)))
 
-lemma ι_comp_coproduct_to_finset_sup_comp_arrow [abelian C] {I : Type*} [fintype I] {B : C}
-  (P : I → subobject B) (i : I) :
-  sigma.ι _ i ≫ coproduct_to_finset_sup P ≫ (finset.univ.sup P).arrow = (P i).arrow :=
-by simp only [coproduct_to_finset_sup, colimit.ι_desc_assoc, cofan.mk_ι_app, subobject.of_le_arrow]
+lemma subobject.jointly_epi_to_binary_sup {B : C} (P₁ P₂ : subobject B) {Z : C}
+  (f₁ f₂ : ↑(P₁ ⊔ P₂) ⟶ Z)
+  (hl : subobject.of_le P₁ (P₁ ⊔ P₂) le_sup_left ≫ f₁ =
+    subobject.of_le P₁ (P₁ ⊔ P₂) le_sup_left ≫ f₂)
+  (hr : subobject.of_le P₂ (P₁ ⊔ P₂) le_sup_right ≫ f₁ =
+    subobject.of_le P₂ (P₁ ⊔ P₂) le_sup_right ≫ f₂) : f₁ = f₂ :=
+begin
+  revert P₁ P₂,
+  refine subobject.ind₂ _ _,
+  introsI A₁ A₂ f₁ f₂ hf₁ hf₂ g₁ g₂ h₁ h₂,
+  let f₁₂ := (mono_over.sup.obj (mono_over.mk' f₁)).obj (mono_over.mk' f₂),
+  have eq : subobject.mk f₁ ⊔ subobject.mk f₂ = (to_thin_skeleton _).obj f₁₂ := rfl,
+  let e := subobject.iso_of_eq (subobject.mk f₁ ⊔ subobject.mk f₂)
+    ((to_thin_skeleton _).obj f₁₂) rfl,
+  rw ← cancel_epi e.inv,
+  all_goals { sorry, },
+end
 
-instance [abelian C] {I : Type*} [fintype I] {B : C} {P : I → subobject B} :
-  epi (coproduct_to_finset_sup P) := sorry
+lemma subobject.jointly_epi_to_sup {I : Type*} (s : finset I) {B : C}
+  (P : I → subobject B) {Z : C} (f₁ f₂ : ↑(s.sup P) ⟶ Z)
+  (h : ∀ (i : s), subobject.of_le (P i) _ (finset.le_sup i.2)  ≫ f₁ =
+    subobject.of_le (P i) _ (finset.le_sup i.2)  ≫ f₂) :
+     f₁ = f₂ :=
+begin
+  revert f₁ f₂ h,
+  induction s using finset.cons_induction_on with j s hj hs,
+  { intros f₁ f₂ h,
+    apply is_initial.hom_ext,
+    simpa only [finset.sup_empty] using
+      is_initial.of_iso initial_is_initial subobject.bot_coe_iso_initial.symm, },
+  { intros f₁ f₂ h,
+    let e := subobject.iso_of_eq ((finset.cons j s hj).sup P) (P j ⊔ s.sup P)
+      (finset.sup_cons _),
+    rw ← cancel_epi e.inv,
+    apply subobject.jointly_epi_to_binary_sup,
+    { simpa only [subobject.iso_of_eq_inv, subobject.of_le_comp_of_le_assoc]
+        using h ⟨j, finset.mem_cons_self j s⟩, },
+    { apply hs,
+      intro i,
+      simpa only [subobject.iso_of_eq_inv, subobject.of_le_comp_of_le_assoc]
+        using h ⟨i.1 , finset.mem_cons.2 (or.inr i.2)⟩, }, },
+end
+
+lemma subobject.jointly_epi_to_univ_sup {I : Type*} [fintype I] {B : C}
+  (P : I → subobject B) {Z : C} (f₁ f₂ : ↑(finset.univ.sup P) ⟶ Z)
+  (h : ∀ (i : I), subobject.of_le (P i) _ (finset.le_sup (finset.mem_univ _)) ≫ f₁ =
+    subobject.of_le (P i) _ (finset.le_sup (finset.mem_univ _)) ≫ f₂) : f₁ = f₂ :=
+subobject.jointly_epi_to_sup _ _ _ _ (λ i, h i.1)
+
+instance : epi (coproduct_to_finset_univ_sup P) :=
+⟨λ Z f₁ f₂ h, subobject.jointly_epi_to_univ_sup _ _ _
+  (λ i, by simpa only [coproduct_to_finset_univ_sup, colimit.ι_desc_assoc, cofan.mk_ι_app]
+    using sigma.ι _ i ≫= h)⟩
+
+lemma ι_comp_coproduct_to_finset_univ_sup_comp_arrow (i : I) :
+  sigma.ι _ i ≫ coproduct_to_finset_univ_sup P ≫ (finset.univ.sup P).arrow = (P i).arrow :=
+by simp only [coproduct_to_finset_univ_sup, colimit.ι_desc_assoc, cofan.mk_ι_app,
+  subobject.of_le_arrow]
+
+end
 
 lemma subobject.factors_sum {X Y : C} [preadditive C] {P : subobject Y} {I : Type*}
   (s : finset I) (f : I → (X ⟶ Y)) (hf : ∀ (i : I) (hi : i ∈ s), P.factors (f i)) :
@@ -92,13 +146,13 @@ end
 @[derive epi]
 def coproduct_to_obj_X (X : simplicial_object C) (n : ℕ) :
   ∐ (λ (i : fin (n+1)), (image_subobject (X.σ i): C)) ⟶ ↑(obj_X X (n+1)) :=
-coproduct_to_finset_sup (λ (i : fin (n + 1)), image_subobject (X.σ i))
+coproduct_to_finset_univ_sup (λ (i : fin (n + 1)), image_subobject (X.σ i))
 
 @[reassoc]
 lemma ι_coproduct_to_obj_X_comp_arrow (X : simplicial_object C) {n : ℕ} (i : fin (n+1)) :
   sigma.ι _ i ≫ coproduct_to_obj_X X n ≫ (obj_X X (n+1)).arrow =
   (image_subobject (X.σ i)).arrow :=
-by apply ι_comp_coproduct_to_finset_sup_comp_arrow
+by apply ι_comp_coproduct_to_finset_univ_sup_comp_arrow
 
 @[simp, reassoc]
 lemma obj_X_arrow_comp_P_infty (X : simplicial_object C) (n : ℕ) :
@@ -178,7 +232,8 @@ def obj (X : simplicial_object C) : chain_complex C ℕ :=
     subobject.factor_thru_arrow, subobject.factor_thru_arrow_assoc, K[X].d_comp_d], }, }
 
 lemma map_factors_obj_X {X Y : simplicial_object C} (f : X ⟶ Y) (n : ℕ) :
-  (obj_X Y n).factors ((obj_X X n).arrow ≫ ((alternating_face_map_complex C).map f).f n) := sorry
+  (obj_X Y n).factors ((obj_X X n).arrow ≫ ((alternating_face_map_complex C).map f).f n) :=
+by simp
 
 @[simps]
 def map {X Y : simplicial_object C} (f : X ⟶ Y) : obj X ⟶ obj Y :=
