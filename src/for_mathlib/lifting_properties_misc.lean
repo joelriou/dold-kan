@@ -3,24 +3,12 @@ import category_theory.adjunction.basic
 
 namespace category_theory
 
-namespace arrow
-namespace hom
-
-variables {C : Type*} [category C]
-
-lemma congr_left {f g : arrow C} {φ₁ φ₂ : f ⟶ g} (h : φ₁ = φ₂) : φ₁.left = φ₂.left := by rw h
-lemma congr_right {f g : arrow C} {φ₁ φ₂ : f ⟶ g} (h : φ₁ = φ₂) : φ₁.right = φ₂.right := by rw h
-
-end hom
-end arrow
-
-
 open category
 
 variables {C D : Type*} [category C] [category D]
   {G : C ⥤ D} {F : D ⥤ C}
 
-namespace comm_sq
+/-namespace comm_sq
 
 section
 variables {A B : C} {X Y : D} {i : A ⟶ B} {p : X ⟶ Y}
@@ -112,11 +100,11 @@ end
 
 end
 
-end comm_sq
+end comm_sq-/
 
 namespace has_lifting_property
 
-lemma iff_of_adjunction (adj : G ⊣ F) {A B : C} {X Y : D} (i : A ⟶ B) (p : X ⟶ Y) :
+/-lemma iff_of_adjunction (adj : G ⊣ F) {A B : C} {X Y : D} (i : A ⟶ B) (p : X ⟶ Y) :
   has_lifting_property (G.map i) p ↔ has_lifting_property i (F.map p) :=
 begin
   split,
@@ -168,7 +156,7 @@ by { split; introI, exacts [of_arrow_iso_left e p, of_arrow_iso_left e.symm p], 
 lemma iff_of_arrow_iso_right {A B X Y X' Y' : C} (i : A ⟶ B) {p : X ⟶ Y} {p' : X' ⟶ Y'}
   (e : arrow.mk p ≅ arrow.mk p') :
   has_lifting_property i p ↔ has_lifting_property i p' :=
-by { split; introI, exacts [of_arrow_iso_right i e, of_arrow_iso_right i e.symm], }
+by { split; introI, exacts [of_arrow_iso_right i e, of_arrow_iso_right i e.symm], }-/
 
 end has_lifting_property
 

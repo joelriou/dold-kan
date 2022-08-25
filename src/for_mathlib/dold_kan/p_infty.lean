@@ -8,9 +8,11 @@ import for_mathlib.dold_kan.projections
 import category_theory.idempotents.functor_categories
 import category_theory.idempotents.functor_extension
 
-/-
+/-!
 
 # Construction of the projection `P_infty` for the Dold-Kan correspondence
+
+TODO (@joelriou) continue adding the various files referenced below
 
 In this file, we construct the projection `P_infty : K[X] ⟶ K[X]` by passing
 to the limit the projections `P q` defined in `projections.lean`. This
@@ -23,11 +25,9 @@ projection on the normalized Moore subcomplex, with kernel the degenerate subcom
 
 open category_theory
 open category_theory.category
-open category_theory.limits
 open category_theory.preadditive
 open category_theory.simplicial_object
 open category_theory.idempotents
-open simplex_category
 open opposite
 open_locale simplicial dold_kan
 
@@ -39,7 +39,7 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C] {X : simplicial_object C}
 
-lemma P_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
+lemma P_is_eventually_constant {q n : ℕ} (hqn : n ≤ q) :
   ((P (q+1)).f n : X _[n] ⟶ _ ) = (P q).f n :=
 begin
   cases n,
@@ -51,39 +51,34 @@ begin
       (nat.succ_le_iff.mp hqn), },
 end
 
-lemma Q_is_eventually_constant {q n : ℕ} (hqn : n≤q) :
+lemma Q_is_eventually_constant {q n : ℕ} (hqn : n ≤ q) :
   ((Q (q+1)).f n : X _[n] ⟶ _ ) = (Q q).f n :=
 by simp only [Q, homological_complex.sub_f_apply, P_is_eventually_constant hqn]
 
-/-- Definition of P_infty from the P q -/
+/-- The endomorphism `P_infty : K[X] ⟶ K[X]` obtained from the `P q` by passing to the limit. -/
 def P_infty : K[X] ⟶ K[X] := chain_complex.of_hom _ _ _ _ _ _
-    (λ n, ((P n).f n : X _[n] ⟶ _ ))
-begin
-  intro n,
-  simp only [← P_is_eventually_constant (rfl.ge : n≤n)],
-  have eq := (P (n+1) : K[X] ⟶ _).comm (n+1) n,
-  erw chain_complex.of_d at eq,
-  exact eq,
-end
+  (λ n, ((P n).f n : X _[n] ⟶ _ ))
+  (λ n, by simpa only [← P_is_eventually_constant (show n ≤ n, by refl),
+    alternating_face_map_complex.obj_d_eq] using (P (n+1)).comm (n+1) n)
 
 @[simp]
 lemma P_infty_f_0 : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
 
-lemma P_infty_f (n : ℕ) :
-  (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := by refl
+lemma P_infty_f (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := rfl
+
+@[simp, reassoc]
+lemma P_infty_f_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+  f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
+P_f_naturality n n f
 
 @[simp, reassoc]
 lemma P_infty_f_idem (n : ℕ) :
   (P_infty.f n : X _[n] ⟶ _) ≫ (P_infty.f n) = P_infty.f n :=
 by simp only [P_infty_f, P_f_idem]
 
+@[simp, reassoc]
 lemma P_infty_idem : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
 by { ext n, exact P_infty_f_idem n, }
-
-@[simp, reassoc]
-lemma P_infty_f_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
-  f.app (op [n]) ≫ P_infty.f n = P_infty.f n ≫ f.app (op [n]) :=
-P_f_naturality n n f
 
 variable (C)
 
@@ -94,9 +89,6 @@ def nat_trans_P_infty :
   alternating_face_map_complex C ⟶ alternating_face_map_complex C :=
 { app := λ _, P_infty,
   naturality' := λ X Y f, by { ext n, exact P_infty_f_naturality n f, }, }
-
---lemma nat_trans_P_infty_f_app (n : ℕ) (Y : simplicial_object C) :
---  ((nat_trans_P_infty C).app Y).f n = P_infty.f n := rfl
 
 /-- The natural transformation in each degree that is induced by `nat_trans_P_infty`. -/
 @[simps]
@@ -117,7 +109,7 @@ computes `P_infty` for the associated object in `simplicial_object (karoubi C)`
 in terms of `P_infty` for `Y.X : simplicial_object C` and `Y.p`. -/
 lemma karoubi_P_infty_f {Y : karoubi (simplicial_object C)} (n : ℕ) :
   ((P_infty : K[(karoubi_functor_category_embedding _ _).obj Y] ⟶ _).f n).f =
-  Y.p.app (op [n]) ≫ (P_infty : K[Y.X] ⟶ _).f n :=
+    Y.p.app (op [n]) ≫ (P_infty : K[Y.X] ⟶ _).f n :=
 begin
   -- We introduce P_infty endomorphisms P₁, P₂, P₃, P₄ on various objects Y₁, Y₂, Y₃, Y₄.
   let Y₁ := (karoubi_functor_category_embedding _ _).obj Y,
@@ -142,15 +134,15 @@ begin
   have h₁₄ := idempotents.nat_trans_eq τ Y,
   dsimp [τ, τ₁, τ₂, nat_trans_P_infty_f] at h₁₄,
   rw [id_comp, id_comp, comp_id, comp_id] at h₁₄,
-  rw [h₁₄, ← h₃₂, ← h₄₃],
+  /- We use the three equalities h₃₂, h₄₃, h₁₄. -/
+  rw [← h₃₂, ← h₄₃, h₁₄],
   simp only [karoubi_functor_category_embedding.map_app_f, karoubi.decomp_id_p_f,
     karoubi.decomp_id_i_f, karoubi.comp],
   let π : Y₄ ⟶ Y₄ := (to_karoubi _ ⋙ karoubi_functor_category_embedding _ _).map Y.p,
   have eq := karoubi.hom_ext.mp (P_infty_f_naturality n π),
   simp only [karoubi.comp] at eq,
-  erw [← eq, ← assoc],
-  congr,
-  exact congr_app Y.idem (op [n]),
+  dsimp [π] at eq,
+  rw [← eq, reassoc_of (app_idem Y (op [n]))],
 end
 
 end dold_kan

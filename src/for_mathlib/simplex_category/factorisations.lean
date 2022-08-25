@@ -1,7 +1,6 @@
 import category_theory.limits.shapes.images
 import algebraic_topology.simplex_category
 import tactic.equiv_rw
-import for_mathlib.lifting_properties_misc
 import category_theory.limits.shapes.regular_mono
 
 noncomputable theory
@@ -10,7 +9,7 @@ universes u
 
 namespace category_theory
 
-lemma concrete_category.bijective_of_is_iso {C : Type*} [category C]
+/-lemma concrete_category.bijective_of_is_iso {C : Type*} [category C]
   [concrete_category C] {X Y : C} (f : X ⟶ Y) [is_iso f] :
   function.bijective ((forget _).map f) :=
 by { rw ← is_iso_iff_bijective, apply_instance, }
@@ -23,13 +22,13 @@ strong_epi.mk' begin
   { l := section_ f ≫ u,
     fac_left' := by simp only [← cancel_mono z, sq.w, category.assoc, is_split_epi.id_assoc],
     fac_right' := by simp only [sq.w, category.assoc, is_split_epi.id_assoc], }
-end
+end-/
 
 variables {C D : Type*} [category C] [category D] (F : C ⥤ D) {A B : C} (f : A ⟶ B)
 
 namespace functor
 
-def is_split_epi_iff [full F] [faithful F] : is_split_epi f ↔ is_split_epi (F.map f) :=
+/-def is_split_epi_iff [full F] [faithful F] : is_split_epi f ↔ is_split_epi (F.map f) :=
 begin
   split,
   { intro h, refine is_split_epi.mk' ((split_epi_equiv F f).to_fun h.exists_split_epi.some), },
@@ -95,7 +94,7 @@ begin
       arrow.iso_of_nat_iso (F.as_equivalence.unit_iso) (arrow.mk f),
     rw strong_epi_iff_of_arrow_iso e,
     apply_instance, }
-end
+end-/
 
 open limits
 
@@ -107,7 +106,7 @@ begin
   { simp only [← F.mono_map_iff_mono, as_equivalence_counit, image_preimage],
     apply mono_comp, },
   haveI : strong_epi (F.preimage (s.e ≫ F.as_equivalence.counit_iso.inv.app _)),
-  { simp only [F.strong_epi_iff_strong_epi_map_of_is_equivalence,
+  { simp only [← @strong_epi_map_iff_strong_epi_of_is_equivalence _ _ _ _ F,
       image_preimage, as_equivalence_counit],
     apply strong_epi_comp, },
   exact
@@ -250,15 +249,8 @@ open category_theory.limits
 instance : split_epi_category simplex_category :=
 ⟨λ X Y f, begin
   introI,
-  rw simplex_category.skeletal_equivalence.{0}.functor.is_split_epi_iff,
+  rw ← simplex_category.skeletal_equivalence.{0}.functor.is_split_epi_iff,
   apply is_split_epi_of_epi,
-end⟩
-
-instance : strong_epi_category simplex_category :=
-⟨λ X Y f, begin
-  introI,
-  haveI : is_split_epi f := is_split_epi_of_epi f,
-  apply strong_epi_of_is_split_epi,
 end⟩
 
 @[protected]
