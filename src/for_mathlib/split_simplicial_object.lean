@@ -11,6 +11,7 @@ import category_theory.limits.shapes.finite_products
 import algebraic_topology.simplicial_set
 import category_theory.limits.preserves.shapes.products
 import algebraic_topology.split_simplicial_object
+import for_mathlib.inclusions_mono
 
 noncomputable theory
 
@@ -275,7 +276,10 @@ end-/
 
 namespace splitting
 
-variables {X Y : simplicial_object C} (s : splitting X)
+variables {X X' : simplicial_object C} (s : splitting X)
+
+instance [mono_in C] {Δ : simplex_categoryᵒᵖ} (A : index_set Δ) : mono (s.ι_summand A) :=
+by { dsimp only [ι_summand, ι_coprod], apply mono_comp, }
 
 @[reassoc]
 lemma ι_summand_epi_naturality {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁)
@@ -305,7 +309,7 @@ def whiskering {D : Type*} [category D] [has_finite_coproducts D]
     apply_instance,
   end, }
 
-def of_iso {X X' : simplicial_object C} (s : splitting X) (e : X ≅ X') :
+def of_iso (e : X ≅ X') :
   splitting X' :=
 { N := s.N,
   ι := λ n, s.ι n ≫ e.hom.app (op [n]),
@@ -314,15 +318,94 @@ def of_iso {X X' : simplicial_object C} (s : splitting X) (e : X ≅ X') :
     change is_iso (splitting.map X' ι' Δ),
     rw [show splitting.map X' ι' Δ = (s.iso Δ).hom ≫ e.hom.app Δ, by tidy],
     apply_instance,
-  end, }
+  end, } .
 
 end splitting
+
+variable (C)
+
+@[ext]
+structure split := (X : simplicial_object C) (s : splitting X)
+
+namespace split
+
+variable {C}
+
+structure hom (S₁ S₂ : split C) :=
+(F : S₁.X ⟶ S₂.X)
+(f : Π (n : ℕ), S₁.s.N n ⟶ S₂.s.N n)
+(comm' : ∀ (n : ℕ), S₁.s.ι n ≫ F.app (op [n]) = f n ≫ S₂.s.ι n)
+
+@[ext]
+lemma hom.ext {S₁ S₂ : split C} (Φ₁ Φ₂ : hom S₁ S₂) (h : ∀ (n : ℕ), Φ₁.f n = Φ₂.f n) :
+  Φ₁ = Φ₂ :=
+begin
+  rcases Φ₁ with ⟨F₁, f₁, c₁⟩,
+  rcases Φ₂ with ⟨F₂, f₂, c₂⟩,
+  have h : f₁ = f₂ := by { ext, apply h, },
+  subst h,
+  simp only [eq_self_iff_true, and_true],
+  apply S₁.s.hom_ext,
+  intro n,
+  dsimp,
+  rw [c₁, c₂],
+end
+
+restate_axiom hom.comm'
+attribute [simp, reassoc] hom.comm
+
+end split
+
+instance : category (split C) :=
+{ hom      := split.hom,
+  id       := λ S, { F := 𝟙 _, f := λ n, 𝟙 _, comm' := by tidy, },
+  comp     := λ S₁ S₂ S₃ Φ₁₂ Φ₂₃,
+    { F := Φ₁₂.F ≫ Φ₂₃.F, f := λ n, Φ₁₂.f n ≫ Φ₂₃.f n, comm' := by tidy, }, }
+
+variable {C}
+
+namespace split
+
+lemma hom.ι_summand_naturality {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
+  {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
+  Φ.f A.1.unop.len ≫ S₂.s.ι_summand A = S₁.s.ι_summand A ≫ Φ.F.app Δ :=
+by rw [S₁.s.ι_summand_eq, S₂.s.ι_summand_eq, assoc, Φ.F.naturality, ← Φ.comm_assoc]
+
+lemma hom.ext' {S₁ S₂ : split C} [mono_in C] (Φ₁ Φ₂ : S₁ ⟶ S₂) (h : Φ₁.F = Φ₂.F) :
+  Φ₁ = Φ₂ :=
+begin
+  ext,
+  rw [← cancel_mono (S₂.s.ι_summand (splitting.index_set.id (op [n]))), splitting.ι_summand_id,
+    ← Φ₁.comm, ← Φ₂.comm, h],
+end
+
+variable (C)
+
+@[simps]
+def forget : split C ⥤ simplicial_object C :=
+{ obj := λ S, S.X,
+  map := λ S₁ S₂ Φ, Φ.F, }
+
+instance [mono_in C] : faithful (forget C) := ⟨λ S₁ S₂ Φ₁ Φ₂, split.hom.ext' Φ₁ Φ₂⟩
+
+@[simps]
+def eval_N (n : ℕ) : split C ⥤ C :=
+{ obj := λ S, S.s.N n,
+  map := λ S₁ S₂ Φ, Φ.f n, }
+
+def nat_trans_ι_summand {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
+  eval_N C A.1.unop.len ⟶ forget C ⋙ (evaluation simplex_categoryᵒᵖ C).obj Δ :=
+{ app := λ S, S.s.ι_summand A,
+  naturality' := λ S₁ S₂ Φ, hom.ι_summand_naturality Φ A, }
+
+end split
 
 end simplicial_object
 
 namespace sSet
 
-class degreewise_finite (X : sSet.{u}) := (finite' : ∀ (Δ : simplex_categoryᵒᵖ), fintype (X.obj Δ))
+class degreewise_finite (X : sSet.{u}) :=
+(finite' : ∀ (Δ : simplex_categoryᵒᵖ), fintype (X.obj Δ))
 
 restate_axiom degreewise_finite.finite'
 attribute [instance] degreewise_finite.finite

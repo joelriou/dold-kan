@@ -123,9 +123,15 @@ def iso : sigma_obj (λ j, X (γ j)) ⨿ sigma_obj (λ (k : (finset.image γ ⊤
 
 end mono_inclusion_sub_coproduct
 
-lemma mono_inclusion_sub_coproduct {I J : Type*} [fintype I] [fintype J] [mono_in C]
-  (X : I → C) (γ : J → I) (hγ : function.injective γ) :
-    mono (sigma.desc (λ j, sigma.ι _ (γ j)) : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X) :=
+section
+
+variables {I J : Type*} [fintype I] [fintype J] [mono_in C]
+  (X : I → C) (γ : J → I)
+
+@[simp]
+def map_coproduct : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X := sigma.desc (λ j, sigma.ι _ (γ j))
+
+lemma mono_inclusion_sub_coproduct (hγ : function.injective γ) : mono (map_coproduct X γ) :=
 begin
   classical,
   let α : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X := sigma.desc
@@ -133,6 +139,23 @@ begin
   change mono α,
   rw [show α = coprod.inl ≫ (mono_inclusion_sub_coproduct.iso X γ hγ).hom, by tidy],
   apply mono_comp,
+end
+
+end
+
+instance mono_sigma_ι {I : Type*} [fintype I] [mono_in C] (X : I → C) (i : I):
+  mono (sigma.ι X i) :=
+begin
+  let γ : fin 1 → I := λ x, i,
+  have hγ : function.injective γ := λ x₁ x₂ h, subsingleton.elim _ _,
+  let e : X i ≅ (∐ λ (j : fin 1), X (γ j)) :=
+  { hom := sigma.ι (λ (j : fin 1), X (γ j)) 0,
+    inv := sigma.desc (λ j, 𝟙 _),
+    hom_inv_id' := by tidy,
+    inv_hom_id' := by { ext, discrete_cases, tidy, }, },
+  haveI := mono_inclusion_sub_coproduct X γ hγ,
+  convert (mono_comp _ _ : mono (e.hom ≫ map_coproduct X γ)),
+  simp only [map_coproduct, colimit.ι_desc, cofan.mk_ι_app],
 end
 
 end mono_in
