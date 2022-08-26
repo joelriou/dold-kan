@@ -5,7 +5,8 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.split_simplicial_object
-import for_mathlib.dold_kan.degenerate_subcomplex
+import for_mathlib.dold_kan.degeneracies
+import for_mathlib.dold_kan.functor_n
 
 noncomputable theory
 
