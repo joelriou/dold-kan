@@ -27,11 +27,12 @@ Colours :
 \node[green](faces) at (0,-4) {faces.lean};
 \node[green](projections) at (0,-6) {projections.lean};
 \node[green](pinfty) at (0,-8) {p\_infty.lean};
-\node[green](functorgamma) at (-6,-8) {functor\_gamma.lean};
+\node[green](functorgamma) at (-6,-9.5) {functor\_gamma.lean};
 \node[green](decomposition) at (-2,-10) {decomposition.lean};
 \node[red](degeneracies) at (-6,-11.5) {degeneracies.lean};
+\node[red](split) at (-3.5,-13) {split.lean};
 \node[green](functorn) at (3,-11) {functor\_n.lean};
-\node[red](nreflectsiso) at (-2.5,-12.5) {n\_reflects\_iso.lean};
+\node[red](nreflectsiso) at (2,-12.5) {n\_reflects\_iso.lean};
 \node[red](gammacompn) at (0,-14) {gamma\_comp\_n.lean};
 \node[red](ncompgamma) at (0,-16) {n\_comp\_gamma.lean};
 \node[orange](compatibility) at (3.5,-17) {compatibility.lean};
@@ -47,14 +48,15 @@ Colours :
 
 \path (notations) edge (homotopies);
 \path (notations) edge [bend right] (functorgamma);
-\path (functorgamma) edge (degeneracies);
+\path (functorgamma) edge [bend left = 6mm] (gammacompn);
 \path (decomposition) edge (degeneracies);
 \path (decomposition) edge (nreflectsiso);
-\path (nreflectsiso) edge [bend right] (ncompgamma);
+\path (nreflectsiso) edge [bend left] (ncompgamma);
 \path (gammacompn) edge (ncompgamma);
-\path (functorn) edge (gammacompn);
 \path (functorn) edge (nreflectsiso);
-\path (degeneracies) edge [bend right] (gammacompn);
+\path (degeneracies) edge (split);
+\path (functorn) edge (split);
+\path (split) edge (gammacompn);
 \path (homotopies) edge (faces);
 \path (faces) edge (projections);
 \path (projections) edge (pinfty);

@@ -5,7 +5,6 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.dold_kan.decomposition
-import for_mathlib.dold_kan.functor_gamma
 import tactic.fin_cases
 import for_mathlib.split_simplicial_object
 

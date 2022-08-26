@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.dold_kan.functor_n
+import for_mathlib.dold_kan.functor_gamma
 import for_mathlib.dold_kan.degeneracies
 import for_mathlib.idempotents.nat_trans
 
