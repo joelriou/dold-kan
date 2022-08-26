@@ -34,7 +34,7 @@ by { ext, exact tsub_eq_of_eq_add hnaq, }
 `Q q` as a sum of morphisms which are postcompositions with suitable degeneracies.
 As `Q q` is the complement projection to `P q`, this implies that in the case of
 simplicial abelian groups, any $(n+1)$-simplex $x$ can be decomposed as
-$x = x' + \sum (i=0}^{q-1} σ_{n-i}(y_i)$ where $x'$ is the image of `P_q` and
+$x = x' + \sum (i=0}^{q-1} σ_{n-i}(y_i)$ where $x'$ is the image of `P q` and
 the $y_i$ are in degree $n$. -/
 lemma decomposition_Q (n q : ℕ) :
   ((Q q).f (n+1) : X _[n+1] ⟶ X _[n+1]) =
