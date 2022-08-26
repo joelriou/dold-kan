@@ -11,6 +11,7 @@ noncomputable theory
 
 open category_theory category_theory.category category_theory.limits
   category_theory.preadditive opposite algebraic_topology.dold_kan
+  category_theory.idempotents
 open_locale simplicial dold_kan big_operators
 
 namespace simplicial_object
@@ -59,9 +60,7 @@ begin
   rw [comp_id, comp_sum, finset.sum_eq_single A, ι_π_summand_eq_id_assoc],
   { intros B h₁ h₂,
     rw [s.ι_π_summand_eq_zero_assoc _ _ h₂, zero_comp], },
-  { intro h,
-    exfalso,
-    simpa only [finset.mem_univ, not_true] using h, },
+  { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
 end
 
 @[simp, reassoc]
@@ -107,9 +106,39 @@ begin
     { simp only [P_infty_on_splitting_eq_zero s A hA, comp_zero], }, },
 end
 
+@[simp, reassoc]
+lemma P_infty_comp_π_summand_id (n : ℕ) :
+  P_infty.f n ≫ s.π_summand (index_set.id (op [n])) = s.π_summand (index_set.id (op [n])) :=
+begin
+  conv_rhs { rw ← id_comp (s.π_summand _), },
+  symmetry,
+  rw [← sub_eq_zero, ← sub_comp, ← comp_P_infty_eq_zero_iff, sub_comp, id_comp,
+    P_infty_f_idem, sub_self],
+end
+
+@[simp, reassoc]
+lemma π_summand_comp_ι_summand_comp_P_infty_eq_P_infty (n : ℕ) :
+  s.π_summand (index_set.id (op [n])) ≫ s.ι_summand (index_set.id (op [n])) ≫ P_infty.f n =
+    P_infty.f n :=
+begin
+  conv_rhs { rw ← id_comp (P_infty.f n), },
+  erw [s.decomposition_id, preadditive.sum_comp],
+  rw [fintype.sum_eq_single (index_set.id (op [n])), assoc],
+  rintros A (hA : ¬A.eq_id),
+  rw [assoc, P_infty_on_splitting_eq_zero s A hA, comp_zero],
+end
+
 @[simp]
 def d (i j : ℕ) : s.N i ⟶ s.N j :=
 s.ι_summand (index_set.id (op [i])) ≫ K[X].d i j ≫ s.π_summand (index_set.id (op [j]))
+
+lemma ι_summand_comp_d_comp_π_summand_eq_zero (j k : ℕ) (A : index_set (op [j])) (hA : ¬A.eq_id):
+  s.ι_summand A ≫ K[X].d j k ≫ s.π_summand (index_set.id (op [k])) = 0 :=
+begin
+  rw A.eq_id_iff_mono at hA,
+  rw [← assoc, ← s.comp_P_infty_eq_zero_iff, assoc, ← P_infty.comm j k, s.ι_summand_eq, assoc,
+    P_infty_on_degeneracies_assoc X j A.e hA, zero_comp, comp_zero],
+end
 
 @[simps]
 def N' : chain_complex C ℕ :=
@@ -129,15 +158,42 @@ def N' : chain_complex C ℕ :=
     { intros A hA,
       simp only [finset.mem_compl, finset.mem_singleton] at hA,
       change ¬A.eq_id at hA,
-      rw index_set.eq_id_iff_mono at hA,
-      suffices : s.ι_summand A ≫ K[X].d j k ≫ s.π_summand (index_set.id (op [k])) = 0,
-      { simp only [assoc, this, comp_zero], },
-      change k+1 = j at hjk,
-      subst hjk,
-      simp only [s.ι_summand_eq, ← assoc, ← s.comp_P_infty_eq_zero_iff],
-      simp only [assoc, ← P_infty.comm (k+1) k, P_infty_on_degeneracies_assoc X (k+1) A.e hA,
-        zero_comp, comp_zero], },
+      simp only [assoc, ι_summand_comp_d_comp_π_summand_eq_zero _ _ _ _ hA, comp_zero], },
   end }
+
+def to_karoubi_N'_iso_N₁ : (to_karoubi _).obj s.N' ≅ N₁.obj X :=
+{ hom :=
+  { f :=
+    { f := λ n, s.ι_summand (index_set.id (op [n])) ≫ P_infty.f n,
+      comm' := λ i j hij, begin
+        dsimp,
+        rw [assoc, assoc, assoc, π_summand_comp_ι_summand_comp_P_infty_eq_P_infty,
+          homological_complex.hom.comm],
+      end, },
+    comm := by { ext n, dsimp, rw [id_comp, assoc, P_infty_f_idem], }, },
+  inv :=
+  { f :=
+    { f := λ n, s.π_summand (index_set.id (op [n])),
+      comm' := λ i j hij, begin
+        dsimp,
+        slice_rhs 1 1 { rw ← id_comp (K[X].d i j), },
+        erw [s.decomposition_id],
+        rw [sum_comp, sum_comp, finset.sum_eq_single (index_set.id (op [i])), assoc, assoc],
+        { rintros A h (hA : ¬ A.eq_id),
+          simp only [assoc, s.ι_summand_comp_d_comp_π_summand_eq_zero _ _ _ hA, comp_zero], },
+        { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
+      end, },
+    comm := by { ext n, dsimp, simp only [comp_id, P_infty_comp_π_summand_id], }, },
+  hom_inv_id' := begin
+    ext n,
+    simpa only [assoc, P_infty_comp_π_summand_id, karoubi.comp, homological_complex.comp_f,
+      ι_π_summand_eq_id],
+  end,
+  inv_hom_id' := begin
+    ext n,
+    simp only [karoubi.comp, homological_complex.comp_f,
+      π_summand_comp_ι_summand_comp_P_infty_eq_P_infty, karoubi.id_eq, N₁_obj_p],
+  end, }
 
 end splitting
 
