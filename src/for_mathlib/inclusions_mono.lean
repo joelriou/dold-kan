@@ -5,6 +5,10 @@ Authors: Joël Riou
 -/
 
 import category_theory.limits.shapes.finite_products
+import category_theory.limits.shapes.zero_morphisms
+import category_theory.limits.types
+
+universe u
 
 noncomputable theory
 
@@ -30,6 +34,12 @@ begin
   rw eq,
   apply mono_comp,
 end
+
+instance [has_zero_morphisms C] : mono_in C :=
+⟨λ A B h, ⟨λ Z f₁ f₂ h, by simpa only [assoc, coprod.inl_desc, comp_id]
+    using h =≫ coprod.desc (𝟙 A) 0⟩⟩
+
+--instance : mono_in (Type u) := sorry
 
 namespace mono_inclusion_sub_coproduct
 

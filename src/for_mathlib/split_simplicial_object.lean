@@ -331,6 +331,9 @@ namespace split
 
 variable {C}
 
+@[simps]
+def mk' {X : simplicial_object C} (s : splitting X) : split C := ⟨X, s⟩
+
 structure hom (S₁ S₂ : split C) :=
 (F : S₁.X ⟶ S₂.X)
 (f : Π (n : ℕ), S₁.s.N n ⟶ S₂.s.N n)
@@ -366,9 +369,28 @@ variable {C}
 
 namespace split
 
-lemma hom.ι_summand_naturality {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
+lemma congr_F {S₁ S₂ : split C} {Φ₁ Φ₂ : S₁ ⟶ S₂} (h : Φ₁ = Φ₂) : Φ₁.F = Φ₂.F := by rw h
+lemma congr_f {S₁ S₂ : split C} {Φ₁ Φ₂ : S₁ ⟶ S₂} (h : Φ₁ = Φ₂) (n : ℕ) :
+  Φ₁.f n = Φ₂.f n := by rw h
+
+@[simp]
+lemma id_F (S : split C) : (𝟙 S : S ⟶ S).F = 𝟙 (S.X) := rfl
+
+@[simp]
+lemma id_f (S : split C) (n : ℕ) : (𝟙 S : S ⟶ S).f n = 𝟙 (S.s.N n) := rfl
+
+@[simp]
+lemma comp_F {S₁ S₂ S₃ : split C} (Φ₁₂ : S₁ ⟶ S₂) (Φ₂₃ : S₂ ⟶ S₃) :
+  (Φ₁₂ ≫ Φ₂₃).F = Φ₁₂.F ≫ Φ₂₃.F := rfl
+
+@[simp]
+lemma comp_f {S₁ S₂ S₃ : split C} (Φ₁₂ : S₁ ⟶ S₂) (Φ₂₃ : S₂ ⟶ S₃) (n : ℕ) :
+  (Φ₁₂ ≫ Φ₂₃).f n = Φ₁₂.f n ≫ Φ₂₃.f n := rfl
+
+@[simp, reassoc]
+lemma hom.ι_summand_naturality_symm {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
   {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
-  Φ.f A.1.unop.len ≫ S₂.s.ι_summand A = S₁.s.ι_summand A ≫ Φ.F.app Δ :=
+  S₁.s.ι_summand A ≫ Φ.F.app Δ = Φ.f A.1.unop.len ≫ S₂.s.ι_summand A :=
 by rw [S₁.s.ι_summand_eq, S₂.s.ι_summand_eq, assoc, Φ.F.naturality, ← Φ.comm_assoc]
 
 lemma hom.ext' {S₁ S₂ : split C} [mono_in C] (Φ₁ Φ₂ : S₁ ⟶ S₂) (h : Φ₁.F = Φ₂.F) :
@@ -393,10 +415,64 @@ def eval_N (n : ℕ) : split C ⥤ C :=
 { obj := λ S, S.s.N n,
   map := λ S₁ S₂ Φ, Φ.f n, }
 
+@[simps]
 def nat_trans_ι_summand {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   eval_N C A.1.unop.len ⟶ forget C ⋙ (evaluation simplex_categoryᵒᵖ C).obj Δ :=
 { app := λ S, S.s.ι_summand A,
-  naturality' := λ S₁ S₂ Φ, hom.ι_summand_naturality Φ A, }
+  naturality' := λ S₁ S₂ Φ, (hom.ι_summand_naturality_symm Φ A).symm, }
+
+variable {C}
+
+instance is_iso_f_of_is_iso {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [is_iso Φ] (n : ℕ) : is_iso (Φ.f n) :=
+by { change is_iso ((eval_N C n).map Φ), apply_instance, }
+
+instance is_iso_F_of_is_iso {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [is_iso Φ] : is_iso Φ.F :=
+by { change is_iso ((forget C).map Φ), apply_instance, }
+
+lemma is_iso_F_of_is_iso_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), is_iso (Φ.f n)] :
+  is_iso Φ.F :=
+begin
+  haveI : ∀ (Δ : simplex_categoryᵒᵖ), is_iso (Φ.F.app Δ) := λ Δ,
+    ⟨⟨S₂.s.desc Δ (λ A, inv (Φ.f A.1.unop.len) ≫ S₁.s.ι_summand A),
+      ⟨S₁.s.hom_ext' _ _ (by tidy), S₂.s.hom_ext' _ _ (by tidy)⟩⟩⟩,
+  apply nat_iso.is_iso_of_is_iso_app,
+end
+
+lemma is_iso_of_is_iso_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), is_iso (Φ.f n)] :
+  is_iso Φ :=
+⟨begin
+  haveI : is_iso Φ.F := is_iso_F_of_is_iso_f Φ,
+  let Ψ : S₂ ⟶ S₁ :=
+  { F := inv Φ.F,
+    f := λ n, inv (Φ.f n),
+    comm' := λ n, by simp only [← cancel_epi (Φ.f n), ← Φ.comm_assoc,
+      nat_iso.is_iso_inv_app, is_iso.hom_inv_id, comp_id, is_iso.hom_inv_id_assoc], },
+  exact ⟨Ψ, by tidy⟩,
+end⟩
+
+lemma epi_F_of_epi_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), epi (Φ.f n)] :
+  epi Φ.F :=
+⟨λ Z g₁ g₂ h, begin
+  apply S₂.s.hom_ext,
+  intro n,
+  dsimp,
+  rw [← splitting.ι_summand_id, ← cancel_epi (Φ.f n)],
+  erw [← hom.ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n])),
+    ← hom.ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n]))],
+  congr' 1,
+  exact congr_app h (op [n]),
+end⟩
+
+lemma epi_of_epi_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), epi (Φ.f n)] :
+  epi Φ :=
+⟨λ S₃ G₁ G₂ h, by { ext n, simpa only [← cancel_epi (Φ.f n)] using congr_f h n, }⟩
+
+/-
+lemma mono_F_of_mono_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), mono (Φ.f n)] :
+  mono Φ.F := sorry
+
+need that a finite coproduct of mono is mono
+-/
 
 end split
 
