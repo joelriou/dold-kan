@@ -388,7 +388,7 @@ lemma comp_f {S₁ S₂ S₃ : split C} (Φ₁₂ : S₁ ⟶ S₂) (Φ₂₃ : S
   (Φ₁₂ ≫ Φ₂₃).f n = Φ₁₂.f n ≫ Φ₂₃.f n := rfl
 
 @[simp, reassoc]
-lemma hom.ι_summand_naturality_symm {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
+lemma ι_summand_naturality_symm {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
   {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   S₁.s.ι_summand A ≫ Φ.F.app Δ = Φ.f A.1.unop.len ≫ S₂.s.ι_summand A :=
 by rw [S₁.s.ι_summand_eq, S₂.s.ι_summand_eq, assoc, Φ.F.naturality, ← Φ.comm_assoc]
@@ -419,7 +419,7 @@ def eval_N (n : ℕ) : split C ⥤ C :=
 def nat_trans_ι_summand {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   eval_N C A.1.unop.len ⟶ forget C ⋙ (evaluation simplex_categoryᵒᵖ C).obj Δ :=
 { app := λ S, S.s.ι_summand A,
-  naturality' := λ S₁ S₂ Φ, (hom.ι_summand_naturality_symm Φ A).symm, }
+  naturality' := λ S₁ S₂ Φ, (ι_summand_naturality_symm Φ A).symm, }
 
 variable {C}
 
@@ -457,8 +457,8 @@ lemma epi_F_of_epi_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), 
   intro n,
   dsimp,
   rw [← splitting.ι_summand_id, ← cancel_epi (Φ.f n)],
-  erw [← hom.ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n])),
-    ← hom.ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n]))],
+  erw [← ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n])),
+    ← ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n]))],
   congr' 1,
   exact congr_app h (op [n]),
 end⟩

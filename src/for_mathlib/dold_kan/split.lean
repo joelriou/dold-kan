@@ -7,12 +7,14 @@ Authors: Joël Riou
 import for_mathlib.split_simplicial_object
 import for_mathlib.dold_kan.degeneracies
 import for_mathlib.dold_kan.functor_n
+import for_mathlib.dold_kan.normalized
+import for_mathlib.idempotents.nat_trans2
 
 noncomputable theory
 
 open category_theory category_theory.category category_theory.limits
   category_theory.preadditive opposite algebraic_topology.dold_kan
-  category_theory.idempotents
+  category_theory.idempotents algebraic_topology
 open_locale simplicial dold_kan big_operators
 
 namespace simplicial_object
@@ -162,6 +164,7 @@ def N' : chain_complex C ℕ :=
       simp only [assoc, ι_summand_comp_d_comp_π_summand_eq_zero _ _ _ _ hA, comp_zero], },
   end }
 
+@[simps]
 def to_karoubi_N'_iso_N₁ : (to_karoubi _).obj s.N' ≅ N₁.obj X :=
 { hom :=
   { f :=
@@ -197,5 +200,56 @@ def to_karoubi_N'_iso_N₁ : (to_karoubi _).obj s.N' ≅ N₁.obj X :=
   end, }
 
 end splitting
+
+namespace split
+
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
+
+@[simps]
+def N' : split C ⥤ chain_complex C ℕ :=
+{ obj := λ S, S.s.N',
+  map := λ S₁ S₂ Φ,
+  { f := Φ.f,
+    comm' := λ i j hij, begin
+      dsimp,
+      erw [← ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [i])),
+        ((alternating_face_map_complex C).map Φ.F).comm_assoc i j],
+      simp only [assoc],
+      congr' 2,
+      apply S₁.s.hom_ext',
+      intro A,
+      dsimp [alternating_face_map_complex],
+      erw ι_summand_naturality_symm_assoc Φ A,
+      by_cases A.eq_id,
+      { dsimp at h,
+        subst h,
+        simpa only [splitting.ι_π_summand_eq_id, comp_id, splitting.ι_π_summand_eq_id_assoc], },
+      { dsimp at h,
+        rw [S₁.s.ι_π_summand_eq_zero_assoc, S₂.s.ι_π_summand_eq_zero, zero_comp, comp_zero],
+        all_goals { symmetry, exact h, }, },
+    end }, }
+
+@[simps]
+def to_karoubi_N'_iso_N₁ :
+  N' ⋙ to_karoubi (chain_complex C ℕ) ≅ forget C ⋙ dold_kan.N₁ :=
+nat_iso.of_components (λ S, S.s.to_karoubi_N'_iso_N₁)
+  (λ S₁ S₂ Φ, begin
+    ext n,
+    dsimp,
+    simp only [to_karoubi_map_f, karoubi.comp, homological_complex.comp_f, N'_map_f,
+      splitting.to_karoubi_N'_iso_N₁_hom_f_f, N₁_map_f, alternating_face_map_complex.map_f,
+      assoc, P_infty_f_idem_assoc],
+    erw ← split.ι_summand_naturality_symm_assoc Φ (splitting.index_set.id (op [n])),
+    rw P_infty_f_naturality,
+  end)
+
+@[simps]
+def N'_iso_to_karoubi_normalized_Moore_complex' {A : Type*} [category A] [abelian A]:
+  N' ≅ forget A ⋙ normalized_Moore_complex A :=
+(whiskering_right_to_karoubi_iso_equiv _ _).inv_fun
+  (to_karoubi_N'_iso_N₁
+    ≪≫ iso_whisker_left _ (N₁_iso_normalized_Moore_complex_comp_to_karoubi A))
+
+end split
 
 end simplicial_object
