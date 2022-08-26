@@ -10,7 +10,7 @@ import for_mathlib.dold_kan.degenerate_subcomplex
 noncomputable theory
 
 open category_theory category_theory.category category_theory.limits
-  category_theory.preadditive opposite
+  category_theory.preadditive opposite algebraic_topology.dold_kan
 open_locale simplicial dold_kan big_operators
 
 namespace simplicial_object
@@ -64,12 +64,55 @@ begin
     simpa only [finset.mem_univ, not_true] using h, },
 end
 
+@[simp, reassoc]
+lemma σ_comp_π_summand_id_eq_zero {n : ℕ} (i : fin (n+1)) :
+  X.σ i ≫ s.π_summand (index_set.id (op [n+1])) = 0 :=
+begin
+  apply s.hom_ext',
+  intro A,
+  erw [comp_zero, s.ι_summand_epi_naturality_assoc A (simplex_category.σ i).op,
+    ι_π_summand_eq_zero],
+  symmetry,
+  change ¬ (A.epi_comp (simplex_category.σ i).op).eq_id,
+  rw index_set.eq_id_iff_len_eq,
+  have h := simplex_category.len_le_of_epi (infer_instance : epi A.e),
+  dsimp at ⊢ h,
+  linarith,
+end
+
+lemma comp_P_infty_eq_zero_iff {Z : C} {n : ℕ} (f : Z ⟶ X _[n]) :
+  f ≫ P_infty.f n = 0 ↔ f ≫ s.π_summand (index_set.id (op [n])) = 0 :=
+begin
+  split,
+  { intro h,
+    cases n,
+    { dsimp at h,
+      rw [comp_id] at h,
+      rw [h, zero_comp], },
+    { have h' := f ≫= P_infty_f_add_Q_infty_f (n+1),
+      erw [comp_id, comp_add, h, zero_add] at h',
+      rw [← h', assoc, Q_infty_f, decomposition_Q, preadditive.sum_comp,
+        preadditive.comp_sum, finset.sum_eq_zero],
+      intros i hi,
+      simp only [assoc, σ_comp_π_summand_id_eq_zero, comp_zero], }, },
+  { intro h,
+    rw [← comp_id f, assoc, s.decomposition_id, preadditive.sum_comp,
+      preadditive.comp_sum, fintype.sum_eq_zero],
+    intro A,
+    rw [assoc],
+    by_cases hA : A.eq_id,
+    { dsimp at hA,
+      subst hA,
+      rw [reassoc_of h, zero_comp], },
+    { simp only [P_infty_on_splitting_eq_zero s A hA, comp_zero], }, },
+end
+
 @[simp]
 def d (i j : ℕ) : s.N i ⟶ s.N j :=
 s.ι_summand (index_set.id (op [i])) ≫ K[X].d i j ≫ s.π_summand (index_set.id (op [j]))
 
 @[simps]
-def K : chain_complex C ℕ :=
+def N' : chain_complex C ℕ :=
 { X := s.N,
   d := s.d,
   shape' := λ i j hij, by simp only [d, K[X].shape i j hij, zero_comp, comp_zero],
@@ -85,13 +128,15 @@ def K : chain_complex C ℕ :=
     { rw [eq, comp_zero], },
     { intros A hA,
       simp only [finset.mem_compl, finset.mem_singleton] at hA,
+      change ¬A.eq_id at hA,
+      rw index_set.eq_id_iff_mono at hA,
       suffices : s.ι_summand A ≫ K[X].d j k ≫ s.π_summand (index_set.id (op [k])) = 0,
       { simp only [assoc, this, comp_zero], },
       change k+1 = j at hjk,
       subst hjk,
-      rw [s.ι_summand_eq, assoc],
-      sorry,
-       },
+      simp only [s.ι_summand_eq, ← assoc, ← s.comp_P_infty_eq_zero_iff],
+      simp only [assoc, ← P_infty.comm (k+1) k, P_infty_on_degeneracies_assoc X (k+1) A.e hA,
+        zero_comp, comp_zero], },
   end }
 
 end splitting

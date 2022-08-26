@@ -277,6 +277,7 @@ namespace splitting
 
 variables {X Y : simplicial_object C} (s : splitting X)
 
+@[reassoc]
 lemma ι_summand_epi_naturality {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁)
   (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
   s.ι_summand A ≫ X.map p = s.ι_summand (A.epi_comp p) :=

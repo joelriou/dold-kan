@@ -185,6 +185,7 @@ begin
   simp only [zero_le, le_add_iff_nonneg_left],
 end
 
+@[reassoc]
 lemma P_infty_on_degeneracies (X : simplicial_object C)
   (n : ℕ) {Δ' : simplex_category} (θ : [n] ⟶ Δ')
   (hθ : ¬mono θ) :
@@ -202,6 +203,7 @@ begin
       σ_comp_P_infty, comp_zero], },
 end
 
+/-- should be renamed to be in the splitting namespace -/
 lemma P_infty_on_splitting_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
   (s : simplicial_object.splitting X)
   {n : ℕ} (A : simplicial_object.splitting.index_set (op [n]))
