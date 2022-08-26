@@ -44,12 +44,26 @@ begin
   revert P₁ P₂,
   refine subobject.ind₂ _ _,
   introsI A₁ A₂ f₁ f₂ hf₁ hf₂ g₁ g₂ h₁ h₂,
-  let f₁₂ := (mono_over.sup.obj (mono_over.mk' f₁)).obj (mono_over.mk' f₂),
-  have eq : subobject.mk f₁ ⊔ subobject.mk f₂ = (to_thin_skeleton _).obj f₁₂ := rfl,
-  let e := subobject.iso_of_eq (subobject.mk f₁ ⊔ subobject.mk f₂)
-    ((to_thin_skeleton _).obj f₁₂) rfl,
-  rw ← cancel_epi e.inv,
-  all_goals { sorry, },
+  rw ← cancel_epi (factor_thru_image_subobject (coprod.desc f₁ f₂)),
+  ext,
+  { rw ← cancel_epi (subobject.underlying_iso f₁).inv at h₁,
+    let α := (subobject.underlying_iso f₁).inv ≫
+      (subobject.mk f₁).of_le (subobject.mk f₁ ⊔ subobject.mk f₂) le_sup_left,
+    suffices eq₁ : coprod.inl ≫ factor_thru_image_subobject (coprod.desc f₁ f₂) = α,
+    { simpa only [reassoc_of eq₁] using h₁, },
+    ext,
+    change _ = _ ≫ (subobject.mk f₁ ⊔ subobject.mk f₂).arrow,
+    simp only [category.assoc, image_subobject_arrow_comp, coprod.inl_desc,
+      subobject.of_le_arrow, subobject.underlying_iso_arrow], },
+  { rw ← cancel_epi (subobject.underlying_iso f₂).inv at h₂,
+    let β := (subobject.underlying_iso f₂).inv ≫
+      (subobject.mk f₂).of_le (subobject.mk f₁ ⊔ subobject.mk f₂) le_sup_right,
+    suffices eq₂ : coprod.inr ≫ factor_thru_image_subobject (coprod.desc f₁ f₂) = β,
+    { simpa only [reassoc_of eq₂] using h₂, },
+    ext,
+    change _ = _ ≫ (subobject.mk f₁ ⊔ subobject.mk f₂).arrow,
+    simp only [category.assoc, image_subobject_arrow_comp, coprod.inr_desc,
+      subobject.of_le_arrow, subobject.underlying_iso_arrow], },
 end
 
 lemma subobject.jointly_epi_to_sup {I : Type*} (s : finset I) {B : C}
@@ -270,6 +284,8 @@ def inclusion_of_degenerate_subcomplex :
   degenerate_subcomplex C ⟶ alternating_face_map_complex C :=
 { app := inclusion_of_degenerate_subcomplex_app, }
 
+namespace dold_kan
+
 variable {C}
 
 @[simps]
@@ -335,5 +351,7 @@ def decomposition_K_N_D (X : simplicial_object C) : K[X] ≅ N[X] ⊞ D[X] :=
     P_infty_to_normalized_Moore_complex_comp_inclusion_of_Moore_complex_map,
     Q_infty_to_degenerate_subcomplex_comp_inclusion_of_degenerate_subcomplex_app],
   inv_hom_id' := by { ext1; ext1; simp, }, }
+
+end dold_kan
 
 end algebraic_topology
