@@ -17,10 +17,11 @@ noncomputable theory
 
 open category_theory
 open category_theory.idempotents
+open category_theory.limits
 open algebraic_topology
 
 variables {C D : Type*} [category C] [category D]
-  [additive_category C] [additive_category D]
+  [preadditive C] [preadditive D] [has_finite_coproducts C] [has_finite_coproducts D]
   [is_idempotent_complete C] [is_idempotent_complete D]
 
 variables (F : C ⥤ D) [functor.additive F]

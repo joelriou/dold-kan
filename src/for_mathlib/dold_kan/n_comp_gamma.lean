@@ -22,11 +22,11 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
 
-/- ajoute lemme général un mono est epi sssi égalité des cardinaux, etc. -/
+/- ajouter lemme général un mono est epi sssi égalité des cardinaux, etc. -/
 
-lemma P_infty_eq_zero_on (X : simplicial_object C) {n : ℕ}
+lemma P_infty_comp_map_mono_eq_zero (X : simplicial_object C) {n : ℕ}
   {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
   (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d₀ i) :
   P_infty.f n ≫ X.map i.op = 0 :=
@@ -110,14 +110,14 @@ begin
     rw finset.sum_eq_single (0 : fin (n+2)), rotate,
     { intros b hb hb',
       simp only [preadditive.comp_zsmul],
-      erw [P_infty_eq_zero_on X (simplex_category.δ b) h (by { rw is_d₀.iff, exact hb', }), zsmul_zero], },
+      erw [P_infty_comp_map_mono_eq_zero X (simplex_category.δ b) h (by { rw is_d₀.iff, exact hb', }), zsmul_zero], },
     { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
     { simpa only [hi.eq_d₀, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
   { rw [Γ₀.obj.termwise.map_mono_eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',
       exact h (congr_arg simplex_category.len h'.symm), },
-    rw P_infty_eq_zero_on,
+    rw P_infty_comp_map_mono_eq_zero,
     { exact h, },
     { by_contradiction h',
       exact hi h', }, },
@@ -178,15 +178,9 @@ def nat_trans : (N₂ : karoubi (simplicial_object C) ⥤ _) ⋙ Γ₂ ⟶ 𝟭 
 end Γ₂N₂
 
 lemma identity_N₂_objectwise_eq₁ (P : karoubi (simplicial_object C)) (n : ℕ):
-(N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
-(Γ₀.splitting (N₂.obj P).X).ι_summand (splitting.index_set.id (op [n])) :=
-begin
-  simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f],
-  dsimp only [to_karoubi],
-  simp only [assoc, simplicial_object.splitting.ι_desc],
-  dsimp [splitting.index_set.id],
-  simp only [← P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem_assoc],
-end
+  (N₂Γ₂.inv.app (N₂.obj P)).f.f n = P_infty.f n ≫ P.p.app (op [n]) ≫
+  (Γ₀.splitting (N₂.obj P).X).ι_summand (splitting.index_set.id (op [n])) :=
+by simp only [N₂Γ₂_inv_app_f_f, N₂_obj_p_f, assoc]
 
 lemma identity_N₂_objectwise_eq₂ (P : karoubi (simplicial_object C)) (n : ℕ):
   (Γ₀.splitting (N₂.obj P).X).ι_summand (splitting.index_set.id (op [n]))
@@ -204,12 +198,12 @@ begin
 end
 
 lemma identity_N₂_objectwise (P : karoubi (simplicial_object C)) :
-N₂Γ₂.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂.nat_trans.app P) = 𝟙 (N₂.obj P) :=
+  N₂Γ₂.inv.app (N₂.obj P) ≫ N₂.map (Γ₂N₂.nat_trans.app P) = 𝟙 (N₂.obj P) :=
 begin
   ext n,
-  simp only [karoubi.comp, homological_complex.comp_f, assoc,
-    identity_N₂_objectwise_eq₁, identity_N₂_objectwise_eq₂,
-    P_infty_f_naturality_assoc, P_infty_f_idem_assoc, app_idem, karoubi.id_eq, N₂_obj_p_f],
+  simp only [karoubi.comp, homological_complex.comp_f, karoubi.id_eq, N₂_obj_p_f, assoc,
+    identity_N₂_objectwise_eq₁, identity_N₂_objectwise_eq₂, P_infty_f_naturality_assoc,
+    app_idem, P_infty_f_idem_assoc],
 end
 
 lemma identity_N₂ :

@@ -123,11 +123,6 @@ open category_theory
 open category_theory.category
 open category_theory.idempotents
 
-@[priority 100]
-instance additive_of_abelian {D : Type*} [category D] [abelian D] : additive_category D :=
-{ to_preadditive := infer_instance,
-  to_has_finite_biproducts := infer_instance }
-
 variables {A : Type*} [category A] [abelian A]
 
 namespace category_theory

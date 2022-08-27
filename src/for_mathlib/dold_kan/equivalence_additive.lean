@@ -10,10 +10,11 @@ noncomputable theory
 
 open category_theory
 open category_theory.category
+open category_theory.limits
 open category_theory.idempotents
 open algebraic_topology.dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
 
 namespace category_theory
 

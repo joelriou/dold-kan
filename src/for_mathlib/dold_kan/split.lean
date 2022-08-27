@@ -244,7 +244,7 @@ nat_iso.of_components (λ S, S.s.to_karoubi_N'_iso_N₁)
   end)
 
 @[simps]
-def N'_iso_to_karoubi_normalized_Moore_complex' {A : Type*} [category A] [abelian A]:
+def N'_iso_to_karoubi_normalized_Moore_complex' {A : Type*} [category A] [abelian A] :
   N' ≅ forget A ⋙ normalized_Moore_complex A :=
 (whiskering_right_to_karoubi_iso_equiv _ _).inv_fun
   (to_karoubi_N'_iso_N₁

@@ -10,6 +10,7 @@ noncomputable theory
 
 open category_theory
 open category_theory.category
+open category_theory.limits
 open category_theory.idempotents
 open algebraic_topology
 
@@ -29,8 +30,8 @@ namespace preadditive
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
-variables {D : Type*} [category D] [additive_category D]
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
+variables {D : Type*} [category D] [preadditive D] [has_finite_coproducts D]
 variables (F : C ⥤ D) [functor.additive F]
 
 lemma functoriality_N₁ : (simplicial_object.whiskering C D).obj F ⋙ N₁ =

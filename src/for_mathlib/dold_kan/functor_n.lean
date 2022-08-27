@@ -80,6 +80,9 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
 def N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) :=
 (functor_extension₁ _ _).obj N₁
 
+lemma to_karoubi_comp_N₂ : to_karoubi (simplicial_object C) ⋙ N₂ = N₁ :=
+functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi _ _) N₁
+
 end dold_kan
 
 end algebraic_topology

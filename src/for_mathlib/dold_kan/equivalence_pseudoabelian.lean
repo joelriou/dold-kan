@@ -18,9 +18,11 @@ noncomputable theory
 
 open category_theory
 open category_theory.category
+open category_theory.limits
 open category_theory.idempotents
 
-variables {C : Type*} [category C] [additive_category C] [is_idempotent_complete C]
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
+  [is_idempotent_complete C]
 
 namespace category_theory
 

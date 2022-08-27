@@ -12,6 +12,7 @@ import for_mathlib.simplex_category.factorisations
 import category_theory.limits.shapes.images
 import for_mathlib.dold_kan.notations
 import algebraic_topology.split_simplicial_object
+import for_mathlib.dold_kan.split
 
 /-!
 
@@ -77,7 +78,7 @@ namespace algebraic_topology
 
 namespace dold_kan
 
-variables {C : Type*} [category C] [additive_category C]
+variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
 variables (K K' : chain_complex C ℕ) (f : K ⟶ K')
 
 /-- `is_d₀ i` is a simple condition used to check whether a monomorphism in
@@ -357,28 +358,24 @@ def map {K K' : chain_complex C ℕ} (f : K ⟶ K') : obj K ⟶ obj K' :=
 
 end Γ₀
 
-/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which is
-the inverse functor of the Dold-Kan equivalence in the category abelian
-categories, or more generally pseudoabelian categories. -/
+/-- The functor `Γ₀' : chain_complex C ℕ ⥤ simplicial_object.split C`
+that induces `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which
+shall be the inverse functor of the Dold-Kan equivalence for
+abelian or pseudo-abelian category. -/
 @[simps]
-def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C :=
-{ obj := Γ₀.obj,
-  map := λ _ _, Γ₀.map,
-  map_id' := λ K, begin
-    apply (Γ₀.splitting K).hom_ext,
-    intro n,
-    simpa only [simplicial_object.splitting.φ, ← simplicial_object.splitting.ι_summand_id,
-      Γ₀.map_app, homological_complex.id_f, nat_trans.id_app, comp_id,
-      (Γ₀.splitting K).ι_desc (op [n])] using id_comp _,
-  end,
-  map_comp' := λ K K' K'' f f', begin
-    apply (Γ₀.splitting K).hom_ext,
-    intro n,
-    simp only [simplicial_object.splitting.φ, ← simplicial_object.splitting.ι_summand_id,
-      Γ₀.map_app, nat_trans.comp_app, assoc, homological_complex.comp_f,
-      (Γ₀.splitting K).ι_desc (op [n]), (Γ₀.splitting K).ι_desc_assoc (op [n]),
-      (Γ₀.splitting K').ι_desc (op [n])],
-  end, }
+def Γ₀' : chain_complex C ℕ ⥤ simplicial_object.split C :=
+{ obj := λ K, simplicial_object.split.mk' (Γ₀.splitting K),
+  map := λ K K' f,
+  { F := Γ₀.map f,
+    f := f.f,
+    comm' := λ n, by { dsimp, simpa only [← splitting.ι_summand_id,
+      (Γ₀.splitting K).ι_desc], }, }, }
+
+/-- The functor `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which is
+the inverse functor of the Dold-Kan equivalence when `C` is an abelian
+categorie, or more generally pseudoabelian categories. -/
+@[simps]
+def Γ₀ : chain_complex C ℕ ⥤ simplicial_object C := Γ₀' ⋙ split.forget _
 
 /-- The extension of `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`
 on the idempotent completions. It shall be an equivalence of categories
@@ -386,6 +383,32 @@ for any additive category `C`. -/
 @[simps]
 def Γ₂ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) :=
 (category_theory.idempotents.functor_extension₂ _ _).obj Γ₀
+
+def higher_faces_vanish.on_Γ₀_summand_id (K : chain_complex C ℕ) (n : ℕ) :
+  higher_faces_vanish (n+1) ((Γ₀.splitting K).ι_summand (splitting.index_set.id (op [n+1]))) :=
+begin
+  intros j hj,
+  have eq := Γ₀.obj.map_mono_on_summand_id K (simplex_category.δ j.succ),
+  rw [Γ₀.obj.termwise.map_mono_eq_zero K, zero_comp] at eq, rotate,
+  { intro h,
+    exact (nat.succ_ne_self n) (congr_arg simplex_category.len h), },
+  { intro h,
+    simp only [is_d₀.iff] at h,
+    exact fin.succ_ne_zero j h, },
+  exact eq,
+end
+
+@[simp, reassoc]
+lemma P_infty_on_Γ₀_splitting_summand_eq_self
+  (K : chain_complex C ℕ) {n : ℕ} :
+  (Γ₀.splitting K).ι_summand (splitting.index_set.id (op [n])) ≫ (P_infty : K[Γ₀.obj K] ⟶ _).f n =
+    (Γ₀.splitting K).ι_summand (splitting.index_set.id (op [n])) :=
+begin
+  rw P_infty_f,
+  cases n,
+  { simpa only [P_f_0_eq] using comp_id _, },
+  { exact (higher_faces_vanish.on_Γ₀_summand_id K n).comp_P_eq_self, },
+end
 
 end dold_kan
 
