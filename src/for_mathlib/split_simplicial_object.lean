@@ -26,6 +26,17 @@ universe u
 
 variables {C : Type*} [category C]
 
+class preserves_finite_coproducts {D : Type*} [category D] (F : C ⥤ D) :=
+(preserves_colimits_of_shape :
+  ∀ (J : Type) [fintype J], preserves_colimits_of_shape (discrete J) F)
+
+class preserves_finite_products {D : Type*} [category D] (F : C ⥤ D) :=
+(preserves_limits_of_shape :
+  ∀ (J : Type) [fintype J], preserves_limits_of_shape (discrete J) F)
+
+attribute [instance] preserves_finite_coproducts.preserves_colimits_of_shape
+  preserves_finite_products.preserves_limits_of_shape
+
 namespace simplicial_object
 
 namespace splitting
@@ -292,9 +303,10 @@ begin
   rw [op_comp, X.map_comp, assoc, quiver.hom.op_unop],
 end
 
+@[simps]
 def whiskering {D : Type*} [category D] [has_finite_coproducts D]
   {X : simplicial_object C} (s : splitting X)
-  (F : C ⥤ D) [hF : ∀ (J : Type) [fintype J], preserves_colimits_of_shape (discrete J) F] :
+  (F : C ⥤ D) [preserves_finite_coproducts F] :
   splitting (((simplicial_object.whiskering _ _).obj F).obj X) :=
 { N := λ n, F.obj (s.N n),
   ι := λ n, F.map (s.ι n),
@@ -305,6 +317,7 @@ def whiskering {D : Type*} [category D] [has_finite_coproducts D]
       sigma_comparison_map_desc, functor.map_comp],
   end, }
 
+@[simps]
 def of_iso (e : X ≅ X') :
   splitting X' :=
 { N := s.N,
@@ -386,6 +399,15 @@ lemma ι_summand_naturality_symm {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
   {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   S₁.s.ι_summand A ≫ Φ.F.app Δ = Φ.f A.1.unop.len ≫ S₂.s.ι_summand A :=
 by rw [S₁.s.ι_summand_eq, S₂.s.ι_summand_eq, assoc, Φ.F.naturality, ← Φ.comm_assoc]
+
+@[simps]
+def whiskering {D : Type*} [category D] [has_finite_coproducts D] (F : C ⥤ D)
+  [preserves_finite_coproducts F] : split C ⥤ split D :=
+{ obj := λ S, split.mk' (S.s.whiskering F),
+  map := λ S₁ S₂ Φ,
+  { F := ((simplicial_object.whiskering _ _).obj F).map Φ.F,
+    f := λ n, F.map (Φ.f n),
+    comm' := λ n, by { dsimp, simp only [← F.map_comp, Φ.comm], }, }, }
 
 lemma hom.ext' {S₁ S₂ : split C} [mono_in C] (Φ₁ Φ₂ : S₁ ⟶ S₂) (h : Φ₁.F = Φ₂.F) :
   Φ₁ = Φ₂ :=
