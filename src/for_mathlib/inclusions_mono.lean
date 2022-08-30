@@ -20,7 +20,7 @@ namespace limits
 
 variables (C : Type*) [category C] [has_finite_coproducts C]
 class mono_in : Prop :=
-(mono_inl' : Π (A B : C) [h : has_binary_coproduct A B], mono (@coprod.inl _ _ A B h))
+(mono_inl' : Π (A B : C), mono (coprod.inl : A ⟶ A ⨿ B))
 
 variable {C}
 
@@ -34,12 +34,9 @@ begin
   rw eq,
   apply mono_comp,
 end
-
 instance [has_zero_morphisms C] : mono_in C :=
-⟨λ A B h, ⟨λ Z f₁ f₂ h, by simpa only [assoc, coprod.inl_desc, comp_id]
+⟨λ A B, ⟨λ Z f₁ f₂ h, by simpa only [assoc, coprod.inl_desc, comp_id]
     using h =≫ coprod.desc (𝟙 A) 0⟩⟩
-
---instance : mono_in (Type u) := sorry
 
 namespace mono_inclusion_sub_coproduct
 
