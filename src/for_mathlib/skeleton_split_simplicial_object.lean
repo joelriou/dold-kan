@@ -221,8 +221,7 @@ def sk_ι (d : ℕ) [mono_in C] : s.sk d ⟶ X :=
 instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_in C] : mono ((s.sk_ι d).app Δ) :=
 by { dsimp only [sk_ι], apply_instance, }
 
-instance (d : ℕ) [mono_in C] : mono (s.sk_ι d) :=
-nat_trans.mono_app_of_mono _ /- the name should be fixed -/
+instance (d : ℕ) [mono_in C] : mono (s.sk_ι d) := nat_trans.mono_of_mono_app _
 
 @[simp]
 def sk_φ {d : ℕ} [mono_in C] {Y : simplicial_object C} (f : s.sk d ⟶ Y) {n : ℕ} (hn : n ≤ d) :

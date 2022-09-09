@@ -316,7 +316,7 @@ def whiskering {D : Type*} [category D] [has_finite_coproducts D]
     simp only [map, simplicial_object.whiskering_obj_obj_map, preserves_coproduct.inv_hom,
       sigma_comparison_map_desc, functor.map_comp],
   end, }
-
+/-
 @[simps]
 def of_iso (e : X ≅ X') :
   splitting X' :=
@@ -325,20 +325,20 @@ def of_iso (e : X ≅ X') :
   map_is_iso' := λ Δ, begin
     convert (infer_instance : is_iso ((s.iso Δ).hom ≫ e.hom.app Δ)),
     tidy,
-  end, } .
+  end, } .-/
 
 end splitting
 
 variable (C)
 
-@[ext]
-structure split := (X : simplicial_object C) (s : splitting X)
+/-@[ext]
+structure split := (X : simplicial_object C) (s : splitting X)-/
 
 namespace split
 
 variable {C}
 
-@[simps]
+/-@[simps]
 def mk' {X : simplicial_object C} (s : splitting X) : split C := ⟨X, s⟩
 
 structure hom (S₁ S₂ : split C) :=
@@ -362,21 +362,21 @@ begin
 end
 
 restate_axiom hom.comm'
-attribute [simp, reassoc] hom.comm
+attribute [simp, reassoc] hom.comm-/
 
 end split
 
-instance : category (split C) :=
+/-instance : category (split C) :=
 { hom      := split.hom,
   id       := λ S, { F := 𝟙 _, f := λ n, 𝟙 _, comm' := by tidy, },
   comp     := λ S₁ S₂ S₃ Φ₁₂ Φ₂₃,
-    { F := Φ₁₂.F ≫ Φ₂₃.F, f := λ n, Φ₁₂.f n ≫ Φ₂₃.f n, comm' := by tidy, }, }
+    { F := Φ₁₂.F ≫ Φ₂₃.F, f := λ n, Φ₁₂.f n ≫ Φ₂₃.f n, comm' := by tidy, }, }-/
 
 variable {C}
 
 namespace split
 
-lemma congr_F {S₁ S₂ : split C} {Φ₁ Φ₂ : S₁ ⟶ S₂} (h : Φ₁ = Φ₂) : Φ₁.F = Φ₂.F := by rw h
+/-lemma congr_F {S₁ S₂ : split C} {Φ₁ Φ₂ : S₁ ⟶ S₂} (h : Φ₁ = Φ₂) : Φ₁.F = Φ₂.F := by rw h
 lemma congr_f {S₁ S₂ : split C} {Φ₁ Φ₂ : S₁ ⟶ S₂} (h : Φ₁ = Φ₂) (n : ℕ) :
   Φ₁.f n = Φ₂.f n := by rw h
 
@@ -399,7 +399,7 @@ lemma ι_summand_naturality_symm {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂)
   {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   S₁.s.ι_summand A ≫ Φ.F.app Δ = Φ.f A.1.unop.len ≫ S₂.s.ι_summand A :=
 by rw [S₁.s.ι_summand_eq, S₂.s.ι_summand_eq, assoc, Φ.F.naturality, ← Φ.comm_assoc]
-
+-/
 @[simps]
 def whiskering {D : Type*} [category D] [has_finite_coproducts D] (F : C ⥤ D)
   [preserves_finite_coproducts F] : split C ⥤ split D :=
@@ -419,7 +419,7 @@ end
 
 variable (C)
 
-@[simps]
+/-@[simps]
 def forget : split C ⥤ simplicial_object C :=
 { obj := λ S, S.X,
   map := λ S₁ S₂ Φ, Φ.F, }
@@ -435,7 +435,7 @@ def eval_N (n : ℕ) : split C ⥤ C :=
 def nat_trans_ι_summand {Δ : simplex_categoryᵒᵖ} (A : splitting.index_set Δ) :
   eval_N C A.1.unop.len ⟶ forget C ⋙ (evaluation simplex_categoryᵒᵖ C).obj Δ :=
 { app := λ S, S.s.ι_summand A,
-  naturality' := λ S₁ S₂ Φ, (ι_summand_naturality_symm Φ A).symm, }
+  naturality' := λ S₁ S₂ Φ, (ι_summand_naturality_symm Φ A).symm, }-/
 
 variable {C}
 
