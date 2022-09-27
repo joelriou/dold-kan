@@ -28,7 +28,13 @@ lemma monomorphisms.infer_property {X Y : C} (f : X ⟶ Y) [hf : mono f] : (mono
 
 variable (C)
 
-lemma monomorphisms.respects_iso : respects_iso (monomorphisms C) := sorry
+lemma monomorphisms.respects_iso : respects_iso (monomorphisms C) :=
+begin
+  split;
+  { intros X Y Z e f hf,
+    haveI : mono f := hf,
+    apply mono_comp, },
+end
 
 end morphism_property
 
