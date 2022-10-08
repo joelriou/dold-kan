@@ -18,45 +18,23 @@ open category_theory category_theory.category category_theory.limits
 
 namespace category_theory
 
-namespace morphism_property
-
-variables (C : Type*) [category C]
-/-def monomorphisms : morphism_property C := λ X Y f, mono f
-
-variable {C}
-lemma monomorphisms.infer_property {X Y : C} (f : X ⟶ Y) [hf : mono f] : (monomorphisms C) f := hf
-
-variable (C)-/
-
-lemma monomorphisms.respects_iso : respects_iso (monomorphisms C) :=
-begin
-  split;
-  { intros X Y Z e f hf,
-    haveI : mono f := hf,
-    apply mono_comp, },
-end
-
-end morphism_property
-
 namespace limits
 
 variables (C : Type*) [category C] [has_finite_coproducts C]
-class mono_coprod_in : Prop :=
-(mono_coprod_inl' : Π (A B : C), mono (coprod.inl : A ⟶ A ⨿ B))
+class mono_coprod : Prop :=
+(inl : Π (A B : C), mono (coprod.inl : A ⟶ A ⨿ B))
 
 variable {C}
 
-instance mono_coprod_in_of_has_zero_morphisms [has_zero_morphisms C] : mono_coprod_in C :=
+instance mono_coprod_of_has_zero_morphisms [has_zero_morphisms C] : mono_coprod C :=
 ⟨λ A B, infer_instance⟩
 
 lemma mono_sigma_ι_iff_of_is_colimit {J : Type*} (X : J → C) [has_coproduct X]
   (c : cocone (discrete.functor X)) (hc : is_colimit c) (j : J) :
   mono (sigma.ι X j) ↔ mono (c.ι.app (discrete.mk j)) :=
-begin
-  let e := arrow.iso_mk' (sigma.ι X j) (c.ι.app (discrete.mk j)) (iso.refl _)
-    (colimit.iso_colimit_cocone ⟨c, hc⟩) (by simp),
-  exact (morphism_property.monomorphisms.respects_iso C).arrow_iso_iff e,
-end
+(morphism_property.respects_iso.monomorphisms C).arrow_iso_iff
+  (arrow.iso_mk' (sigma.ι X j) (c.ι.app (discrete.mk j)) (iso.refl _)
+    (colimit.iso_colimit_cocone ⟨c, hc⟩) (by simp))
 
 lemma mono_coprod_inl_iff_of_is_colimit {A B : C} (c : binary_cofan A B) (hc : is_colimit c) :
   mono (coprod.inl : A ⟶ A ⨿ B) ↔ mono c.inl :=
@@ -66,7 +44,7 @@ lemma mono_coprod_inr_iff_of_is_colimit {A B : C} (c : binary_cofan A B) (hc : i
   mono (coprod.inr : B ⟶ A ⨿ B) ↔ mono c.inr :=
 mono_sigma_ι_iff_of_is_colimit (pair_function A B) c hc walking_pair.right
 
-instance mono_coprod_in_type : mono_coprod_in (Type u) :=
+instance mono_coprod_type : mono_coprod (Type u) :=
 ⟨λ A B, begin
   let c : binary_cofan A B := binary_cofan.mk (sum.inl : A ⟶ A ⊕ B) sum.inr,
   have hc : is_colimit c :=
@@ -82,23 +60,23 @@ instance mono_coprod_in_type : mono_coprod_in (Type u) :=
   tidy,
 end⟩
 
-namespace mono_coprod_in
+namespace mono_coprod
 
-instance [hC : mono_coprod_in C] {A B : C} : mono (coprod.inl : A ⟶ A ⨿ B) :=
-by apply hC.mono_coprod_inl'
+instance [mono_coprod C] {A B : C} : mono (coprod.inl : A ⟶ A ⨿ B) :=
+mono_coprod.inl A B
 
-instance [hC : mono_coprod_in C] {A B : C} : mono (coprod.inr : B ⟶ A ⨿ B) :=
+instance [mono_coprod C] {A B : C} : mono (coprod.inr : B ⟶ A ⨿ B) :=
 begin
-  have eq : (coprod.inr : B ⟶ A ⨿ B) = coprod.inl ≫ (coprod.braiding B A).hom := by simp,
-  rw eq,
+  suffices : mono (coprod.inl ≫ (coprod.braiding B A).hom),
+  { simpa only [coprod.braiding_hom, coprod.inl_desc] using this, },
   apply mono_comp,
 end
 
-lemma mono_binary_cofan_inl [hC : mono_coprod_in C] {A B : C} (c : binary_cofan A B)
+lemma mono_binary_cofan_inl [hC : mono_coprod C] {A B : C} (c : binary_cofan A B)
   (hc : is_colimit c) : mono c.inl :=
 by { rw ← mono_coprod_inl_iff_of_is_colimit c hc, apply_instance, }
 
-lemma mono_binary_cofan_inr [hC : mono_coprod_in C] {A B : C} (c : binary_cofan A B)
+lemma mono_binary_cofan_inr [hC : mono_coprod C] {A B : C} (c : binary_cofan A B)
   (hc : is_colimit c) : mono c.inr :=
 by { rw ← mono_coprod_inr_iff_of_is_colimit c hc, apply_instance, }
 
@@ -137,7 +115,7 @@ def coproduct_pullback_iso {A B : Type*} (X : B → C) (e : A ≃ B) [has_coprod
     exact (congr_sigma_ι X (e.apply_symm_apply b).symm).symm,
   end, }
 
-instance mono_coproduct_pullback_inl [mono_coprod_in C] {A B : Type*} (X : A ⊕ B → C)
+instance mono_coproduct_pullback_inl [mono_coprod C] {A B : Type*} (X : A ⊕ B → C)
   [has_coproduct X] [has_coproduct (X ∘ sum.inl)] [has_coproduct (X ∘ sum.inr)] :
   mono (coproduct_pullback X sum.inl) :=
 begin
@@ -160,7 +138,7 @@ begin
   exact mono_binary_cofan_inl c hc,
 end
 
-lemma mono_coproduct_pullback_of_injective [mono_coprod_in C] [has_finite_coproducts C]
+lemma mono_coproduct_pullback_of_injective [mono_coprod C] [has_finite_coproducts C]
   {A B : Type*} [fintype A] [fintype B] (X : B → C) (f : A → B) (hf : function.injective f) :
   mono (coproduct_pullback X f) :=
 begin
@@ -191,13 +169,13 @@ begin
     dsimp,
     simp only [id_comp, colimit.ι_desc_assoc, cofan.mk_ι_app, colimit.ι_desc],
     erw [colimit.ι_desc, cofan.mk_ι_app], },
-  exact ((morphism_property.monomorphisms.respects_iso C).arrow_mk_iso_iff E).mp
+  exact ((morphism_property.respects_iso.monomorphisms C).arrow_mk_iso_iff E).mp
     (morphism_property.monomorphisms.infer_property _),
 end
 
 end
 
-end mono_coprod_in
+end mono_coprod
 
 end limits
 
