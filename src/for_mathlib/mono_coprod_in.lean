@@ -21,12 +21,12 @@ namespace category_theory
 namespace morphism_property
 
 variables (C : Type*) [category C]
-def monomorphisms : morphism_property C := λ X Y f, mono f
+/-def monomorphisms : morphism_property C := λ X Y f, mono f
 
 variable {C}
 lemma monomorphisms.infer_property {X Y : C} (f : X ⟶ Y) [hf : mono f] : (monomorphisms C) f := hf
 
-variable (C)
+variable (C)-/
 
 lemma monomorphisms.respects_iso : respects_iso (monomorphisms C) :=
 begin
