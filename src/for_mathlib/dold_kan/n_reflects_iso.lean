@@ -57,7 +57,7 @@ instance : reflects_isomorphisms
         b := λ i, inv (f.app (op [n])) ≫ X.σ i, },
     simp only [morph_components.id, ← id_φ, ← pre_comp_φ, pre_comp, ← post_comp_φ,
       post_comp, P_infty_f_naturality_assoc, is_iso.hom_inv_id_assoc, assoc,
-      is_iso.inv_hom_id_assoc, simplicial_object.naturality_σ, h₁, h₂, h₃],
+      is_iso.inv_hom_id_assoc, simplicial_object.σ_naturality, h₁, h₂, h₃],
     tauto, },
 end⟩
 

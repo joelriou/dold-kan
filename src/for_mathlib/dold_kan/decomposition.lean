@@ -131,7 +131,7 @@ begin
   simp only [P_infty_f, comp_add],
   congr' 1,
   { simp only [P_f_naturality_assoc], },
-  { simp only [comp_sum, P_f_naturality_assoc, simplicial_object.naturality_δ_assoc], }
+  { simp only [comp_sum, P_f_naturality_assoc, simplicial_object.δ_naturality_assoc], }
 end
 
 end morph_components
