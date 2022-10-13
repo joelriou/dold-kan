@@ -98,7 +98,7 @@ instance : inhabited (index_set Δ) := ⟨id Δ⟩
 -/
 
 variables {Δ : simplex_categoryᵒᵖ} (A : index_set Δ)
-
+/-
 /-- The condition that an element `splitting.index_set Δ` is the distinguished
 element `splitting.index_set.id Δ`. -/
 @[simp]
@@ -131,7 +131,7 @@ begin
     rw ← unop_inj_iff,
     ext,
     exact h, },
-end
+end-/
 
 lemma eq_id_iff_len_le : A.eq_id ↔ Δ.unop.len ≤ A.1.unop.len :=
 begin
@@ -157,9 +157,9 @@ begin
     exact len_le_of_mono h, }
 end
 
-@[simps]
+/-@[simps]
 def epi_comp {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁) (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
-  index_set Δ₂ := ⟨A.1, ⟨p.unop ≫ A.e, epi_comp _ _⟩⟩
+  index_set Δ₂ := ⟨A.1, ⟨p.unop ≫ A.e, epi_comp _ _⟩⟩-/
 
 end index_set
 
@@ -292,7 +292,7 @@ variables {X X' : simplicial_object C} (s : splitting X)
 instance [mono_in C] {Δ : simplex_categoryᵒᵖ} (A : index_set Δ) : mono (s.ι_summand A) :=
 by { dsimp only [ι_summand, ι_coprod], apply mono_comp, }
 
-@[reassoc]
+/-@[reassoc]
 lemma ι_summand_epi_naturality {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (A : index_set Δ₁)
   (p : Δ₁ ⟶ Δ₂) [epi p.unop] :
   s.ι_summand A ≫ X.map p = s.ι_summand (A.epi_comp p) :=
@@ -301,7 +301,7 @@ begin
   erw [colimit.ι_desc, colimit.ι_desc, cofan.mk_ι_app, cofan.mk_ι_app],
   dsimp only [index_set.epi_comp, index_set.e],
   rw [op_comp, X.map_comp, assoc, quiver.hom.op_unop],
-end
+end-/
 
 @[simps]
 def whiskering {D : Type*} [category D] [has_finite_coproducts D]
@@ -483,8 +483,7 @@ lemma epi_of_epi_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), ep
   epi Φ :=
 ⟨λ S₃ G₁ G₂ h, by { ext n, simpa only [← cancel_epi (Φ.f n)] using congr_f h n, }⟩
 
-/-
-lemma mono_F_of_mono_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), mono (Φ.f n)] :
+/-lemma mono_F_of_mono_f {S₁ S₂ : split C} (Φ : S₁ ⟶ S₂) [∀ (n : ℕ), mono (Φ.f n)] :
   mono Φ.F := sorry
 
 need that a finite coproduct of mono is mono

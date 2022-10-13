@@ -34,7 +34,7 @@ namespace simplicial_object
 variables {C : Type*} [category C]
 
 @[reassoc]
-lemma δ_comp_σ_succ' (X : simplicial_object C) {n : ℕ} (i : fin (n+1)) (j : fin (n+2))
+lemma δ_comp_σ_succ' (X : simplicial_object C) {n : ℕ} {i : fin (n+1)} {j : fin (n+2)}
   (h : j = i.succ) : X.σ i ≫ X.δ j = 𝟙 _ :=
 by { subst h, rw X.δ_comp_σ_succ, }
 
