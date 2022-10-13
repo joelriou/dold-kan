@@ -26,14 +26,28 @@ by induction on `q : ℕ`.
 
 -/
 
-open category_theory
-open category_theory.category
-open category_theory.limits
-open category_theory.idempotents
-open opposite
-open_locale simplicial dold_kan
-
 noncomputable theory
+
+namespace category_theory
+namespace simplicial_object
+
+variables {C : Type*} [category C]
+
+@[reassoc]
+lemma δ_comp_σ_succ' (X : simplicial_object C) {n : ℕ} (i : fin (n+1)) (j : fin (n+2))
+  (h : j = i.succ) : X.σ i ≫ X.δ j = 𝟙 _ :=
+by { subst h, rw X.δ_comp_σ_succ, }
+
+local attribute [reassoc] δ_comp_σ_self
+local attribute [reassoc] δ_comp_σ_succ
+local attribute [reassoc] σ_comp_σ
+
+end simplicial_object
+end category_theory
+
+open category_theory category_theory.category category_theory.limits category_theory.idempotents
+  category_theory.preadditive opposite
+open_locale simplicial dold_kan
 
 namespace algebraic_topology
 
@@ -44,35 +58,35 @@ variables {C : Type*} [category C] [preadditive C]
 lemma higher_faces_vanish.comp_σ {Y : C} {X : simplicial_object C} {n b q : ℕ} {φ : Y ⟶ X _[n+1]}
   (v : higher_faces_vanish q φ) (hnbq : n + 1 = b + q) :
     higher_faces_vanish q (φ ≫ X.σ ⟨b,
-    by simpa only [hnbq, nat.lt_succ_iff, le_add_iff_nonneg_right] using zero_le q⟩) := λ j hj,
+    by simpa only [hnbq, nat.lt_succ_iff, le_add_iff_nonneg_right] using zero_le q⟩) := λ j hj₁,
 begin
   rw assoc,
   have eq := simplicial_object.δ_comp_σ_of_gt X (_ : fin.cast_succ ⟨b, _⟩ < j), rotate,
   { rw [hnbq, lt_add_iff_pos_right],
     by_contradiction,
     simp only [not_lt, nonpos_iff_eq_zero] at h,
-    rw [h, add_zero] at hj,
-    exact (lt_self_iff_false _).mp (lt_of_le_of_lt hj (fin.is_lt j)), },
+    rw [h, add_zero] at hj₁,
+    have pif := lt_of_le_of_lt hj₁ (fin.is_lt j),
+    simpa only [lt_self_iff_false] using lt_of_le_of_lt hj₁ (fin.is_lt j), },
   { rw [fin.cast_succ_mk, fin.lt_iff_coe_lt_coe, fin.coe_mk, nat.lt_iff_add_one_le,
       ← add_le_add_iff_right q, add_assoc, add_comm 1, ← add_assoc, ← hnbq],
-    exact hj, },
+    exact hj₁, },
   simp only [fin.cast_succ_mk] at eq,
-  erw [eq, ← assoc],
-  have eq' := v (j.pred _) _, rotate,
-  { intro hj',
-    rw [hj', hnbq] at hj,
-    simpa only [fin.coe_zero, zero_add, add_comm b, add_assoc,
-      nat.one_ne_zero, add_le_iff_nonpos_right, add_eq_zero_iff, nonpos_iff_eq_zero, false_and] using hj, },
-  { rw [← add_le_add_iff_right 1, add_assoc _ q, add_comm q 1, ← add_assoc,
+  have hj₂ : j ≠ 0,
+  { intro hj₃,
+    simpa only [hj₃, hnbq, fin.coe_zero, zero_add, add_comm b, add_assoc, add_le_iff_nonpos_right,
+      le_zero_iff, add_eq_zero_iff, nat.one_ne_zero, false_and] using hj₁, },
+  rw [eq, ← assoc],
+  conv_lhs { congr, congr, skip, rw ← fin.succ_pred j hj₂, },
+  rw [v (j.pred hj₂), zero_comp],
+  rw [← add_le_add_iff_right 1, add_assoc _ q, add_comm q 1, ← add_assoc,
       ← fin.coe_succ, fin.succ_pred],
-    exact hj, },
-  simp only [fin.succ_pred] at eq',
-  rw [eq', zero_comp],
+  exact hj₁,
 end
 
 lemma σ_comp_P_eq_zero (X : simplicial_object C)
-  {n q : ℕ} : ∀ (i : fin (n+1)) (hi : (n+1) ≤ (i : ℕ)+q),
-  (X.σ i) ≫ (P q).f (n+1) = 0 :=
+  {n q : ℕ} : ∀ (i : fin (n + 1)) (hi : n + 1 ≤ i + q),
+  (X.σ i) ≫ (P q).f (n + 1) = 0 :=
 begin
   induction q with q hq,
   { intros i hi,
@@ -86,71 +100,54 @@ begin
       rw [hq i h, zero_comp], },
     { have hi' : n = (i : ℕ) + q,
       { cases le_iff_exists_add.mp hi with j hj,
-        rw [← nat.lt_succ_iff, nat.succ_eq_add_one, add_assoc, hj, not_lt, add_le_iff_nonpos_right,
-          nonpos_iff_eq_zero] at h,
+        rw [← nat.lt_succ_iff, nat.succ_eq_add_one, add_assoc, hj, not_lt,
+          add_le_iff_nonpos_right, nonpos_iff_eq_zero] at h,
         rw [← add_left_inj 1, add_assoc, hj, self_eq_add_right, h], },
       cases n,
-      { rw [show i = 0, by { ext, simpa only [nat.lt_one_iff] using i.is_lt, }],
+      { fin_cases i,
         rw [show q = 0, by linarith],
         unfold P,
-        simp only [id_comp, homological_complex.add_f_apply, preadditive.comp_add, homological_complex.id_f],
-        erw [comp_id, Hσ, homotopy.null_homotopic_map_f (c_mk 2 1 rfl) (c_mk 1 0 rfl)],
+        simp only [id_comp, homological_complex.add_f_apply, comp_add, homological_complex.id_f],
+        erw [comp_id, Hσ, homotopy.null_homotopic_map'_f (c_mk 2 1 rfl) (c_mk 1 0 rfl)],
         unfold hσ' hσ,
-        simp only [tsub_zero, nat.not_lt_zero, zero_tsub, pow_one, preadditive.comp_add, one_zsmul,
-          if_false, eq_to_hom_refl, neg_smul, preadditive.neg_comp, comp_id, pow_zero, preadditive.comp_neg],
-        repeat { erw chain_complex.of_d, },
+        simp only [nat.not_lt_zero, if_false, tsub_zero, pow_zero, pow_one, one_zsmul,
+          neg_smul, comp_add, neg_comp, comp_neg, eq_to_hom_refl,comp_id,
+          alternating_face_map_complex.obj_d_eq],
         dsimp,
-        simp only [fin.sum_univ_two],
-        erw fin.sum_univ_succ,
-        simp only [fin.sum_univ_two],
-        simp only [fin.coe_zero, fin.coe_one, preadditive.add_comp, pow_one,
-          preadditive.comp_add, one_zsmul, neg_smul, preadditive.neg_comp, pow_zero,
-          preadditive.comp_neg, neg_sq, one_pow, fin.succ_one_eq_two, fin.coe_two,
-          fin.succ_zero_eq_one, neg_add_rev, neg_neg, ← add_assoc,
-          eq_self_iff_true, if_true],
-        have simplif : ∀ (a b c d e f : X _[0] ⟶ X _[1]), a = b → a = c → a = d → a =e → a = f
-          → a + b + (-c) + (-d) + e  + (-f) = 0,
+        erw [fin.sum_univ_two, fin.sum_univ_succ, fin.sum_univ_two],
+        simp only [fin.coe_zero, pow_zero, one_zsmul, fin.coe_one, pow_one, neg_smul,
+          add_comp, neg_comp, comp_add, comp_neg, neg_add_rev, neg_neg, ← add_assoc,
+          fin.succ_zero_eq_one, fin.succ_one_eq_two, fin.coe_two, neg_one_sq],
+        have simplif : ∀ (a b c d e f : X _[0] ⟶ X _[1]), a = b → a = c → a = d → a = e →
+          a = f → a + b + (-c) + (-d) + e  + (-f) = 0,
         { intros a b c d e f hb hc hd he hf,
           rw [← hb, ← hc, ← hd, ← he, ← hf],
           abel, },
         apply simplif,
-        { slice_rhs 1 2 { erw simplicial_object.δ_comp_σ_self, },
-          erw id_comp, },
-        { slice_rhs 1 2 { erw simplicial_object.δ_comp_σ_succ, },
-          erw id_comp, },
+        { erw simplicial_object.δ_comp_σ_self_assoc, },
+        { erw simplicial_object.δ_comp_σ_succ_assoc, },
         { erw [simplicial_object.δ_comp_σ_succ, comp_id], },
         { erw [simplicial_object.δ_comp_σ_self, comp_id], },
         { erw simplicial_object.δ_comp_σ_of_le X
-            (show (0 : fin(2)) ≤ fin.cast_succ 0, by { simp only [fin.cast_succ_zero], }),
-          slice_rhs 1 2 { erw simplicial_object.δ_comp_σ_self, },
-          erw [id_comp], }, },
-      { rw [← id_comp (X.σ i),
-          show 𝟙 (X.obj (op [n.succ])) = (P q).f (n+1) + (Q q).f (n+1), by { unfold Q,
-            simpa only [homological_complex.sub_f_apply, add_sub_cancel'_right, homological_complex.id_f]}],
-        simp only [preadditive.add_comp],
-        conv { to_rhs, erw ← zero_add (0 : X.obj (op [n+1]) ⟶ X.obj (op [n+2])), },
+            (show (0 : fin(2)) ≤ fin.cast_succ 0, by rw fin.cast_succ_zero),
+          erw simplicial_object.δ_comp_σ_self_assoc, }, },
+      { rw [← id_comp (X.σ i), ← (P_add_Q_f q n.succ : _ = 𝟙 (X.obj _)), add_comp, add_comp,
+          ← zero_add (0 : X.obj (op [n+1]) ⟶ X.obj (op [n+2]))],
         congr,
-        { let φ := (P q).f (n+1) ≫ X.σ i,
-          have v : higher_faces_vanish q φ := (higher_faces_vanish.of_P q n).comp_σ hi',
-          rw [show (P q).f (n+1) ≫ X.σ i = φ, by refl],
+        { have v : higher_faces_vanish q ((P q).f n.succ ≫ X.σ i) :=
+            (higher_faces_vanish.of_P q n).comp_σ hi',
           unfold P,
           erw [← assoc, v.comp_P_eq_self, homological_complex.add_f_apply,
-            preadditive.comp_add, comp_id, v.comp_Hσ_eq hi', add_neg_eq_zero],
-          dsimp [φ],
-          have eq : (⟨(i : ℕ)+1, _⟩ : fin(n+3)) = i.succ, rotate 2,
-          { have h := fin.is_lt i,
-            simp only [nat.succ_eq_add_one] at h,
-            linarith, },
+            preadditive.comp_add, comp_id, v.comp_Hσ_eq hi', add_neg_eq_zero, assoc],
+          rw simplicial_object.δ_comp_σ_succ'_assoc, swap,
           { ext,
-            simp only [fin.coe_succ, fin.coe_mk], },
-          slice_rhs 2 3 { erw [eq, simplicial_object.δ_comp_σ_succ X], },
-          erw [id_comp],
+            simp only [fin.coe_mk, fin.coe_succ], },
           refl, },
         { simp only [decomposition_Q n q, preadditive.sum_comp],
           apply finset.sum_eq_zero,
           intros j hj,
           simp only [true_and, finset.mem_univ, finset.mem_filter] at hj,
-          let i' : fin (n+1) := ⟨(i : ℕ), _⟩, swap,
+          let i' : fin (n + 1) := ⟨(i : ℕ), _⟩, swap,
           { by_contradiction h',
             simp only [not_lt] at h',
             simp only [nat.succ_eq_add_one] at hi',
@@ -158,22 +155,19 @@ begin
             simp only [add_le_iff_nonpos_right, nonpos_iff_eq_zero] at h',
             rw h' at hj,
             exact nat.not_lt_zero _ hj, },
-          rw [show i = fin.cast_succ i', by {ext, simp only [fin.cast_succ_mk, fin.eta], }],
-          cases nat.le.dest (nat.lt_succ_iff.mp (fin.is_lt j)) with k hk,
+          obtain ⟨k, hk⟩ := nat.le.dest (nat.lt_succ_iff.mp (fin.is_lt j)),
           rw add_comm at hk,
-          have eq := simplicial_object.σ_comp_σ X (_ : i' ≤ (reverse_fin j)), swap,
+          rw [show i = fin.cast_succ i', by { ext, simp only [fin.cast_succ_mk, fin.eta], },
+            assoc, assoc, assoc, simplicial_object.σ_comp_σ_assoc], swap,
           { simp only [reverse_fin_eq j hk.symm, fin.le_iff_coe_le_coe, fin.coe_mk],
             simp only [nat.succ_eq_add_one] at hi',
             linarith, },
-          slice_lhs 3 4 { erw eq, },
           unfold P,
           have eq' := hq (reverse_fin j).succ _, swap,
           { simp only [← hk, reverse_fin_eq j hk.symm, nat.succ_eq_add_one,
               fin.succ_mk, fin.coe_mk],
             linarith, },
-          conv { to_lhs, congr, skip, congr, skip, erw ← assoc, congr,
-            erw assoc, congr, skip, erw eq', },
-          simp only [comp_zero, zero_comp], }, }, }, },
+          simp only [assoc, homological_complex.comp_f, reassoc_of eq', zero_comp, comp_zero], }, }, }, },
 end
 
 lemma σ_comp_P_infty (X : simplicial_object C)
