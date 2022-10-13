@@ -82,6 +82,17 @@ begin
   linarith,
 end
 
+lemma ι_summand_comp_P_infty_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
+  (s : simplicial_object.splitting X)
+  {n : ℕ} (A : simplicial_object.splitting.index_set (op [n]))
+  (hA : ¬ A.eq_id) :
+  s.ι_summand A ≫ P_infty.f n = 0 :=
+begin
+  rw simplicial_object.splitting.index_set.eq_id_iff_mono at hA,
+  rw [simplicial_object.splitting.ι_summand_eq, assoc,
+    P_infty_on_degeneracies X n A.e hA, comp_zero],
+end
+
 lemma comp_P_infty_eq_zero_iff {Z : C} {n : ℕ} (f : Z ⟶ X _[n]) :
   f ≫ P_infty.f n = 0 ↔ f ≫ s.π_summand (index_set.id (op [n])) = 0 :=
 begin
@@ -106,7 +117,7 @@ begin
     { dsimp at hA,
       subst hA,
       rw [reassoc_of h, zero_comp], },
-    { simp only [P_infty_on_splitting_eq_zero s A hA, comp_zero], }, },
+    { simp only [s.ι_summand_comp_P_infty_eq_zero A hA, comp_zero], }, },
 end
 
 @[simp, reassoc]
@@ -128,7 +139,7 @@ begin
   erw [s.decomposition_id, preadditive.sum_comp],
   rw [fintype.sum_eq_single (index_set.id (op [n])), assoc],
   rintros A (hA : ¬A.eq_id),
-  rw [assoc, P_infty_on_splitting_eq_zero s A hA, comp_zero],
+  rw [assoc, s.ι_summand_comp_P_infty_eq_zero A hA, comp_zero],
 end
 
 @[simp]

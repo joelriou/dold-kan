@@ -21,7 +21,7 @@ In this file, we obtain `P_infty_on_degeneracies` which states that
 if `X : simplicial_object C` with `C` a preadditive,
 `θ : [n] ⟶ Δ'` is a non injective map in `simplex_category`, then
 `X.map θ.op ≫ P_infty.f n = 0`. It follows from the more precise
-statement `σ_comp_P_q_eq_zero` which is obtained for the `P q`
+statement `σ_comp_P_eq_zero` which is obtained for the `P q`
 by induction on `q : ℕ`.
 
 -/
@@ -41,9 +41,10 @@ namespace dold_kan
 
 variables {C : Type*} [category C] [preadditive C]
 
-lemma higher_faces_vanish_σφ {Y : C} {X : simplicial_object C} {n b q : ℕ} (hnbq : n+1=b+q) {φ : Y ⟶ X _[n+1]}
-  (v : higher_faces_vanish q φ) : higher_faces_vanish q (φ ≫ X.σ ⟨b,
-    by { rw [hnbq, nat.lt_succ_iff, le_add_iff_nonneg_right], exact zero_le q, }⟩) := λ j hj,
+lemma higher_faces_vanish.comp_σ {Y : C} {X : simplicial_object C} {n b q : ℕ} {φ : Y ⟶ X _[n+1]}
+  (v : higher_faces_vanish q φ) (hnbq : n + 1 = b + q) :
+    higher_faces_vanish q (φ ≫ X.σ ⟨b,
+    by simpa only [hnbq, nat.lt_succ_iff, le_add_iff_nonneg_right] using zero_le q⟩) := λ j hj,
 begin
   rw assoc,
   have eq := simplicial_object.δ_comp_σ_of_gt X (_ : fin.cast_succ ⟨b, _⟩ < j), rotate,
@@ -69,7 +70,7 @@ begin
   rw [eq', zero_comp],
 end
 
-lemma σ_comp_P_q_eq_zero (X : simplicial_object C)
+lemma σ_comp_P_eq_zero (X : simplicial_object C)
   {n q : ℕ} : ∀ (i : fin (n+1)) (hi : (n+1) ≤ (i : ℕ)+q),
   (X.σ i) ≫ (P q).f (n+1) = 0 :=
 begin
@@ -130,7 +131,7 @@ begin
         conv { to_rhs, erw ← zero_add (0 : X.obj (op [n+1]) ⟶ X.obj (op [n+2])), },
         congr,
         { let φ := (P q).f (n+1) ≫ X.σ i,
-          have v : higher_faces_vanish q φ := higher_faces_vanish_σφ hi' (higher_faces_vanish.of_P q n),
+          have v : higher_faces_vanish q φ := (higher_faces_vanish.of_P q n).comp_σ hi',
           rw [show (P q).f (n+1) ≫ X.σ i = φ, by refl],
           unfold P,
           erw [← assoc, v.comp_P_eq_self, homological_complex.add_f_apply,
@@ -180,7 +181,7 @@ lemma σ_comp_P_infty (X : simplicial_object C)
   (X.σ i) ≫ P_infty.f (n+1) = 0 :=
 begin
   rw P_infty_f,
-  apply σ_comp_P_q_eq_zero X i,
+  apply σ_comp_P_eq_zero X i,
   simp only [zero_le, le_add_iff_nonneg_left],
 end
 
@@ -200,18 +201,6 @@ begin
   { rcases simplex_category.eq_σ_comp_of_not_injective θ hθ with ⟨i, α, h⟩,
     rw [h, op_comp, X.map_comp, assoc, (show X.map (simplex_category.σ i).op = X.σ i, by refl),
       σ_comp_P_infty, comp_zero], },
-end
-
-/-- should be renamed to be in the splitting namespace -/
-lemma P_infty_on_splitting_eq_zero {X : simplicial_object C} [has_finite_coproducts C]
-  (s : simplicial_object.splitting X)
-  {n : ℕ} (A : simplicial_object.splitting.index_set (op [n]))
-  (hA : ¬ A.eq_id) :
-  s.ι_summand A ≫ P_infty.f n = 0 :=
-begin
-  rw simplicial_object.splitting.index_set.eq_id_iff_mono at hA,
-  rw [simplicial_object.splitting.ι_summand_eq, assoc,
-    P_infty_on_degeneracies X n A.e hA, comp_zero],
 end
 
 end dold_kan
