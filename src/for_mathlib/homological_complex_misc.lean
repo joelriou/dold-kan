@@ -66,42 +66,28 @@ end
 
 end chain_complex
 
-instance {D : Type*} [category D] [preadditive D]
-  {F : C ⥤ D} [F.additive] [full F] [faithful F] : reflects_isomorphisms (functor.map_homological_complex F c) :=
+namespace homological_complex
+
+lemma is_iso_of_components {A B : homological_complex C c} (f : A ⟶ B)
+  [∀ (n : ι), is_iso (f.f n)] : is_iso f :=
 begin
-  refine ⟨_⟩,
-  intros A B f,
-  introI,
-  let φ := (F.map_homological_complex c).map f,
-  let g : B ⟶ A :=
-  { f := λ i, (equiv_of_fully_faithful F).inv_fun ((inv φ).f i),
-    comm' := λ i j hij, begin
-      apply (equiv_of_fully_faithful F).injective,
-      dsimp,
-      simp only [functor.image_preimage, functor.map_comp],
-      haveI : is_split_epi (φ.f i) := is_split_epi.mk'
-      { section_ := (inv φ).f i,
-        id' := by simpa only [homological_complex.comp_f]
-          using homological_complex.congr_hom (is_iso.inv_hom_id φ) i, },
-      haveI : is_split_mono (φ.f j) := is_split_mono.mk'
-      { retraction := (inv φ).f j,
-        id' := by simpa only [homological_complex.comp_f]
-          using homological_complex.congr_hom (is_iso.hom_inv_id φ) j, },
-      apply (cancel_epi (φ.f i)).mp,
-      apply (cancel_mono (φ.f j)).mp,
-      conv { to_lhs, congr, rw ← assoc, congr, rw [← homological_complex.comp_f, is_iso.hom_inv_id], },
-      conv { to_rhs, rw assoc, congr, skip, rw assoc, congr, skip, rw [← homological_complex.comp_f, is_iso.inv_hom_id], },
-      simp only [functor.map_homological_complex_map_f, homological_complex.id_f, id_comp],
-      erw comp_id,
-      exact (((functor.map_homological_complex F c).map f).comm' i j hij).symm,
-    end },
-  refine ⟨_⟩,
-  use g,
-  split; ext n; apply (equiv_of_fully_faithful F).injective; dsimp,
-  { simp only [functor.image_preimage, functor.map_comp,
-      ← functor.map_homological_complex_map_f, ← homological_complex.comp_f,
-      is_iso.hom_inv_id, homological_complex.id_f, F.map_id], },
-  { simpa only [functor.image_preimage, functor.map_comp,
-      ← functor.map_homological_complex_map_f, ← homological_complex.comp_f,
-      is_iso.inv_hom_id, homological_complex.id_f, F.map_id], }
+  convert is_iso.of_iso (homological_complex.hom.iso_of_components (λ n, as_iso (f.f n))
+    (by tidy)),
+  ext n,
+  refl,
 end
+
+instance {D : Type*} [category D] [preadditive D]
+  {F : C ⥤ D} [F.additive] [full F] [faithful F] :
+  reflects_isomorphisms (functor.map_homological_complex F c) :=
+⟨λ A B f, begin
+  introI,
+  suffices : ∀ (n : ι), is_iso (f.f n),
+  { haveI := this, apply is_iso_of_components, },
+  intro n,
+  apply is_iso_of_reflects_iso _ F,
+  change is_iso ((homological_complex.eval D c n).map ((F.map_homological_complex c).map f)),
+  apply_instance,
+end⟩
+
+end homological_complex
