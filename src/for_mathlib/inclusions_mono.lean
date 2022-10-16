@@ -7,6 +7,7 @@ Authors: Joël Riou
 import category_theory.limits.shapes.finite_products
 import category_theory.limits.shapes.zero_morphisms
 import category_theory.limits.types
+import category_theory.limits.mono_coprod
 
 universe u
 
@@ -18,29 +19,16 @@ namespace category_theory
 
 namespace limits
 
-variables (C : Type*) [category C] [has_finite_coproducts C]
-class mono_in : Prop :=
-(mono_inl' : Π (A B : C), mono (coprod.inl : A ⟶ A ⨿ B))
+variables {C : Type*} [category C] [has_finite_coproducts C]
 
 variable {C}
 
-namespace mono_in
+namespace mono_coprod
 
-instance [hC : mono_in C] {A B : C} : mono (coprod.inl : A ⟶ A ⨿ B) := by apply hC.mono_inl'
-
-instance [hC : mono_in C] {A B : C} : mono (coprod.inr : B ⟶ A ⨿ B) :=
-begin
-  have eq : (coprod.inr : B ⟶ A ⨿ B) = coprod.inl ≫ (coprod.braiding B A).hom := by simp,
-  rw eq,
-  apply mono_comp,
-end
-instance [has_zero_morphisms C] : mono_in C :=
-⟨λ A B, ⟨λ Z f₁ f₂ h, by simpa only [assoc, coprod.inl_desc, comp_id]
-    using h =≫ coprod.desc (𝟙 A) 0⟩⟩
 
 namespace mono_inclusion_sub_coproduct
 
-variables {I J : Type*} [fintype I] [decidable_eq I] [fintype J] [mono_in C] (X : I → C) (γ : J → I)
+variables {I J : Type*} [fintype I] [decidable_eq I] [fintype J] [mono_coprod C] (X : I → C) (γ : J → I)
   (hγ : function.injective γ)
 
 def α : sigma_obj (λ j, X (γ j)) ⟶ sigma_obj X := sigma.desc (λ j, sigma.ι _ (γ j))
@@ -132,7 +120,7 @@ end mono_inclusion_sub_coproduct
 
 section
 
-variables {I J : Type*} [fintype I] [fintype J] [mono_in C]
+variables {I J : Type*} [fintype I] [fintype J] [mono_coprod C]
   (X : I → C) (γ : J → I)
 
 @[simp]
@@ -150,7 +138,7 @@ end
 
 end
 
-instance mono_sigma_ι {I : Type*} [fintype I] [mono_in C] (X : I → C) (i : I):
+instance mono_sigma_ι {I : Type*} [fintype I] [mono_coprod C] (X : I → C) (i : I):
   mono (sigma.ι X i) :=
 begin
   let γ : fin 1 → I := λ x, i,
@@ -165,7 +153,7 @@ begin
   simp only [map_coproduct, colimit.ι_desc, cofan.mk_ι_app],
 end
 
-end mono_in
+end mono_coprod
 
 end limits
 

@@ -23,6 +23,8 @@ namespace index_set
 def truncated (d : ℕ) (Δ : simplex_categoryᵒᵖ) :=
 { A : splitting.index_set Δ // A.1.unop.len ≤ d }
 
+def truncated.id (Δ : simplex_categoryᵒᵖ) : truncated Δ.unop.len Δ := ⟨index_set.id Δ, by refl⟩
+
 def truncated.pull {d : ℕ} {Δ₁ Δ₂ : simplex_categoryᵒᵖ} (B : truncated d Δ₁)
   (θ : Δ₁ ⟶ Δ₂) : truncated d Δ₂ :=
 ⟨B.1.pull θ, (simplex_category.len_le_of_mono
@@ -79,12 +81,12 @@ begin
   erw [colimit.ι_desc, cofan.mk_ι_app],
 end
 
-instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_in C] : mono (s.sk_ι_app d Δ) :=
+instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_coprod C] : mono (s.sk_ι_app d Δ) :=
 begin
   let α : (s.sk_obj d Δ) ⟶ sigma_obj (splitting.summand s.N Δ) :=
     sigma.desc (λ (B : index_set.truncated d Δ), splitting.ι_coprod s.N B.1),
   haveI : mono α,
-  { apply mono_in.mono_inclusion_sub_coproduct,
+  { apply mono_coprod.mono_inclusion_sub_coproduct,
     intros B₁ B₂ h,
     ext1,
     exact h, },
@@ -206,7 +208,7 @@ begin
 end
 
 @[simps]
-def sk (d : ℕ) [mono_in C] : simplicial_object C :=
+def sk (d : ℕ) [mono_coprod C] : simplicial_object C :=
 { obj := s.sk_obj d,
   map := λ Δ₁ Δ₂ θ, s.sk_map d θ,
   map_id' := λ Δ, by simp only [← cancel_mono (s.sk_ι_app d Δ), sk_ι_app_naturality,
@@ -215,19 +217,19 @@ def sk (d : ℕ) [mono_in C] : simplicial_object C :=
     sk_ι_app_naturality, functor.map_comp, category.assoc, sk_ι_app_naturality_assoc], }
 
 @[simps]
-def sk_ι (d : ℕ) [mono_in C] : s.sk d ⟶ X :=
+def sk_ι (d : ℕ) [mono_coprod C] : s.sk d ⟶ X :=
 { app := s.sk_ι_app d, }
 
-instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_in C] : mono ((s.sk_ι d).app Δ) :=
+instance (d : ℕ) (Δ : simplex_categoryᵒᵖ) [mono_coprod C] : mono ((s.sk_ι d).app Δ) :=
 by { dsimp only [sk_ι], apply_instance, }
 
-instance (d : ℕ) [mono_in C] : mono (s.sk_ι d) := nat_trans.mono_of_mono_app _
+instance (d : ℕ) [mono_coprod C] : mono (s.sk_ι d) := nat_trans.mono_of_mono_app _
 
 @[simp]
-def sk_φ {d : ℕ} [mono_in C] {Y : simplicial_object C} (f : s.sk d ⟶ Y) {n : ℕ} (hn : n ≤ d) :
+def sk_φ {d : ℕ} [mono_coprod C] {Y : simplicial_object C} (f : s.sk d ⟶ Y) {n : ℕ} (hn : n ≤ d) :
   s.N n ⟶ Y _[n] := s.ι_summand_sk d ⟨index_set.id (op [n]), hn⟩ ≫ f.app (op [n])
 
-lemma ι_summand_sk_eq (d : ℕ) {Δ : simplex_categoryᵒᵖ} (B : index_set.truncated d Δ) [mono_in C]:
+lemma ι_summand_sk_eq (d : ℕ) {Δ : simplex_categoryᵒᵖ} (B : index_set.truncated d Δ) [mono_coprod C]:
   s.ι_summand_sk d ⟨index_set.id B.1.1, B.2⟩ ≫ (s.sk d).map B.1.e.op = s.ι_summand_sk d B :=
 begin
   simp only [sk_map_2, s.sk_map_on_summand d B.1.e.op ⟨index_set.id B.1.1, B.2⟩
@@ -241,7 +243,7 @@ begin
   simp only [category.comp_id],
 end
 
-lemma sk_hom_ext (d : ℕ) [mono_in C] {Y : simplicial_object C}
+lemma sk_hom_ext (d : ℕ) [mono_coprod C] {Y : simplicial_object C}
   {f₁ f₂ : s.sk d ⟶ Y}
   (h : ∀ (n : ℕ) (hn : n ≤ d), s.sk_φ f₁ hn = s.sk_φ f₂ hn) : f₁ = f₂ :=
 begin
@@ -257,7 +259,7 @@ begin
 end
 
 @[simps]
-def sk_hom_extension (d : ℕ) [mono_in C] {Y : simplicial_object C}
+def sk_hom_extension (d : ℕ) [mono_coprod C] {Y : simplicial_object C}
   (f : ((simplicial_object.sk d).obj X ⟶ (simplicial_object.sk d).obj Y)) :
   s.sk d ⟶ Y :=
 { app := λ Δ, s.sk_desc d Δ (λ B, s.ι B.1.1.unop.len ≫ f.app (op ⟨B.1.1.unop, B.2⟩) ≫
@@ -291,15 +293,15 @@ def sk_hom_extension (d : ℕ) [mono_in C] {Y : simplicial_object C}
     simpa only [category.assoc],
   end}
 
-instance (d : ℕ) [mono_in C] (Δ : (simplex_category.truncated d)ᵒᵖ) :
+instance (d : ℕ) [mono_coprod C] (Δ : (simplex_category.truncated d)ᵒᵖ) :
   is_iso (((simplicial_object.sk d).map (s.sk_ι d)).app Δ) :=
 s.sk_ι_is_iso_of_le d (op Δ.unop.1) Δ.unop.2
 
-instance (d : ℕ) [mono_in C] : is_iso ((simplicial_object.sk d).map (s.sk_ι d)) :=
+instance (d : ℕ) [mono_coprod C] : is_iso ((simplicial_object.sk d).map (s.sk_ι d)) :=
 nat_iso.is_iso_of_is_iso_app _
 
 include s
-def hom_equiv (d : ℕ) [mono_in C] (Y : simplicial_object C) : (s.sk d ⟶ Y) ≃
+def hom_equiv (d : ℕ) [mono_coprod C] (Y : simplicial_object C) : (s.sk d ⟶ Y) ≃
   ((simplicial_object.sk d).obj X ⟶ (simplicial_object.sk d).obj Y) :=
 { to_fun := λ f, inv ((simplicial_object.sk d).map (s.sk_ι d)) ≫
       (simplicial_object.sk d).map f,
@@ -331,12 +333,12 @@ def hom_equiv (d : ℕ) [mono_in C] (Y : simplicial_object C) : (s.sk d ⟶ Y) �
   end, }
 
 @[simp]
-def sk_inclusion_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] (Δ : simplex_categoryᵒᵖ) :
+def sk_inclusion_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_coprod C] (Δ : simplex_categoryᵒᵖ) :
   (s.sk d₁).obj Δ ⟶ (s.sk d₂).obj Δ :=
 s.sk_desc d₁ Δ (λ B, s.ι_summand_sk d₂ ⟨B.1, B.2.trans h⟩)
 
 @[reassoc]
-lemma sk_inclusion_app_comp_sk_ι_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C]
+lemma sk_inclusion_app_comp_sk_ι_app {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_coprod C]
   (Δ : simplex_categoryᵒᵖ) : s.sk_inclusion_app h Δ ≫ s.sk_ι_app d₂ Δ = s.sk_ι_app d₁ Δ :=
 begin
   apply s.sk_obj_hom_ext,
@@ -345,7 +347,7 @@ begin
 end
 
 @[simps]
-def sk_inclusion {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] :
+def sk_inclusion {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_coprod C] :
   s.sk d₁ ⟶ s.sk d₂ :=
 { app := λ Δ, s.sk_inclusion_app h Δ,
   naturality' := λ Δ₁ Δ₂ θ, by begin
@@ -355,7 +357,7 @@ def sk_inclusion {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] :
     end }
 
 @[simp, reassoc]
-lemma sk_inclusion_comp_sk_ι {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_in C] :
+lemma sk_inclusion_comp_sk_ι {d₁ d₂ : ℕ} (h : d₁ ≤ d₂) [mono_coprod C] :
   s.sk_inclusion h ≫ s.sk_ι d₂ = s.sk_ι d₁ :=
 begin
   apply s.sk_hom_ext,
@@ -366,7 +368,7 @@ begin
 end
 
 @[simp, reassoc]
-lemma sk_inclusion_comp_sk_inclusion {d₁ d₂ d₃ : ℕ} (h₁₂ : d₁ ≤ d₂) (h₂₃ : d₂ ≤ d₃) [mono_in C] :
+lemma sk_inclusion_comp_sk_inclusion {d₁ d₂ d₃ : ℕ} (h₁₂ : d₁ ≤ d₂) (h₂₃ : d₂ ≤ d₃) [mono_coprod C] :
   s.sk_inclusion h₁₂ ≫ s.sk_inclusion h₂₃ = s.sk_inclusion (h₁₂.trans h₂₃) :=
 by simp only [← cancel_mono (s.sk_ι d₃), category.assoc, sk_inclusion_comp_sk_ι]
 

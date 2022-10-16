@@ -289,7 +289,7 @@ namespace splitting
 
 variables {X X' : simplicial_object C} (s : splitting X)
 
-instance [mono_in C] {Δ : simplex_categoryᵒᵖ} (A : index_set Δ) : mono (s.ι_summand A) :=
+instance [mono_coprod C] {Δ : simplex_categoryᵒᵖ} (A : index_set Δ) : mono (s.ι_summand A) :=
 by { dsimp only [ι_summand, ι_coprod], apply mono_comp, }
 
 /-@[reassoc]
@@ -409,7 +409,7 @@ def whiskering {D : Type*} [category D] [has_finite_coproducts D] (F : C ⥤ D)
     f := λ n, F.map (Φ.f n),
     comm' := λ n, by { dsimp, simp only [← F.map_comp, Φ.comm], }, }, }
 
-lemma hom.ext' {S₁ S₂ : split C} [mono_in C] (Φ₁ Φ₂ : S₁ ⟶ S₂) (h : Φ₁.F = Φ₂.F) :
+lemma hom.ext' {S₁ S₂ : split C} [mono_coprod C] (Φ₁ Φ₂ : S₁ ⟶ S₂) (h : Φ₁.F = Φ₂.F) :
   Φ₁ = Φ₂ :=
 begin
   ext,
@@ -521,6 +521,7 @@ def tensor (X : sSet.{u}) (Y : C)
     refl,
   end, }
 
+@[simp]
 def tensor_ι {X : sSet.{u}} {Δ : simplex_categoryᵒᵖ} (x : X.obj Δ) (Y : C)
   [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X.obj Δ), Y)] :
   Y ⟶ (X.tensor Y).obj Δ :=
@@ -532,7 +533,7 @@ lemma tensor_ι_comp_map {X : sSet.{u}} {Δ Δ' : simplex_categoryᵒᵖ} (x : X
   (θ : Δ ⟶ Δ') :
   tensor_ι x Y ≫ (X.tensor Y).map θ = tensor_ι (X.map θ x) Y :=
 begin
-  dsimp [tensor_ι],
+  dsimp,
   simp only [colimit.ι_desc, cofan.mk_ι_app],
 end
 
@@ -545,6 +546,7 @@ begin
 end
 
 instance (n : ℕ) : degreewise_finite Δ[n] := ⟨λ Δ, simplex_category.hom.fintype _ _⟩
+instance (n : ℕ) : degreewise_finite ∂Δ[n] := ⟨λ Δ, by { dsimp [boundary], apply_instance, }⟩
 
 instance has_coproduct_of_degreewise_finite
   (X : sSet.{u}) [degreewise_finite X] (Δ : simplex_categoryᵒᵖ) [has_finite_coproducts C]
@@ -579,5 +581,21 @@ def tensor_yoneda_adjunction [has_finite_coproducts C]
     simp only [colimit.ι_desc, cofan.mk_ι_app],
     erw [op_id, X.map_id, comp_id],
   end, }
+
+example : ℕ := 42
+
+@[simps]
+def tensor_map₁ {X₁ X₂ : sSet.{u}} (f : X₁ ⟶ X₂) (Y : C)
+  [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X₁.obj Δ), Y)]
+  [∀ (Δ : simplex_categoryᵒᵖ), has_coproduct (λ (x : X₂.obj Δ), Y)] :
+  X₁.tensor Y ⟶ X₂.tensor Y :=
+{ app := λ Δ, limits.sigma.desc (λ x, tensor_ι (f.app Δ x) Y),
+  naturality' := λ Δ₁ Δ₂ φ, begin
+    ext x,
+    dsimp,
+    simp only [colimit.ι_desc_assoc, cofan.mk_ι_app, colimit.ι_desc],
+    congr,
+    exact congr_fun (f.naturality φ) x.as,
+  end}
 
 end sSet
