@@ -40,6 +40,17 @@ attribute [instance] preserves_finite_coproducts.preserves_colimits_of_shape
 namespace simplicial_object
 
 namespace splitting
+
+def mk' (X : simplicial_object C) (N : Π (n : ℕ), C) (ι' : Π (n : ℕ), N n ⟶ X _[n])
+  (h : ∀ (Δ : simplex_categoryᵒᵖ), is_colimit (cofan.mk (X.obj Δ) (λ (A : index_set Δ),
+    ι' A.1.unop.len ≫ X.map A.e.op)))
+  [has_finite_coproducts C] :
+  splitting X :=
+{ N := N,
+  ι := ι',
+  map_is_iso' := λ Δ,
+    is_iso.of_iso (is_colimit.cocone_point_unique_up_to_iso (colimit.is_colimit _) (h Δ)), }
+
 /-
 /-- The index set which appears in the definition of split simplicial objects. -/
 def index_set (Δ : simplex_categoryᵒᵖ) :=
@@ -581,8 +592,6 @@ def tensor_yoneda_adjunction [has_finite_coproducts C]
     simp only [colimit.ι_desc, cofan.mk_ι_app],
     erw [op_id, X.map_id, comp_id],
   end, }
-
-example : ℕ := 42
 
 @[simps]
 def tensor_map₁ {X₁ X₂ : sSet.{u}} (f : X₁ ⟶ X₂) (Y : C)
