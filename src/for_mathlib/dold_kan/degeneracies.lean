@@ -6,7 +6,7 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.decomposition
 import tactic.fin_cases
-import for_mathlib.split_simplicial_object
+import algebraic_topology.split_simplicial_object
 
 /-!
 
