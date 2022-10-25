@@ -90,7 +90,7 @@ lemma ι_summand_comp_P_infty_eq_zero {X : simplicial_object C} [has_finite_copr
 begin
   rw simplicial_object.splitting.index_set.eq_id_iff_mono at hA,
   rw [simplicial_object.splitting.ι_summand_eq, assoc,
-    P_infty_on_degeneracies X n A.e hA, comp_zero],
+    degeneracy_comp_P_infty X n A.e hA, comp_zero],
 end
 
 lemma comp_P_infty_eq_zero_iff {Z : C} {n : ℕ} (f : Z ⟶ X _[n]) :
@@ -151,7 +151,7 @@ lemma ι_summand_comp_d_comp_π_summand_eq_zero (j k : ℕ) (A : index_set (op [
 begin
   rw A.eq_id_iff_mono at hA,
   rw [← assoc, ← s.comp_P_infty_eq_zero_iff, assoc, ← P_infty.comm j k, s.ι_summand_eq, assoc,
-    P_infty_on_degeneracies_assoc X j A.e hA, zero_comp, comp_zero],
+    degeneracy_comp_P_infty_assoc X j A.e hA, zero_comp, comp_zero],
 end
 
 @[simps]
