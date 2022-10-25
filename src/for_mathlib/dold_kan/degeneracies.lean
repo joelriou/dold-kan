@@ -28,23 +28,6 @@ by induction on `q : ℕ`.
 
 noncomputable theory
 
-namespace category_theory
-namespace simplicial_object
-
-variables {C : Type*} [category C]
-
-@[reassoc]
-lemma δ_comp_σ_succ' (X : simplicial_object C) {n : ℕ} {i : fin (n+1)} {j : fin (n+2)}
-  (h : j = i.succ) : X.σ i ≫ X.δ j = 𝟙 _ :=
-by { subst h, rw X.δ_comp_σ_succ, }
-
-local attribute [reassoc] δ_comp_σ_self
-local attribute [reassoc] δ_comp_σ_succ
-local attribute [reassoc] σ_comp_σ
-
-end simplicial_object
-end category_theory
-
 open category_theory category_theory.category category_theory.limits category_theory.idempotents
   category_theory.preadditive opposite
 open_locale simplicial dold_kan
