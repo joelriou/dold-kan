@@ -28,7 +28,7 @@ variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
 
 lemma P_infty_comp_map_mono_eq_zero (X : simplicial_object C) {n : ℕ}
   {Δ' : simplex_category} (i : Δ' ⟶ [n]) [mono i]
-  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_d₀ i) :
+  (h₁ : Δ'.len ≠ n) (h₂ : ¬is_δ₀ i) :
   P_infty.f n ≫ X.map i.op = 0 :=
 begin
   have h₃ := simplex_category.len_le_of_mono (show mono i, by apply_instance),
@@ -63,7 +63,7 @@ begin
       unfreezingI { subst h₉, },
       haveI : mono θ := mono_of_mono_fac hθ.symm,
       rw [simplex_category.eq_id_of_mono θ, id_comp] at hθ,
-      simpa only [hθ, is_d₀.iff] using h₂, },
+      simpa only [hθ, is_δ₀.iff] using h₂, },
       rw simplex_category.epi_iff_surjective at h₇,
       simp only [not_forall, not_exists] at h₇,
       cases h₇ with y hy,
@@ -98,11 +98,11 @@ begin
       op_id, X.map_id],
     dsimp,
     simp only [id_comp, comp_id], },
-  by_cases hi : is_d₀ i,
+  by_cases hi : is_δ₀ i,
   /- The case `i = δ 0` -/
   { have h' : n' = n+1 := hi.left,
     unfreezingI { subst h', },
-    rw Γ₀.obj.termwise.map_mono_d₀ _ i hi,
+    rw Γ₀.obj.termwise.map_mono_δ₀' _ i hi,
     dsimp,
     rw ← P_infty.comm' _ n rfl,
     dsimp [alternating_face_map_complex.obj, chain_complex.of],
@@ -110,9 +110,9 @@ begin
     rw finset.sum_eq_single (0 : fin (n+2)), rotate,
     { intros b hb hb',
       simp only [preadditive.comp_zsmul],
-      erw [P_infty_comp_map_mono_eq_zero X (simplex_category.δ b) h (by { rw is_d₀.iff, exact hb', }), zsmul_zero], },
+      erw [P_infty_comp_map_mono_eq_zero X (simplex_category.δ b) h (by { rw is_δ₀.iff, exact hb', }), zsmul_zero], },
     { simp only [finset.mem_univ, not_true, is_empty.forall_iff], },
-    { simpa only [hi.eq_d₀, fin.coe_zero, pow_zero, one_zsmul], }, },
+    { simpa only [hi.eq_δ₀, fin.coe_zero, pow_zero, one_zsmul], }, },
   /- The case `i ≠ δ 0` -/
   { rw [Γ₀.obj.termwise.map_mono_eq_zero _ i _ hi, zero_comp], swap,
     { by_contradiction h',

@@ -81,14 +81,14 @@ namespace dold_kan
 variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
 variables (K K' : chain_complex C ℕ) (f : K ⟶ K')
 
-/-- `is_d₀ i` is a simple condition used to check whether a monomorphism in
+/-- `is_δ₀ i` is a simple condition used to check whether a monomorphism in
 `simplex_category` is the coface maps `δ 0`. -/
 @[nolint unused_arguments]
-def is_d₀ {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
+def is_δ₀ {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] : Prop := (Δ.len = Δ'.len+1) ∧ (i.to_order_hom 0 ≠ 0)
 
-namespace is_d₀
+namespace is_δ₀
 
-lemma iff {j : ℕ} {i : fin (j+2)} : is_d₀ (simplex_category.δ i) ↔ i = 0 :=
+lemma iff {j : ℕ} {i : fin (j+2)} : is_δ₀ (simplex_category.δ i) ↔ i = 0 :=
 begin
   split,
   { rintro ⟨h₁, h₂⟩,
@@ -101,7 +101,7 @@ begin
     { apply fin.succ_ne_zero, }, }
 end
 
-lemma eq_d₀ {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_d₀ i) :
+lemma eq_δ₀ {n : ℕ} {i : [n] ⟶ [n+1]} [mono i] (hi : is_δ₀ i) :
   i = simplex_category.δ 0 :=
 begin
   cases simplex_category.eq_δ_of_mono i with j h,
@@ -110,7 +110,7 @@ begin
   rw hi,
 end
 
-end is_d₀
+end is_δ₀
 
 namespace Γ₀
 
@@ -135,7 +135,7 @@ begin
   by_cases Δ = Δ',
   { apply eq_to_hom,
     congr', },
-  { by_cases is_d₀ i,
+  { by_cases is_δ₀ i,
     { exact K.d Δ.len Δ'.len, },
     { exact 0, }, },
 end
@@ -148,7 +148,7 @@ lemma map_mono_id : map_mono K (𝟙 Δ) = 𝟙 _ := by { unfold map_mono, tidy,
 
 variable {Δ}
 
-lemma map_mono_d₀ (hi : is_d₀ i) : map_mono K i = K.d Δ.len Δ'.len :=
+lemma map_mono_δ₀' (hi : is_δ₀ i) : map_mono K i = K.d Δ.len Δ'.len :=
 begin
   unfold map_mono,
   split_ifs,
@@ -159,10 +159,10 @@ begin
   refl,
 end
 
-lemma map_mono_d₀' {n : ℕ} : map_mono K (δ (0 : fin (n+2))) = K.d (n+1) n :=
-map_mono_d₀ K _ (by rw is_d₀.iff)
+lemma map_mono_δ₀ {n : ℕ} : map_mono K (δ (0 : fin (n+2))) = K.d (n+1) n :=
+map_mono_δ₀' K _ (by rw is_δ₀.iff)
 
-lemma map_mono_eq_zero (h₁ : ¬Δ = Δ') (h₂ : ¬is_d₀ i) : map_mono K i = 0 :=
+lemma map_mono_eq_zero (h₁ : ¬Δ = Δ') (h₂ : ¬is_δ₀ i) : map_mono K i = 0 :=
 by { unfold map_mono, split_ifs, refl, }
 
 variables {K K'}
@@ -178,13 +178,13 @@ begin
   { rw [zero_comp, comp_zero], }
 end
 
-lemma simplex_category_non_epi_mono {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [mono i] (hi : ¬Δ=Δ'):
-  ∃ (k : ℕ), Δ.len = Δ'.len + (k + 1) :=
+lemma simplex_category_non_epi_mono {Δ' Δ : simplex_category} (i : Δ' ⟶ Δ) [hi : mono i]
+  (hi' : ¬Δ=Δ') : ∃ (k : ℕ), Δ.len = Δ'.len + (k + 1) :=
 begin
-  cases le_iff_exists_add.mp (simplex_category.len_le_of_mono (infer_instance : mono i)) with k h,
+  cases le_iff_exists_add.mp (simplex_category.len_le_of_mono hi) with k h,
   cases k,
   { exfalso,
-    exact hi (simplex_category.ext Δ Δ' h), },
+    exact hi' (simplex_category.ext Δ Δ' h), },
   { exact ⟨k, h⟩, },
 end
 
@@ -194,34 +194,34 @@ variable (K)
 lemma map_mono_comp : map_mono K i ≫ map_mono K i' = map_mono K (i' ≫ i) :=
 begin
   /- case where i : Δ' ⟶ Δ is the identity -/
-  by_cases h1 : Δ = Δ',
-  { unfreezingI { subst h1, },
+  by_cases h₁ : Δ = Δ',
+  { unfreezingI { subst h₁, },
     simp only [simplex_category.eq_id_of_mono i,
       comp_id, id_comp, map_mono_id K, eq_to_hom_refl], },
   /- case where i' : Δ'' ⟶ Δ' is the identity -/
-  by_cases h2 : Δ' = Δ'',
-  { unfreezingI { subst h2, },
+  by_cases h₂ : Δ' = Δ'',
+  { unfreezingI { subst h₂, },
     simp only [simplex_category.eq_id_of_mono i',
       comp_id, id_comp, map_mono_id K, eq_to_hom_refl], },
   /- then the RHS is always zero -/
-  cases simplex_category_non_epi_mono i h1 with k hk,
-  cases simplex_category_non_epi_mono i' h2 with k' hk',
+  cases simplex_category_non_epi_mono i h₁ with k hk,
+  cases simplex_category_non_epi_mono i' h₂ with k' hk',
   have eq : Δ.len = Δ''.len + (k+k'+2) := by { rw hk' at hk, linarith, },
   rw map_mono_eq_zero K (i' ≫ i) _ _, rotate,
   { by_contradiction,
     simpa only [self_eq_add_right,h ] using eq, },
   { by_contradiction,
-    dsimp [is_d₀] at h,
+    dsimp [is_δ₀] at h,
     simp only [h.left, add_right_inj] at eq,
     linarith, },
   /- in all cases, the LHS is also zero,
   either by definition, or because d ≫ d = 0 -/
-  by_cases h3 : is_d₀ i,
-  { by_cases h4 : is_d₀ i',
-    { rw [map_mono_d₀ K i h3, map_mono_d₀ K i' h4,
+  by_cases h₃ : is_δ₀ i,
+  { by_cases h₄ : is_δ₀ i',
+    { rw [map_mono_δ₀' K i h₃, map_mono_δ₀' K i' h₄,
         homological_complex.d_comp_d], },
-    { simp only [map_mono_eq_zero K i' h2 h4, comp_zero], }, },
-  { simp only [map_mono_eq_zero K i h1 h3, zero_comp], },
+    { simp only [map_mono_eq_zero K i' h₂ h₄, comp_zero], }, },
+  { simp only [map_mono_eq_zero K i h₁ h₃, zero_comp], },
 end
 
 end termwise
@@ -335,7 +335,7 @@ by { apply obj.map_on_summand, apply image.fac, }
 lemma obj.map_mono_on_summand_id {Δ Δ' : simplex_category} (i : Δ' ⟶ Δ) [mono i] :
   (splitting K).ι_summand (splitting.index_set.id (op Δ)) ≫ (obj K).map i.op =
   obj.termwise.map_mono K i ≫ (splitting K).ι_summand (splitting.index_set.id (op Δ')) :=
-obj.map_on_summand K (splitting.index_set.id (op Δ)) i.op (show 𝟙 _ ≫ i = i ≫ 𝟙 _, by refl)
+obj.map_on_summand K (splitting.index_set.id (op Δ)) i.op (rfl : 𝟙 _ ≫ i = i ≫ 𝟙 _)
 
 @[reassoc]
 lemma obj.map_epi_on_summand_id {Δ Δ' : simplex_category } (e : Δ' ⟶ Δ) [epi e] :
@@ -361,7 +361,7 @@ end Γ₀
 /-- The functor `Γ₀' : chain_complex C ℕ ⥤ simplicial_object.split C`
 that induces `Γ₀ : chain_complex C ℕ ⥤ simplicial_object C`, which
 shall be the inverse functor of the Dold-Kan equivalence for
-abelian or pseudo-abelian category. -/
+abelian or pseudo-abelian categories. -/
 @[simps]
 def Γ₀' : chain_complex C ℕ ⥤ simplicial_object.split C :=
 { obj := λ K, simplicial_object.split.mk' (Γ₀.splitting K),
@@ -393,7 +393,7 @@ begin
   { intro h,
     exact (nat.succ_ne_self n) (congr_arg simplex_category.len h), },
   { intro h,
-    simp only [is_d₀.iff] at h,
+    simp only [is_δ₀.iff] at h,
     exact fin.succ_ne_zero j h, },
   exact eq,
 end

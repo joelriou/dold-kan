@@ -36,7 +36,7 @@ begin
     preadditive.sum_comp, preadditive.comp_sum],
   rw fintype.sum_eq_single (0 : fin (n+2)),
   { simp only [fin.coe_zero, pow_zero, one_zsmul],
-    erw [Γ₀.obj.map_mono_on_summand_id_assoc, Γ₀.obj.termwise.map_mono_d₀',
+    erw [Γ₀.obj.map_mono_on_summand_id_assoc, Γ₀.obj.termwise.map_mono_δ₀,
       splitting.ι_π_summand_eq_id, comp_id], },
   { intros i hi,
     dsimp,
@@ -47,20 +47,18 @@ begin
       replace h := congr_arg simplex_category.len h,
       change n+1 = n at h,
       linarith, },
-    { simpa only [is_d₀.iff] using hi, }, },
+    { simpa only [is_δ₀.iff] using hi, }, },
 end
 
 def N'Γ₀' : Γ₀' ⋙ split.N' ≅ 𝟭 (chain_complex C ℕ) :=
 nat_iso.of_components N'Γ₀'_app (λ X Y f, by { ext n, dsimp, simp only [comp_id, id_comp], })
 
 def N₁Γ₀ : Γ₀ ⋙ N₁ ≅ to_karoubi (chain_complex C ℕ) :=
-begin
-  calc Γ₀ ⋙ N₁ ≅ Γ₀' ⋙ split.forget C ⋙ N₁ : (functor.associator _ _ _)
-  ... ≅ Γ₀' ⋙ split.N' ⋙ to_karoubi _ : iso_whisker_left Γ₀' split.to_karoubi_N'_iso_N₁.symm
-  ... ≅ (Γ₀' ⋙ split.N') ⋙ to_karoubi _ : (functor.associator _ _ _).symm
-  ... ≅ 𝟭 _ ⋙ to_karoubi (chain_complex C ℕ) : iso_whisker_right N'Γ₀' _
-  ... ≅ to_karoubi (chain_complex C ℕ) : functor.left_unitor _,
-end
+calc Γ₀ ⋙ N₁ ≅ Γ₀' ⋙ split.forget C ⋙ N₁ : functor.associator _ _ _
+... ≅ Γ₀' ⋙ split.N' ⋙ to_karoubi _ : iso_whisker_left Γ₀' split.to_karoubi_N'_iso_N₁.symm
+... ≅ (Γ₀' ⋙ split.N') ⋙ to_karoubi _ : (functor.associator _ _ _).symm
+... ≅ 𝟭 _ ⋙ to_karoubi (chain_complex C ℕ) : iso_whisker_right N'Γ₀' _
+... ≅ to_karoubi (chain_complex C ℕ) : functor.left_unitor _
 
 lemma N₁Γ₀_app (K : chain_complex C ℕ) :
   N₁Γ₀.app K = (Γ₀.splitting K).to_karoubi_N'_iso_N₁.symm
