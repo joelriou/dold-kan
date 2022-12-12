@@ -22,8 +22,7 @@ open category_theory.category
 open category_theory.limits
 open category_theory.idempotents
 
-variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
-  [is_idempotent_complete C]
+variables {C : Type*} [category C] [is_idempotent_complete C]
 
 namespace category_theory
 
@@ -33,31 +32,25 @@ namespace dold_kan
 
 open algebraic_topology.dold_kan
 
-/-- The equivalence `simplicial_object A ≌ karoubi (simplicial_object A) ` -/
-@[nolint unused_arguments]
-def κequiv := to_karoubi_equivalence (simplicial_object C)
-
-instance : is_idempotent_complete (chain_complex C ℕ) := sorry
-
-/-- The equivalence `chain_complex A ℕ ≌ karoubi (chain_complex A ℕ) ` -/
-def κequiv' := to_karoubi_equivalence (chain_complex C ℕ)
+variables [preadditive C] [has_finite_coproducts C]
 
 /-- The functor `N` for the equivalence is obtained by composing
 `N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)` and the inverse
 of the equivalence `chain_complex C ℕ ≌ karoubi (chain_complex C ℕ)`. -/
-@[simps]
-def N : simplicial_object C ⥤ chain_complex C ℕ := N₁ ⋙ κequiv'.inverse
+@[simps, nolint unused_arguments]
+def N : simplicial_object C ⥤ chain_complex C ℕ :=
+N₁ ⋙ (to_karoubi_equivalence _).inverse
 
 /-- The functor `Γ` for the equivalence is `Γ'`. -/
 @[simps, nolint unused_arguments]
 def Γ : chain_complex C ℕ ⥤ simplicial_object C := Γ₀
 
-lemma hN₁ : κequiv.functor ⋙ preadditive.dold_kan.equivalence.functor =
-  (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
+lemma hN₁ : (to_karoubi_equivalence (simplicial_object C)).functor ⋙
+  preadditive.dold_kan.equivalence.functor = N₁ :=
 functor.congr_obj (functor_extension₁_comp_whiskering_left_to_karoubi _ _) N₁
 
-lemma hΓ₀ : κequiv'.functor ⋙ preadditive.dold_kan.equivalence.inverse =
-    (Γ : chain_complex C ℕ ⥤ _) ⋙ κequiv.functor  :=
+lemma hΓ₀ : (to_karoubi_equivalence (chain_complex C ℕ)).functor ⋙
+  preadditive.dold_kan.equivalence.inverse = Γ ⋙ (to_karoubi_equivalence _).functor :=
 functor.congr_obj (functor_extension₂_comp_whiskering_left_to_karoubi _ _) Γ₀
 
 /-- The Dold-Kan equivalence for pseudoabelian categories given
@@ -73,38 +66,40 @@ lemma equivalence_inverse : (equivalence : simplicial_object C ≌ _).inverse = 
 for the construction of our counit isomorphism `η` -/
 lemma hη : compatibility.τ₀ =
   compatibility.τ₁ (eq_to_iso hN₁) (eq_to_iso hΓ₀)
-  (N₁Γ₀ : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ κequiv'.functor) :=
+  (N₁Γ₀ : Γ ⋙ N₁ ≅ (to_karoubi_equivalence (chain_complex C ℕ)).functor) :=
 begin
   ext K : 3,
-  rw compatibility.τ₀_hom_app_eq,
+  rw compatibility.τ₀_hom_app,
   dsimp [compatibility.τ₁],
   simpa only [id_comp, comp_id, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans,
     N₂Γ₂_to_karoubi_iso_hom] using N₂Γ₂_compatible_with_N₁Γ₀ K,
 end
 
-/-- The counit isomorphism induced by `N₁Γ₀_iso` -/
+/-- The counit isomorphism induced by `N₁Γ₀` -/
 @[simps]
 def η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ) := compatibility.equivalence_counit_iso
-  (N₁Γ₀ : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ κequiv'.functor)
+  (N₁Γ₀ : (Γ : chain_complex C ℕ ⥤ _ ) ⋙ N₁ ≅ (to_karoubi_equivalence _).functor)
 
 lemma equivalence_counit_iso :
   dold_kan.equivalence.counit_iso = (η : Γ ⋙ N ≅ 𝟭 (chain_complex C ℕ)) :=
 compatibility.equivalence_counit_iso_eq hη
 
+local attribute [-simp, reassoc] nat_trans.comp_app
+
 lemma hε : compatibility.υ (eq_to_iso hN₁) =
-  (Γ₂N₁ : κequiv.functor ≅ (N₁ : simplicial_object C ⥤ _) ⋙
+  (Γ₂N₁ : (to_karoubi_equivalence _).functor ≅ (N₁ : simplicial_object C ⥤ _) ⋙
   preadditive.dold_kan.equivalence.inverse) :=
 begin
   ext X : 4,
   erw [nat_trans.comp_app, compatibility_Γ₂N₁_Γ₂N₂_nat_trans],
-  dsimp [compatibility.υ],
-  simp only [id_comp, comp_id],
-  slice_lhs 2 3 { erw [← nat_trans.comp_app, is_iso.hom_inv_id], },
-  slice_lhs 2 3 { erw id_comp, },
-  simpa only [eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans],
+  simp only [compatibility.υ_hom_app, compatibility_Γ₂N₁_Γ₂N₂,
+    preadditive.dold_kan.equivalence_unit_iso, Γ₂N₂, iso.symm_hom, as_iso_inv, assoc],
+  erw [← nat_trans.comp_app_assoc, is_iso.hom_inv_id],
+  dsimp,
+  simpa only [id_comp, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans],
 end
 
-/-- The unit isomorphism induced by `Γ₂N₁` -/
+/-- The unit isomorphism induced by `Γ₂N₁`. -/
 @[simps]
 def ε : 𝟭 (simplicial_object C) ≅ N ⋙ Γ :=
 compatibility.equivalence_unit_iso (eq_to_iso hΓ₀) Γ₂N₁

@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 
 import category_theory.idempotents.karoubi
+import algebra.homology.homological_complex
 
 noncomputable theory
 
@@ -30,11 +31,16 @@ end karoubi
 
 variable (C)
 
+@[simps functor inverse]
 def to_karoubi_equivalence [is_idempotent_complete C] : C ≌ karoubi C :=
 begin
   haveI := to_karoubi_is_equivalence C,
   exact functor.as_equivalence (to_karoubi C),
 end
+
+
+instance [preadditive C] [is_idempotent_complete C] :
+  is_idempotent_complete (chain_complex C ℕ) := sorry
 
 end idempotents
 

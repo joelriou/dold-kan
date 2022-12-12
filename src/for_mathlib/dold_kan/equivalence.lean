@@ -146,14 +146,14 @@ def κequiv' := to_karoubi_equivalence (chain_complex A ℕ)
 the functor `idempotents.dold_kan.N` from the pseudoabelian case -/
 @[simps]
 def comparison_N : (N : simplicial_object A ⥤ _) ≅ idempotents.dold_kan.N :=
-begin
-  calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
-  ... ≅ N ⋙ (κequiv'.functor ⋙ κequiv'.inverse) : iso_whisker_left _ κequiv'.unit_iso
-  ... ≅ (N ⋙ κequiv'.functor) ⋙ κequiv'.inverse : by refl
-  ... ≅ N₁ ⋙ κequiv'.inverse : iso_whisker_right
-    (N₁_iso_normalized_Moore_complex_comp_to_karoubi A).symm _
-  ... ≅ idempotents.dold_kan.N : by refl,
-end
+calc N ≅ N ⋙ 𝟭 _ : functor.left_unitor N
+... ≅ N ⋙ ((to_karoubi_equivalence _).functor ⋙ (to_karoubi_equivalence _).inverse) :
+  iso_whisker_left _ κequiv'.unit_iso
+... ≅ (N ⋙ (to_karoubi_equivalence _).functor) ⋙ (to_karoubi_equivalence _).inverse :
+  iso.refl _
+... ≅ N₁ ⋙ (to_karoubi_equivalence _).inverse : iso_whisker_right
+  (N₁_iso_normalized_Moore_complex_comp_to_karoubi A).symm _
+... ≅ idempotents.dold_kan.N : by refl
 
 /-- The Dold-Kan equivalence for abelian categories -/
 @[simps]
@@ -166,8 +166,8 @@ begin
   exact N.as_equivalence,
 end
 
-lemma equivalence_functor : (equivalence : simplicial_object A ≌ _).functor = N := by refl
-lemma equivalence_inverse : (equivalence : simplicial_object A ≌ _).inverse = Γ := by refl
+lemma equivalence_functor : (equivalence : simplicial_object A ≌ _).functor = N := rfl
+lemma equivalence_inverse : (equivalence : simplicial_object A ≌ _).inverse = Γ := rfl
 
 end dold_kan
 
