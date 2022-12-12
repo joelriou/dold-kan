@@ -5,10 +5,30 @@ Authors: Joël Riou
 -/
 
 import category_theory.equivalence
-import category_theory.idempotents.functor_extension
 
-open category_theory
-open category_theory.category
+/-! Tools for compatibilities between Dold-Kan equivalences
+
+The purpose of this file is to introduce a tool which will enable the
+construction of the Dold-Kan equivalence `simplicial_object C ≌ chain_complex C ℕ`
+for a pseudoabelian category `C` from the equivalence
+`karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)` and the two
+equivalences `simplicial_object C ≅ karoubi (simplicial_object C)` and
+`chain_complex C ℕ ≅ karoubi (chain_complex C ℕ)`.
+
+It is certainly possible to get an equivalence `simplicial_object C ≌ chain_complex C ℕ`
+using a compositions of three equivalences above, but then neither the functor
+nor the inverse would have good definitional properties. For example, it would be better
+if the inverse functor of the equivalence was the functor
+`Γ₀ : simplicial_object C ⥤ chain_complex C ℕ` which was constructed in `functor_gamma.lean`.
+
+In this file, given four categories `A`, `A'`, `B`, `B'`, equivalences `eA : A ≅ A'`,
+`eB : B ≅ B'`, `e' : A' ≅ B'`, functors `F : A ⥤ B'`, `G : B ⥤ A` equipped with certain
+compatibilities, we construct an equivalence `A ≅ B` whose functor is `F ⋙ eB.inverse`
+and whose inverse functor is `G`.
+
+-/
+
+open category_theory category_theory.category
 
 noncomputable theory
 

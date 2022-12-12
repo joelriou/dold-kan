@@ -6,17 +6,25 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.functor_n
 import for_mathlib.dold_kan.decomposition
+import category_theory.idempotents.homological_complex
 import category_theory.idempotents.karoubi_karoubi
-import for_mathlib.idempotents.homological_complex
-import for_mathlib.idempotents.karoubi_misc
+
+/-!
+
+# N₁ and N₂ reflects isomorphisms
+
+In this file, it is shown that the functors
+`N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)` and
+`N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ))`
+reflect isomorphisms for any preadditive category `C`.
+
+-/
 
 open category_theory
 open category_theory.category
 open category_theory.idempotents
 open opposite
 open_locale simplicial
-
-noncomputable theory
 
 namespace algebraic_topology
 
@@ -26,8 +34,7 @@ variables {C : Type*} [category C] [preadditive C]
 
 open morph_components
 
-instance : reflects_isomorphisms
-  (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
+instance : reflects_isomorphisms (N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)) :=
 ⟨λ X Y f, begin
   introI,
   /- restating the result in a way that allows induction on the degree n -/
@@ -37,8 +44,8 @@ instance : reflects_isomorphisms
   /- restating the assumption in a more practical form -/
   have h₁ := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.hom_inv_id (N₁.map f))),
   have h₂ := homological_complex.congr_hom (karoubi.hom_ext.mp (is_iso.inv_hom_id (N₁.map f))),
-  have h₃ := λ n, karoubi.homological_complex.f_p_comm_assoc (inv (N₁.map f)) (n) (f.app (op [n])),
-  simp only [N₁_map_f, karoubi.comp, homological_complex.comp_f,
+  have h₃ := λ n, karoubi.homological_complex.p_comm_f_assoc (inv (N₁.map f)) (n) (f.app (op [n])),
+  simp only [N₁_map_f, karoubi.comp_f, homological_complex.comp_f,
     alternating_face_map_complex.map_f, N₁_obj_p, karoubi.id_eq, assoc] at h₁ h₂ h₃,
   /- we have to construct an inverse to f in degree n, by induction on n -/
   intro n,
@@ -61,50 +68,33 @@ instance : reflects_isomorphisms
     tauto, },
 end⟩
 
-lemma karoubi_alternating_face_map_complex_d (P : karoubi (simplicial_object C)) (n : ℕ) :
-  (((alternating_face_map_complex.obj (karoubi_functor_category_embedding.obj P)).d (n+1) n).f) =
-    P.p.app (op [n+1]) ≫ ((alternating_face_map_complex.obj P.X).d (n+1) n) :=
-begin
-  dsimp,
-  simpa only [alternating_face_map_complex.obj_d_eq, karoubi.sum_hom,
-    preadditive.sum_comp, preadditive.comp_sum,
-    karoubi.zsmul_hom, preadditive.zsmul_comp, preadditive.comp_zsmul],
-end
-
 lemma compatibility_N₂_N₁_karoubi :
   N₂ ⋙ (karoubi_chain_complex_equivalence C ℕ).functor =
   karoubi_functor_category_embedding simplex_categoryᵒᵖ C ⋙ N₁ ⋙
   (karoubi_chain_complex_equivalence (karoubi C) ℕ).functor ⋙
-  functor.map_homological_complex (karoubi_karoubi.equivalence C).inverse
-    (complex_shape.down ℕ) :=
+  functor.map_homological_complex (karoubi_karoubi.equivalence C).inverse _ :=
 begin
-  apply category_theory.functor.ext,
-  { intros P Q f,
-    ext n,
-    dsimp [karoubi_karoubi.inverse, karoubi_functor_category_embedding,
-      karoubi_functor_category_embedding.map],
-    simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id, assoc,
-      karoubi_chain_complex_equivalence_functor_obj_X_p, N₂_obj_p_f,
-      homological_complex.eq_to_hom_f, karoubi_P_infty_f, app_p_comm,
-      P_infty_f_naturality, P_infty_f_naturality_assoc,
-      P_infty_f_idem_assoc, app_comp_p], },
-  { intro P,
-    apply homological_complex.ext,
-    { intros i j hij,
-      have h : j+1=i := hij,
-      subst h,
-      ext,
-      dsimp [N₂, N₁, functor_extension₁.obj, karoubi_chain_complex_equivalence,
-        karoubi_homological_complex.functor.obj, karoubi_karoubi.inverse],
-      have h := (alternating_face_map_complex.map P.p).comm (j+1) j,
-      dsimp at h,
-      simp only [assoc, karoubi.comp, karoubi.eq_to_hom_f, karoubi_P_infty_f,
-        eq_to_hom_refl, comp_id, ← homological_complex.hom.comm_assoc, ← h,
-        karoubi_alternating_face_map_complex_d, app_idem_assoc], },
+  refine category_theory.functor.ext (λ P, _) (λ P Q f, _),
+  { refine homological_complex.ext _ _,
     { ext n,
       { dsimp,
-        simp only [comp_id, id_comp, karoubi_P_infty_f, P_infty_f_naturality], },
-      { refl, }, }, },
+        simp only [karoubi_P_infty_f, comp_id, P_infty_f_naturality, id_comp], },
+      { refl, }, },
+    { rintros _ n (rfl : n+1 = _),
+      ext,
+      have h := (alternating_face_map_complex.map P.p).comm (n+1) n,
+      dsimp [N₂, karoubi_chain_complex_equivalence, karoubi_karoubi.inverse,
+        karoubi_homological_complex_equivalence.functor.obj] at ⊢ h,
+      simp only [karoubi.comp_f, assoc, karoubi.eq_to_hom_f, eq_to_hom_refl, id_comp, comp_id,
+        karoubi_alternating_face_map_complex_d, karoubi_P_infty_f,
+        ← homological_complex.hom.comm_assoc, ← h, app_idem_assoc], }, },
+  { ext n,
+    dsimp [karoubi_karoubi.inverse, karoubi_functor_category_embedding,
+      karoubi_functor_category_embedding.map],
+    simp only [karoubi.comp_f, karoubi_P_infty_f, homological_complex.eq_to_hom_f,
+      karoubi.eq_to_hom_f, assoc, comp_id, P_infty_f_naturality, app_p_comp,
+      karoubi_chain_complex_equivalence_functor_obj_X_p, N₂_obj_p_f, eq_to_hom_refl,
+      P_infty_f_naturality_assoc, app_comp_p, P_infty_f_idem_assoc], },
 end
 
 /-- We deduce that `N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ))`

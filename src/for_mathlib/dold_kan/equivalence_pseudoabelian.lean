@@ -6,7 +6,8 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.equivalence_additive
 import for_mathlib.dold_kan.compatibility
-import for_mathlib.idempotents.simplicial_object
+import category_theory.idempotents.simplicial_object
+import for_mathlib.idempotents.karoubi_misc
 
 /-!
 
@@ -35,6 +36,8 @@ open algebraic_topology.dold_kan
 /-- The equivalence `simplicial_object A ≌ karoubi (simplicial_object A) ` -/
 @[nolint unused_arguments]
 def κequiv := to_karoubi_equivalence (simplicial_object C)
+
+instance : is_idempotent_complete (chain_complex C ℕ) := sorry
 
 /-- The equivalence `chain_complex A ℕ ≌ karoubi (chain_complex A ℕ) ` -/
 def κequiv' := to_karoubi_equivalence (chain_complex C ℕ)
@@ -92,7 +95,7 @@ lemma hε : compatibility.υ (eq_to_iso hN₁) =
   (Γ₂N₁ : κequiv.functor ≅ (N₁ : simplicial_object C ⥤ _) ⋙
   preadditive.dold_kan.equivalence.inverse) :=
 begin
-  ext1, ext1, ext1, ext1 X,
+  ext X : 4,
   erw [nat_trans.comp_app, compatibility_Γ₂N₁_Γ₂N₂_nat_trans],
   dsimp [compatibility.υ],
   simp only [id_comp, comp_id],

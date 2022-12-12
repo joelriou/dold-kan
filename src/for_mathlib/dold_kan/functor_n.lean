@@ -6,15 +6,16 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.p_infty
 
-/-
+/-!
 
 # Construction of functors N for the Dold-Kan correspondence
 
 TODO (@joelriou) continue adding the various files referenced below
 
-In this file, we construct the functors `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`
+In this file, we construct functors `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`
 and `N₂ : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)`
-for any preadditive category `C`.
+for any preadditive category `C`. (The indices of these functors are the number of occurrences
+of `karoubi` at the source or the target.)
 
 In the case `C` is additive, the functor `N₂` shall be the functor of the equivalence
 `category_theory.preadditive.dold_kan.equivalence` defined in `equivalence_additive.lean`.
@@ -54,26 +55,9 @@ def N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ) :=
     idem := P_infty_idem, },
   map := λ X Y f,
   { f := P_infty ≫ alternating_face_map_complex.map f,
-    comm := begin
-      ext n,
-      simp only [homological_complex.comp_f, alternating_face_map_complex.map,
-        chain_complex.of_hom_f],
-      slice_rhs 3 4 { erw P_infty_f_naturality, },
-      simp only [← assoc, P_infty_f_idem],
-    end, },
-  map_id' := λ X, begin
-    ext n,
-    simpa only [homological_complex.comp_f, nat_trans.id_app, karoubi.id_eq,
-      alternating_face_map_complex.map, chain_complex.of_hom_f] using comp_id _,
-  end,
-  map_comp' := λ X Y Z f g, begin
-    ext n,
-    simp only [karoubi.comp, homological_complex.comp_f, nat_trans.comp_app,
-      alternating_face_map_complex.map, chain_complex.of_hom_f],
-    slice_rhs 2 3 { erw P_infty_f_naturality, },
-    slice_rhs 1 2 { erw P_infty_f_idem, },
-    rw assoc,
-  end }
+    comm := by { ext, simp }, },
+  map_id' := λ X, by { ext, dsimp, simp },
+  map_comp' := λ X Y Z f g, by { ext, simp } }
 
 /-- The extension of `N₁` to the Karoubi envelope of `simplicial_object C`. -/
 @[simps]

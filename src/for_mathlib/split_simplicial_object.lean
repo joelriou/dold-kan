@@ -34,6 +34,7 @@ namespace index_set
 
 variables {Δ : simplex_categoryᵒᵖ} (A : index_set Δ)
 
+/-
 lemma eq_id_iff_len_le : A.eq_id ↔ Δ.unop.len ≤ A.1.unop.len :=
 begin
   split,
@@ -56,7 +57,7 @@ begin
   { intro h,
     rw eq_id_iff_len_le,
     exact len_le_of_mono h, }
-end
+end-/
 
 end index_set
 

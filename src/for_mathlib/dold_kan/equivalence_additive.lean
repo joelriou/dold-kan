@@ -6,15 +6,19 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.n_comp_gamma
 
+/-! The Dold-Kan equivalence for additive categories.
+
+This file defines `preadditive.dold_kan.equivalence` which is the equivalence
+of categories `karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)`.
+
+-/
+
 noncomputable theory
 
-open category_theory
-open category_theory.category
-open category_theory.limits
-open category_theory.idempotents
-open algebraic_topology.dold_kan
+open category_theory category_theory.category category_theory.limits
+  category_theory.idempotents algebraic_topology.dold_kan
 
-variables {C : Type*} [category C] [preadditive C] [has_finite_coproducts C]
+variables {C : Type*} [category C] [preadditive C]
 
 namespace category_theory
 
@@ -22,12 +26,20 @@ namespace preadditive
 
 namespace dold_kan
 
+/-- The functor `karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ)` of
+the Dold-Kan equivalence for additive categories. -/
 @[simps]
 def N : karoubi (simplicial_object C) ⥤ karoubi (chain_complex C ℕ) := N₂
 
+variable [has_finite_coproducts C]
+
+/-- The inverse functor `karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C)` of
+the Dold-Kan equivalence for additive categories. -/
 @[simps]
 def Γ : karoubi (chain_complex C ℕ) ⥤ karoubi (simplicial_object C) := Γ₂
 
+/-- The Dold-Kan equivalence `karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ)`
+for additive categories. -/
 @[simps]
 def equivalence : karoubi (simplicial_object C) ≌ karoubi (chain_complex C ℕ) :=
 { functor := N,

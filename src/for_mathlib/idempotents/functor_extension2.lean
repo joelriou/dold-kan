@@ -113,8 +113,7 @@ def functor_extension₂ : (C ⥤ D) ⥤ (karoubi C ⥤ karoubi D) :=
 (whiskering_right C D (karoubi D)).obj (to_karoubi D) ⋙ functor_extension₁ C D
 
 lemma functor_extension₂_comp_whiskering_left_to_karoubi :
-  functor_extension₂ C D ⋙
-    (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) =
+  functor_extension₂ C D ⋙ (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) =
   (whiskering_right C D (karoubi D)).obj (to_karoubi D) :=
 by simp only [functor_extension₂, functor.assoc_eq,
   functor_extension₁_comp_whiskering_left_to_karoubi, functor.comp_id]

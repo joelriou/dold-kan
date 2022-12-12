@@ -67,11 +67,11 @@ def Q_infty : K[X] ⟶ K[X] := 𝟙 _ - P_infty
 @[simp]
 lemma P_infty_f_0 : (P_infty.f 0 : X _[0] ⟶ X _[0]) = 𝟙 _ := rfl
 
+lemma P_infty_f (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := rfl
+
 @[simp]
 lemma Q_infty_f_0 : (Q_infty.f 0 : X _[0] ⟶ X _[0]) = 0 :=
 by { dsimp [Q_infty], simp only [sub_self], }
-
-lemma P_infty_f (n : ℕ) : (P_infty.f n : X _[n] ⟶  X _[n] ) = (P n).f n := rfl
 
 lemma Q_infty_f (n : ℕ) : (Q_infty.f n : X _[n] ⟶  X _[n] ) = (Q n).f n := rfl
 
@@ -81,6 +81,11 @@ lemma P_infty_f_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
 P_f_naturality n n f
 
 @[simp, reassoc]
+lemma Q_infty_f_naturality (n : ℕ) {X Y : simplicial_object C} (f : X ⟶ Y) :
+  f.app (op [n]) ≫ Q_infty.f n = Q_infty.f n ≫ f.app (op [n]) :=
+Q_f_naturality n n f
+
+@[simp, reassoc]
 lemma P_infty_f_idem (n : ℕ) :
   (P_infty.f n : X _[n] ⟶ _) ≫ (P_infty.f n) = P_infty.f n :=
 by simp only [P_infty_f, P_f_idem]
@@ -88,6 +93,15 @@ by simp only [P_infty_f, P_f_idem]
 @[simp, reassoc]
 lemma P_infty_idem : (P_infty : K[X] ⟶ _) ≫ P_infty = P_infty :=
 by { ext n, exact P_infty_f_idem n, }
+
+@[simp, reassoc]
+lemma Q_infty_f_idem (n : ℕ) :
+  (Q_infty.f n : X _[n] ⟶ _) ≫ (Q_infty.f n) = Q_infty.f n :=
+Q_f_idem _ _
+
+@[simp, reassoc]
+lemma Q_infty_idem : (Q_infty : K[X] ⟶ _) ≫ Q_infty = Q_infty :=
+by { ext n, exact Q_infty_f_idem n, }
 
 @[simp, reassoc]
 lemma P_infty_f_comp_Q_infty_f (n : ℕ) :
@@ -116,16 +130,6 @@ end
 lemma Q_infty_comp_P_infty :
   (Q_infty : K[X] ⟶ _) ≫ P_infty = 0 :=
 by { ext n, apply Q_infty_f_comp_P_infty_f, }
-
-@[simp, reassoc]
-lemma Q_infty_f_idem (n : ℕ) :
-  (Q_infty.f n : X _[n] ⟶ _) ≫ Q_infty.f n = Q_infty.f n :=
-(karoubi.mk (X _[n]) _ (P_infty_f_idem _)).complement.idem
-
-@[simp, reassoc]
-lemma Q_infty_idem :
-  (Q_infty : K[X] ⟶ _) ≫ Q_infty = Q_infty :=
-by { ext n, apply Q_infty_f_idem, }
 
 @[simp]
 lemma P_infty_add_Q_infty :
@@ -193,10 +197,10 @@ begin
   /- We use the three equalities h₃₂, h₄₃, h₁₄. -/
   rw [← h₃₂, ← h₄₃, h₁₄],
   simp only [karoubi_functor_category_embedding.map_app_f, karoubi.decomp_id_p_f,
-    karoubi.decomp_id_i_f, karoubi.comp],
+    karoubi.decomp_id_i_f, karoubi.comp_f],
   let π : Y₄ ⟶ Y₄ := (to_karoubi _ ⋙ karoubi_functor_category_embedding _ _).map Y.p,
   have eq := karoubi.hom_ext.mp (P_infty_f_naturality n π),
-  simp only [karoubi.comp] at eq,
+  simp only [karoubi.comp_f] at eq,
   dsimp [π] at eq,
   rw [← eq, reassoc_of (app_idem Y (op [n]))],
 end

@@ -21,10 +21,10 @@ namespace idempotents
 
 namespace karoubi
 
-@[simp]
-lemma zsmul_hom [preadditive C] {P Q : karoubi C} (f : P ⟶ Q) (n : ℤ) :
-  (n • f).f = n • f.f :=
-map_zsmul (inclusion_hom P Q) n f
+--@[simp]
+--lemma zsmul_hom [preadditive C] {P Q : karoubi C} (f : P ⟶ Q) (n : ℤ) :
+--  (n • f).f = n • f.f :=
+--map_zsmul (inclusion_hom P Q) n f
 
 end karoubi
 

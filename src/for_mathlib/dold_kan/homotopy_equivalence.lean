@@ -6,12 +6,13 @@ Authors: Joël Riou
 
 import for_mathlib.dold_kan.normalized
 
-/-
+/-!
+
 # The normalized Moore complex and the alternating face map complex are homotopy equivalent
 
 In this file, when the category `A` is abelian, we obtain the homotopy equivalence
-`inclusion_of_Moore_complex_map_is_homotopy_equiv` between the normalized Moore complex
-and the alternating face map complex of a simplicial object in `A`.
+`homotopy_equiv_normalized_Moore_complex_alternating_face_map_complex` between the
+normalized Moore complex and the alternating face map complex of a simplicial object in `A`.
 
 -/
 
@@ -31,8 +32,7 @@ variables {C : Type*} [category C] [preadditive C] (X : simplicial_object C)
 noncomputable def homotopy_P_to_id : Π (q : ℕ),
   homotopy (P q : K[X] ⟶ _) (𝟙 _)
 | 0     := homotopy.refl _
-| (q+1) :=
-  begin
+| (q+1) := begin
     refine homotopy.trans (homotopy.of_eq _)
       (homotopy.trans
         (homotopy.add (homotopy_P_to_id q) (homotopy.comp_left (homotopy_Hσ_to_zero q) (P q)))
@@ -42,19 +42,18 @@ noncomputable def homotopy_P_to_id : Π (q : ℕ),
   end
 
 /-- The complement projection `Q q` to `P q` is homotopic to zero. -/
-def Q_is_homotopic_to_zero (q : ℕ) : homotopy (Q q : K[X] ⟶ _) 0 :=
+def homotopy_Q_to_zero (q : ℕ) : homotopy (Q q : K[X] ⟶ _) 0 :=
 homotopy.equiv_sub_zero.to_fun (homotopy_P_to_id X q).symm
 
-lemma homotopy_P_to_id_eventually_constant {q : ℕ} {n : ℕ} (hqn : n<q):
+lemma homotopy_P_to_id_eventually_constant {q n : ℕ} (hqn : n<q):
   ((homotopy_P_to_id X (q+1)).hom n (n+1) : X _[n] ⟶ X _[n+1]) =
   (homotopy_P_to_id X q).hom n (n+1) :=
 begin
   unfold homotopy_P_to_id,
-  simp only [homotopy.trans_hom, pi.add_apply, homotopy.of_eq_hom, pi.zero_apply,
-    graded_object.zero_apply, homotopy.add_hom, homotopy.comp_left_hom, add_zero,
-    zero_add, add_right_eq_self, homotopy_Hσ_to_zero, homotopy.null_homotopy'_hom,
-    complex_shape.down_rel, eq_self_iff_true, dif_pos, hσ'_eq_zero hqn (c_mk (n+1) n rfl),
-    comp_zero],
+  simp only [homotopy_Hσ_to_zero, hσ'_eq_zero hqn (c_mk (n+1) n rfl), homotopy.trans_hom,
+    pi.add_apply, homotopy.of_eq_hom, pi.zero_apply, homotopy.add_hom, homotopy.comp_left_hom,
+    homotopy.null_homotopy'_hom, complex_shape.down_rel, eq_self_iff_true, dite_eq_ite,
+    if_true, comp_zero, add_zero, zero_add],
 end
 
 variable (X)
@@ -79,9 +78,9 @@ def homotopy_P_infty_to_id :
 /-- The inclusion of the Moore complex in the alternating face map complex
 is an homotopy equivalence -/
 @[simps]
-def inclusion_of_Moore_complex_map_is_homotopy_equiv {A : Type*} [category A] [abelian A]
-  {Y : simplicial_object A} : homotopy_equiv ((normalized_Moore_complex A).obj Y)
-  ((alternating_face_map_complex A).obj Y) :=
+def homotopy_equiv_normalized_Moore_complex_alternating_face_map_complex {A : Type*}
+  [category A] [abelian A] {Y : simplicial_object A} :
+  homotopy_equiv ((normalized_Moore_complex A).obj Y) ((alternating_face_map_complex A).obj Y) :=
 { hom := inclusion_of_Moore_complex_map Y,
   inv := P_infty_to_normalized_Moore_complex Y,
   homotopy_hom_inv_id := homotopy.of_eq (split_mono_inclusion_of_Moore_complex_map Y).id,

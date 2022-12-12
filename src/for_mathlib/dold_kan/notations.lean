@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joël Riou
 -/
 
-import for_mathlib.alternating_face_map_complex
+import algebraic_topology.alternating_face_map_complex
 
 /-!
 
@@ -16,5 +16,7 @@ as `N[X]` for the normalized subcomplex in the case `C` is an abelian category.
 
 -/
 
-localized "notation `K[`X`]` := algebraic_topology.alternating_face_map_complex.obj X" in dold_kan
-localized "notation `N[`X`]` := algebraic_topology.normalized_Moore_complex.obj X" in dold_kan
+localized "notation (name := alternating_face_map_complex) `K[`X`]` :=
+  algebraic_topology.alternating_face_map_complex.obj X" in dold_kan
+localized "notation (name := normalized_Moore_complex) `N[`X`]` :=
+  algebraic_topology.normalized_Moore_complex.obj X" in dold_kan
