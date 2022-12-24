@@ -13,6 +13,23 @@ import for_mathlib.idempotents.karoubi_misc
 
 # The Dold-Kan correspondence for pseudoabelian categories
 
+In this file, for any idempotent complete additive category `C`,
+the Dold-Kan equivalence
+`idempotents.dold_kan.equivalence C : simplicial_object C ≌ chain_complex C ℕ`
+is obtained. It is deduced from the equivalence
+`preadditive.dold_kan.equivalence` between the respective idempotent
+completions of these categories using the fact that when `C` is idempotent complete,
+then both `simplicial_object C` and `chain_complex C ℕ` are idempotent complete.
+
+The construction of `idempotents.dold_kan.equivalence` uses the tools
+introduced in the file `compatibility.lean`. Doing so, the functor
+`idempotents.dold_kan.N` of the equivalence is
+the composition of `N₁ : simplicial_object C ⥤ karoubi (chain_complex C ℕ)`
+(defined in `functor_n.lean`) and the inverse of the equivalence
+`chain_complex C ℕ ≌ karoubi (chain_complex C ℕ)`. The functor
+`idempotents.dold_kan.Γ` of the equivalence is by definition the functor
+`Γ₀` introduced in `functor_gamma.lean`.
+
 -/
 
 noncomputable theory
@@ -23,6 +40,7 @@ open category_theory.limits
 open category_theory.idempotents
 
 variables {C : Type*} [category C] [is_idempotent_complete C]
+  [preadditive C] [has_finite_coproducts C]
 
 namespace category_theory
 
@@ -31,8 +49,6 @@ namespace idempotents
 namespace dold_kan
 
 open algebraic_topology.dold_kan
-
-variables [preadditive C] [has_finite_coproducts C]
 
 /-- The functor `N` for the equivalence is obtained by composing
 `N' : simplicial_object C ⥤ karoubi (chain_complex C ℕ)` and the inverse
@@ -69,10 +85,9 @@ lemma hη : compatibility.τ₀ =
   (N₁Γ₀ : Γ ⋙ N₁ ≅ (to_karoubi_equivalence (chain_complex C ℕ)).functor) :=
 begin
   ext K : 3,
-  rw compatibility.τ₀_hom_app,
-  dsimp [compatibility.τ₁],
-  simpa only [id_comp, comp_id, eq_to_hom_app, eq_to_hom_map, eq_to_hom_trans,
-    N₂Γ₂_to_karoubi_iso_hom] using N₂Γ₂_compatible_with_N₁Γ₀ K,
+  simpa only [compatibility.τ₀_hom_app, compatibility.τ₁_hom_app, eq_to_iso.hom,
+    preadditive.dold_kan.equivalence_counit_iso, N₂Γ₂_to_karoubi_iso_hom, eq_to_hom_map,
+    eq_to_hom_trans_assoc, eq_to_hom_app] using N₂Γ₂_compatible_with_N₁Γ₀ K,
 end
 
 /-- The counit isomorphism induced by `N₁Γ₀` -/
