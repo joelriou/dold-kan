@@ -8,6 +8,7 @@ import for_mathlib.dold_kan.equivalence_additive
 import for_mathlib.dold_kan.compatibility
 import category_theory.idempotents.simplicial_object
 import for_mathlib.idempotents.karoubi_misc
+import for_mathlib.idempotents.homological_complex
 
 /-!
 

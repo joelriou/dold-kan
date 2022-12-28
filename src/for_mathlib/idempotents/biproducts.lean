@@ -29,7 +29,7 @@ open category_theory.preadditive
 
 universes v
 
-namespace category_theory
+/-namespace category_theory
 
 namespace idempotents
 
@@ -168,4 +168,4 @@ end karoubi
 
 end idempotents
 
-end category_theory
+end category_theory-/

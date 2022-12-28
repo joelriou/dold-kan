@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 
 import for_mathlib.dold_kan.equivalence_additive
+import for_mathlib.idempotents.homological_complex
 
 noncomputable theory
 
@@ -40,7 +41,7 @@ begin
   apply functor.ext,
   { intros X Y f,
     ext n,
-    simp only [karoubi.comp, homological_complex.comp_f, karoubi.eq_to_hom_f,
+    simp only [karoubi.comp_f, homological_complex.comp_f, karoubi.eq_to_hom_f,
       homological_complex.eq_to_hom_f, eq_to_hom_refl, comp_id],
     dsimp,
     simp only [map_P_infty_f, ← F.map_comp],

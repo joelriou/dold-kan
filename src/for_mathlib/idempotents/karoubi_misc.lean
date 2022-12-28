@@ -39,8 +39,8 @@ begin
 end
 
 
-instance [preadditive C] [is_idempotent_complete C] :
-  is_idempotent_complete (chain_complex C ℕ) := sorry
+--instance [preadditive C] [is_idempotent_complete C] :
+--  is_idempotent_complete (chain_complex C ℕ) := sorry
 
 end idempotents
 

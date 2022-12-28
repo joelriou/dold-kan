@@ -58,7 +58,7 @@ begin
   simp only [assoc],
   congr,
   ext,
-  simp only [decomp_id_p_f, comp, to_karoubi_map_f, P.idem],
+  simp only [decomp_id_p_f, comp_f, to_karoubi_map_f, P.idem],
 end
 
 lemma whiskering_left_to_karoubi_hom_inv_fun_id

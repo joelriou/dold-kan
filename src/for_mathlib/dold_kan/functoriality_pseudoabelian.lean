@@ -38,26 +38,26 @@ namespace dold_kan
   functors `preadditive.dold_kan.functor_karoubi_homological_complex_compat` for the
   functors `κequiv'.functor`. -/
 def functoriality_κinv' :
-  F.map_karoubi_homological_complex _ ⋙ κequiv'.inverse
-  ≅ κequiv'.inverse ⋙ functor.map_homological_complex F _ :=
+  F.map_karoubi_homological_complex _ ⋙ (to_karoubi_equivalence (chain_complex _ ℕ)).inverse
+  ≅ (to_karoubi_equivalence _).inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ) :=
 begin
-  calc (F.map_karoubi_homological_complex _ ⋙ κequiv'.inverse)
-    ≅ 𝟭 _ ⋙ (F.map_karoubi_homological_complex _ ⋙ κequiv'.inverse) :
+  calc (F.map_karoubi_homological_complex _ ⋙ (to_karoubi_equivalence (chain_complex _ ℕ)).inverse)
+    ≅ 𝟭 _ ⋙ (F.map_karoubi_homological_complex _ ⋙ (to_karoubi_equivalence _).inverse) :
           by refl
-  ... ≅ (κequiv'.inverse ⋙ κequiv'.functor) ⋙
-      (F.map_karoubi_homological_complex _ ⋙ κequiv'.inverse) :
-        iso_whisker_right κequiv'.counit_iso.symm _
-  ... ≅ κequiv'.inverse ⋙ (κequiv'.functor ⋙
-      F.map_karoubi_homological_complex _) ⋙ κequiv'.inverse : by refl
-  ... ≅ κequiv'.inverse ⋙
-    (functor.map_homological_complex F (complex_shape.down ℕ) ⋙ κequiv'.functor) ⋙
-    κequiv'.inverse : iso_whisker_left _ (iso_whisker_right
+  ... ≅ ((to_karoubi_equivalence _).inverse ⋙ (to_karoubi_equivalence _).functor) ⋙
+      (F.map_karoubi_homological_complex _ ⋙ (to_karoubi_equivalence _).inverse) :
+        iso_whisker_right (to_karoubi_equivalence _).counit_iso.symm _
+  ... ≅ (to_karoubi_equivalence _).inverse ⋙ ((to_karoubi_equivalence _).functor ⋙
+      F.map_karoubi_homological_complex _) ⋙ (to_karoubi_equivalence _).inverse : by refl
+  ... ≅ (to_karoubi_equivalence _).inverse ⋙
+    (functor.map_homological_complex F (complex_shape.down ℕ) ⋙ (to_karoubi_equivalence _).functor) ⋙
+    (to_karoubi_equivalence _).inverse : iso_whisker_left _ (iso_whisker_right
         (eq_to_iso (F.map_homological_complex_karoubi_compatibility _)) _)
-  ... ≅ (κequiv'.inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) ⋙
-    (κequiv'.functor ⋙ κequiv'.inverse) : by refl
-  ... ≅ (κequiv'.inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) ⋙ 𝟭 _ :
-    iso_whisker_left _ κequiv'.unit_iso.symm
-  ... ≅ (κequiv'.inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) :
+  ... ≅ ((to_karoubi_equivalence _).inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) ⋙
+    ((to_karoubi_equivalence _).functor ⋙ (to_karoubi_equivalence _).inverse) : by refl
+  ... ≅ ((to_karoubi_equivalence _).inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) ⋙ 𝟭 _ :
+    iso_whisker_left _ (to_karoubi_equivalence _).unit_iso.symm
+  ... ≅ ((to_karoubi_equivalence _).inverse ⋙ functor.map_homological_complex F (complex_shape.down ℕ)) :
     functor.right_unitor _,
 end
 
@@ -70,10 +70,10 @@ def functoriality_N : (simplicial_object.whiskering C D).obj F ⋙ N ≅
 begin
   calc (simplicial_object.whiskering C D).obj F ⋙ N
     ≅ (dold_kan.N₁ ⋙ F.map_karoubi_homological_complex _) ⋙
-      κequiv'.inverse : iso_whisker_right (eq_to_iso (preadditive.dold_kan.functoriality_N₁ F)) _
+      (to_karoubi_equivalence _).inverse : iso_whisker_right (eq_to_iso (preadditive.dold_kan.functoriality_N₁ F)) _
   ... ≅ dold_kan.N₁ ⋙ (F.map_karoubi_homological_complex _ ⋙
-        κequiv'.inverse) : by refl
-  ... ≅ dold_kan.N₁ ⋙ (κequiv'.inverse ⋙
+        (to_karoubi_equivalence _).inverse) : by refl
+  ... ≅ dold_kan.N₁ ⋙ ((to_karoubi_equivalence _).inverse ⋙
     functor.map_homological_complex F (complex_shape.down ℕ)) :
         iso_whisker_left _ (functoriality_κinv' F)
   ... ≅ N ⋙ functor.map_homological_complex F (complex_shape.down ℕ) : by refl,

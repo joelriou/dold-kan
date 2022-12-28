@@ -31,6 +31,7 @@ variables (C D E : Type*) [category C] [category D] [category E]
 
 namespace karoubi_universal₁
 
+/-
 @[simps]
 def counit_iso :
   (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C) ⋙
@@ -41,7 +42,7 @@ nat_iso.of_components (λ G,
     { f := (G.map (decomp_id_p P)).f,
       comm := begin
         have eq : P.decomp_id_p = (to_karoubi C).map P.p ≫ P.decomp_id_p ≫ 𝟙 _,
-        { simp only [P.idem, decomp_id_p_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
+        { simp only [P.idem, decomp_id_p_f, to_karoubi_map_f, id_eq, comp_f, hom_ext], },
         simpa only [hom_ext, G.map_comp, G.map_id] using G.congr_map eq,
       end },
       naturality' := λ P Q f, begin
@@ -53,7 +54,7 @@ nat_iso.of_components (λ G,
     { f := (G.map (decomp_id_i P)).f,
       comm := begin
         have eq : P.decomp_id_i = 𝟙 _ ≫ P.decomp_id_i ≫ (to_karoubi C).map P.p,
-        { simp only [P.idem, decomp_id_i_f, to_karoubi_map_f, id_eq, comp, hom_ext], },
+        { simp only [idem, id_eq, hom_ext, decomp_id_i_f, comp_f, to_karoubi_map_f], },
         simpa only [hom_ext, G.map_comp, G.map_id] using (G.congr_map eq),
       end, },
     naturality' := λ P Q f, begin
@@ -72,15 +73,15 @@ begin
   intros G G' φ,
   ext P,
   dsimp,
-  simp only [nat_trans_eq φ P, comp, functor_extension₁.map_app_f,
+  simp only [nat_trans_eq φ P, comp_f, functor_extension₁.map_app_f,
     functor.comp_map, whisker_left_app],
-  rw [P.decomp_p, G.map_comp, comp, assoc, assoc],
+  rw [P.decomp_p, G.map_comp, comp_f, assoc, assoc],
   refl,
-end
+end-/
 
 end karoubi_universal₁
 
-@[simps]
+/-@[simps]
 def karoubi_universal₁ : (C ⥤ karoubi D) ≌ (karoubi C ⥤ karoubi D) :=
 { functor := functor_extension₁ C D,
   inverse := (whiskering_left C (karoubi C) (karoubi D)).obj (to_karoubi C),
@@ -165,7 +166,7 @@ begin
     apply_instance, }
 end
 
-end is_idempotent_complete
+end is_idempotent_complete-/
 
 end idempotents
 

@@ -10,6 +10,7 @@ import category_theory.limits.types
 import category_theory.concrete_category
 import category_theory.morphism_property
 import category_theory.limits.mono_coprod
+import data.set.finite
 
 universes v u
 
@@ -82,7 +83,7 @@ begin
 end
 
 lemma mono_coproduct_pullback_of_injective [mono_coprod C] [has_finite_coproducts C]
-  {A B : Type*} [fintype A] [fintype B] (X : B → C) (f : A → B) (hf : function.injective f) :
+  {A B : Type*} [finite A] [finite B] (X : B → C) (f : A → B) (hf : function.injective f) :
   mono (coproduct_pullback X f) :=
 begin
   let A' := (set.image f set.univ)ᶜ,
@@ -104,7 +105,7 @@ begin
         exact ⟨sum.inl a, ha.symm⟩, },
       { exact ⟨sum.inr ⟨b, λ h', h ⟨h'.some, h'.some_spec.2.symm⟩⟩, rfl⟩, }, }, },
   let γ := equiv.of_bijective g hg,
-  haveI : fintype A' := fintype.of_injective (λ a', a'.1) (λ a₁' a₂' h, by { ext, exact h, }),
+  haveI : finite A' := finite.of_injective (λ a', a'.1) (λ a₁' a₂' h, by { ext, exact h, }),
   let E : arrow.mk (coproduct_pullback (X ∘ γ) sum.inl) ≅ arrow.mk (coproduct_pullback X f),
   { refine arrow.iso_mk (iso.refl _) (coproduct_pullback_iso X γ) _,
     ext a,

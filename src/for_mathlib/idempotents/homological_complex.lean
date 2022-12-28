@@ -7,6 +7,7 @@ import for_mathlib.homological_complex_misc
 import algebra.homology.homological_complex
 import algebra.homology.additive
 import for_mathlib.idempotents.functor_extension2
+import category_theory.idempotents.homological_complex
 
 noncomputable theory
 
@@ -63,7 +64,7 @@ def obj (P : karoubi (homological_complex C c)) : homological_complex (karoubi C
   shape' := λ i j hij, by simp only [karoubi.hom_eq_zero_iff,
     P.X.shape i j hij, limits.comp_zero],
   d_comp_d' := λ i j k hij hjk, begin
-    simp only [karoubi.hom_eq_zero_iff, karoubi.comp, P.p.comm j k],
+    simp only [karoubi.hom_eq_zero_iff, karoubi.comp_f, P.p.comm j k],
     slice_lhs 2 3 { rw P.X.d_comp_d' i j k hij hjk, },
     simp only [limits.comp_zero, limits.zero_comp],
   end, }
@@ -76,7 +77,7 @@ def map {P Q : karoubi (homological_complex C c)} (f : P ⟶ Q) : obj P ⟶ obj 
       using homological_complex.congr_hom f.comm n, },
   comm' := λ i j hij, begin
     ext,
-    simp only [karoubi.comp, obj_d_f, assoc, ← f.f.comm],
+    simp only [karoubi.comp_f, obj_d_f, assoc, ← f.f.comm],
     simp only [← assoc],
     have eq := homological_complex.congr_hom (karoubi.p_comm f) i,
     simp only [homological_complex.comp_f] at eq,
@@ -91,7 +92,7 @@ def functor :
 { obj := functor.obj,
   map := λ P Q f, functor.map f,
   map_comp' := λ P Q R f f',
-    by { ext n, simpa only [karoubi.comp], }, }
+    by { ext n, simpa only [karoubi.comp_f], }, }
 
 namespace inverse
 
@@ -101,18 +102,18 @@ def obj (K : homological_complex (karoubi C) c) : karoubi (homological_complex C
   { X := λ n, (K.X n).X,
     d := λ i j, (K.d i j).f,
     shape' := λ i j hij, karoubi.hom_eq_zero_iff.mp (K.shape' i j hij),
-    d_comp_d' := λ i j k hij hjk, by simpa only [karoubi.comp]
+    d_comp_d' := λ i j k hij hjk, by simpa only [karoubi.comp_f]
       using karoubi.hom_eq_zero_iff.mp (K.d_comp_d' i j k hij hjk), },
   p :=
     { f := λ n, (K.X n).p,
       comm' := λ i j hij, karoubi.p_comm (K.d i j), },
-  idem := by { ext n, simpa only [karoubi.comp] using (K.X n).idem, }, }
+  idem := by { ext n, simpa only [karoubi.comp_f] using (K.X n).idem, }, }
 
 @[simps]
 def map {K L : homological_complex (karoubi C) c} (f : K ⟶ L) : obj K ⟶ obj L :=
 { f:=
   { f := λ n, (f.f n).f,
-    comm' := λ i j hij, by simpa only [karoubi.comp]
+    comm' := λ i j hij, by simpa only [karoubi.comp_f]
       using karoubi.hom_ext.mp (f.comm' i j hij), },
   comm := by { ext n, exact (f.f n).comm, }, }
 
@@ -124,7 +125,7 @@ def inverse :
 { obj := inverse.obj,
   map := λ K L f, inverse.map f,
   map_comp' := λ K L M f g, by { ext n,
-    simp only [karoubi.comp, homological_complex.comp_f, inverse.map_f_f], }, }
+    simp only [karoubi.comp_f, homological_complex.comp_f, inverse.map_f_f], }, }
 
 def counit_eq : inverse ⋙ functor = 𝟭 (homological_complex (karoubi C) c) :=
 begin
@@ -133,7 +134,7 @@ begin
     ext n,
     dsimp [functor.map, inverse.map],
     simp only [karoubi.eq_to_hom_f, functor.obj_X_p, homological_complex.eq_to_hom_f,
-      eq_to_hom_refl, comp_id, karoubi.comp, inverse.obj_p_f],
+      eq_to_hom_refl, comp_id, karoubi.comp_f, inverse.obj_p_f],
     rw [← karoubi.hom.comm], },
   { intro P,
     apply homological_complex.ext,
@@ -169,7 +170,7 @@ def unit_iso : 𝟭 (karoubi (homological_complex C c)) ≅ functor ⋙ inverse 
       ext n,
       have h := homological_complex.congr_hom ((karoubi.p_comm f).symm) n,
       simpa only [functor.map_f_f, homological_complex.comp_f,
-        inverse.map_f_f, karoubi.comp] using h,
+        inverse.map_f_f, karoubi.comp_f] using h,
     end },
   inv :=
   { app := λ P,
@@ -194,19 +195,19 @@ def unit_iso : 𝟭 (karoubi (homological_complex C c)) ≅ functor ⋙ inverse 
       ext n,
       have h := homological_complex.congr_hom (karoubi.p_comm f).symm n,
       simpa only [functor_map, functor.map_f_f, functor.id_map, functor.comp_map,
-        homological_complex.comp_f, inverse.map_f_f, inverse_map, karoubi.comp]
+        homological_complex.comp_f, inverse.map_f_f, inverse_map, karoubi.comp_f]
         using h,
     end },
   hom_inv_id' := begin
     ext P n,
     dsimp,
-    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp]
+    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp_f]
       using homological_complex.congr_hom P.idem n,
   end,
   inv_hom_id' := begin
     ext P n,
     dsimp [inverse.obj, functor.obj],
-    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp]
+    simpa only [homological_complex.comp_f, karoubi.id_eq, karoubi.comp_f]
       using homological_complex.congr_hom P.idem n,
   end, }
 
@@ -214,7 +215,7 @@ end karoubi_homological_complex
 
 variables (C) (c)
 
-@[simps]
+/-@[simps]
 def karoubi_homological_complex_equivalence :
   karoubi (homological_complex C c) ≌ homological_complex (karoubi C) c :=
 { functor    := karoubi_homological_complex.functor,
@@ -230,8 +231,8 @@ def karoubi_homological_complex_equivalence :
       eq_to_hom_app, karoubi_homological_complex.functor.obj_X_p,
       karoubi_homological_complex.inverse.obj_p_f, eq_to_hom_refl,
       karoubi.id_eq, karoubi_homological_complex.functor.map_f_f,
-      karoubi.comp] using h,
-  end }
+      karoubi.comp_f] using h,
+  end }-/
 
 lemma functor.map_homological_complex_id {D : Type*} [category D] [preadditive D] :
   functor.map_homological_complex (𝟭 D) c = 𝟭 _ :=
@@ -287,7 +288,7 @@ end
 
 variables (α : Type*) [add_right_cancel_semigroup α] [has_one α]
 
-@[simps]
+/-@[simps]
 def karoubi_chain_complex_equivalence :
   karoubi (chain_complex C α) ≌
     chain_complex (karoubi C) α :=
@@ -297,7 +298,7 @@ karoubi_homological_complex_equivalence C (complex_shape.down α)
 def karoubi_cochain_complex_equivalence :
   karoubi (cochain_complex C α) ≌
     cochain_complex (karoubi C) α :=
-karoubi_homological_complex_equivalence C (complex_shape.up α)
+karoubi_homological_complex_equivalence C (complex_shape.up α)-/
 
 end idempotents
 
@@ -319,7 +320,7 @@ begin
   { intros X Y f,
     ext n,
     dsimp [to_karoubi],
-    simp only [karoubi.comp, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id,
+    simp only [karoubi.comp_f, karoubi.eq_to_hom_f, eq_to_hom_refl, comp_id,
       homological_complex.comp_f, map_karoubi_homological_complex_obj_p_f,
       homological_complex.id_f, map_id, map_homological_complex_map_f],
     erw id_comp, },

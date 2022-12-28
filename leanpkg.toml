@@ -1,8 +1,8 @@
 [package]
 name = "dold-kan"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.49.1"
+lean_version = "leanprover-community/lean:3.50.3"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "ee00ca5e2fb606ac5fcb6a48245c3eb2f458b1b5"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "422e70f7ce183d2900c586a8cda8381e788a0c62"}

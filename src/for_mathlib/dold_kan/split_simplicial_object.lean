@@ -284,9 +284,8 @@ nat_iso.of_components (λ S, S.s.to_karoubi_nondeg_complex_iso_N₁)
 
 
 --@[simps]
-def nondeg_complex_functor_iso_forget_comp_normalized_Moore_complex {A : Type*} [category A] [abelian A] :
-  nondeg_complex_functor ≅ forget A ⋙ normalized_Moore_complex A :=
-sorry
+--def nondeg_complex_functor_iso_forget_comp_normalized_Moore_complex {A : Type*} [category A] [abelian A] :
+--  nondeg_complex_functor ≅ forget A ⋙ normalized_Moore_complex A :=
 --(whiskering_right_to_karoubi_iso_equiv _ _).inv_fun
 --  (to_karoubi_N'_iso_N₁
 --    ≪≫ iso_whisker_left _ (N₁_iso_normalized_Moore_complex_comp_to_karoubi A))
